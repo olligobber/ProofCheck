@@ -1,11 +1,19 @@
-module WFF exposing (..)
+module WFF exposing
+    ( WFF(..)
+    , show
+    , eval
+    , neg
+    , and
+    , or
+    , implies
+    )
 
 {-
 A Well Formed Formula, either a Proposition, Unary (prefix) operation, or a
 Binary (infix) operation
 -}
 type WFF
-    = Prop { char : String }
+    = Prop String
     | Unary
         { function : Bool -> Bool
         , symbol : String
@@ -21,7 +29,7 @@ type WFF
 -- Renders a WFF to display to the user
 show : WFF -> String
 show wff = case wff of
-    Prop v -> v.char
+    Prop v -> v
     Unary v -> v.symbol ++ safeShow v.contents
     Binary v -> safeShow v.first ++ v.symbol ++ safeShow v.second
 
@@ -34,7 +42,7 @@ safeShow wff = case wff of
 -- Given a mapping of propositions to values, evaluates a WFF
 eval : (String -> Bool) -> WFF -> Bool
 eval mapping wff = case wff of
-    Prop v -> mapping v.char
+    Prop v -> mapping v
     Unary v -> v.function <| eval mapping v.contents
     Binary v -> v.function (eval mapping v.first) (eval mapping v.second)
 
