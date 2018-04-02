@@ -1,5 +1,5 @@
-Make a function to match two WFF 
+Make a function to match sequents
 
-Make a class for sequents
+Make default sequents (double negation, modus ponens, modus tollens, etc.)
 
 Make UI

@@ -45,16 +45,16 @@ mergeErr a b = merge
 match : WFF -> WFF -> Maybe (Dict String WFF)
 match small big = case (small, big) of
     (Binary v, Binary u) ->
-        if v.symb == u.symb then
+        if v.symbol == u.symbol then
             case (match v.first u.first, match v.second u.second) of
                 (Just d1, Just d2) -> mergeErr d1 d2
                 _ -> Nothing
         else
             Nothing
     (Unary v, Unary u) ->
-        if v.symb == u.symb then
+        if v.symbol == u.symbol then
             match v.contents u.contents
         else
             Nothing
-    (Prop s, _) -> Just <| Map.singleton s big
+    (Prop s, _) -> Just <| Dict.singleton s big
     _ -> Nothing
