@@ -36,8 +36,8 @@ show wff = case wff of
 -- Renders a WFF to be contained in another WFF
 safeShow : WFF -> String
 safeShow wff = case wff of
-    Binary v -> "(" ++ show (Binary v) ++ ")"
-    v -> show v
+    Prop v -> v
+    v -> "(" ++ show v ++ ")"
 
 -- Given a mapping of propositions to values, evaluates a WFF
 eval : (String -> Bool) -> WFF -> Bool

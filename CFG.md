@@ -1,3 +1,19 @@
+# WFF CFG
+
+A Context Free Grammar (CFG) for general Well Formed Formulas (WFF), implemented in `src/Parser.elm`.
+
+## Character sets
+
+In this document, `s` represents symbol characters, `` `~!@#$%^&*_+-=[]{}|\:;\"',<.>/? ``, and `p` represents upper and lowercase letters.
+
+## Pre-Processing
+
+Before parsing a WFF, all space characters, ` \t\n\r`, are removed from the string.
+
+## Simple CFG
+
+The following CFG produces all acceptable WFF:
+
 ```
 A -> B
 A -> B S B
@@ -10,7 +26,9 @@ S -> s S
 S -> s
 ```
 
----
+## LL(1) CFG
+
+To parse expressions we want an LL(1) CFG. The following CFG produces all acceptable WFF and is LL(1):
 
 ```
 A -> B C    1
@@ -27,7 +45,9 @@ T -> s T    7
 T -> null   5
 ```
 
----
+The production rules are numbered to match their representation in code.
+
+Below is the LL(1) lookup table for the CFG:
 
 |     | `p` | `(` | `s` | EOF | `)` |
 | :-: | :-: | :-: | :-: | :-: | :-: |
