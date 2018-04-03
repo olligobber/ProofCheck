@@ -5,9 +5,9 @@ module WFFTools exposing
     )
 
 import Set exposing (Set, singleton, union)
-import Dict exposing (Dict, empty, insert, merge, singleton)
-import Maybe exposing (Maybe, map)
-import WFF exposing (WFF(..))
+import Dict exposing (Dict, singleton)
+import WFF exposing (WFF(..), eq)
+import DictMerge exposing (mergeErr)
 
 -- Get all variables from a WFF
 variables : WFF -> Set String
@@ -29,25 +29,14 @@ substitute func wff = case wff of
         , second = substitute func val.second
         }
 
--- Merges two dictionaries, returning Nothing on any clash
-mergeErr : Dict String WFF -> Dict String WFF -> Maybe (Dict String WFF)
-mergeErr a b = merge
-    (\k -> \v -> \d -> map (insert k v) d)
-    (\k -> \v1 -> \v2 -> \d -> case v1 == v2 of
-        True -> map (insert k v1) d
-        False -> Nothing)
-    (\k -> \v -> \d -> map (insert k v) d)
-    a
-    b
-    (Just empty)
-
--- Match a WFF to one after substitutions were applied, returning the relevant substitutions
+-- Match a WFF to one after substitutions were applied, returning the relevant
+-- substitutions
 match : WFF -> WFF -> Maybe (Dict String WFF)
 match small big = case (small, big) of
     (Binary v, Binary u) ->
         if v.symbol == u.symbol then
             case (match v.first u.first, match v.second u.second) of
-                (Just d1, Just d2) -> mergeErr d1 d2
+                (Just d1, Just d2) -> mergeErr eq d1 d2
                 _ -> Nothing
         else
             Nothing
