@@ -2,9 +2,18 @@ module Sequent exposing
     ( Sequent
     , verify
     , match
+    , dn1
+    , dn2
+    , mp
+    , mt
+    , ai
+    , ae1
+    , ae2
+    , oi1
+    , oi2
     )
 
-import WFF exposing (WFF, eval)
+import WFF exposing (WFF, eval, and, or, implies, neg)
 import WFFTools exposing (variables, match)
 import PermTools exposing (assignments, permutations)
 import List exposing (foldl, filter, all, map2, map, length)
@@ -64,3 +73,75 @@ match small big =
                 (permutations small.ante)
     else
         Nothing
+
+-- Double Negation sequent 1
+dn1 : Sequent
+dn1 =
+    { ante = [neg (neg (Prop "A"))]
+    , conse = Prop "A"
+    }
+
+-- Double Negation sequent 2
+dn2 : Sequent
+dn2 =
+    { ante = [Prop "A"]
+    , conse = neg (neg (Prop "A"))
+    }
+
+-- Modus Ponens sequent
+mp : Sequent
+mp =
+    { ante =
+        [ Prop "A"
+        , implies (Prop "A") (Prop "B")
+        ]
+    , conse = Prop "B"
+    }
+
+-- Modus Tollens sequent
+mt : Sequent
+mt =
+    { ante =
+        [ neg (Prop "B")
+        , implies (Prop "A") (Prop "B")
+        ]
+    , conse = neg (Prop "A")
+    }
+
+-- And Introduction sequent
+ai : Sequent
+ai =
+    { ante =
+        [ Prop "A"
+        , Prop "B"
+        ]
+    , conse = and (Prop "A") (Prop "B")
+    }
+
+-- And Elimination sequent 1
+ae1 : Sequent
+ae1 =
+    { ante = [and (Prop "A") (Prop "B")]
+    , conse = Prop "A"
+    }
+
+-- And Elimination sequent 2
+ae2 : Sequent
+ae2 =
+    { ante = [and (Prop "A") (Prop "B")]
+    , conse = Prop "B"
+    }
+
+-- Or Introduction sequent 1
+oi1 : Sequent
+oi1 =
+    { ante = [Prop "A"]
+    , conse = or (Prop "A") (Prop "B")
+    }
+
+-- Or Introduction sequent 2
+oi2 : Sequent
+oi2 =
+    { ante = [Prop "B"]
+    , conse = or (Prop "A") (Prop "B")
+    }

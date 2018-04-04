@@ -10,8 +10,6 @@ module WFF exposing
     , implies
     )
 
-import List exposing (all)
-
 {-
 A Well Formed Formula, either a Proposition, Unary (prefix) operation, or a
 Binary (infix) operation
@@ -46,10 +44,10 @@ safeShow wff = case wff of
 -- Turns an int into a unary operator
 toUn : Int -> Bool -> Bool
 toUn n = case (n%4) of
-    0 -> \_ -> False
+    0 -> always False
     1 -> identity
     2 -> not
-    _ -> \_ -> True
+    _ -> always True
 
 -- Turns a unary operator into an int
 fromUn : (Bool -> Bool) -> Int

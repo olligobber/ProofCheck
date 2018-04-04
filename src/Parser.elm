@@ -79,7 +79,7 @@ prod4 =
 
 prod5 : List Token
 prod5 =
-    [ Action 0 (\_ -> Ok <| Base "")
+    [ Action 0 (always (Ok <| Base ""))
     ]
 
 prod6 : List Token
