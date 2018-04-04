@@ -13,8 +13,7 @@ module Sequent exposing
     , oi2
     )
 
-import WFF exposing (WFF, eval, and, or, implies, neg)
-import WFFTools exposing (variables, match)
+import WFF exposing (WFF, eval, and, or, implies, neg, variables, match)
 import PermTools exposing (assignments, permutations)
 import List exposing (foldl, filter, all, map2, map, length)
 import Dict exposing (Dict, get, empty)
