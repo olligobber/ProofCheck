@@ -4,7 +4,7 @@ module Sequent exposing
     , match
     )
 
-import WFF exposing (WFF, eval, eq)
+import WFF exposing (WFF, eval)
 import WFFTools exposing (variables, match)
 import PermTools exposing (assignments, permutations)
 import List exposing (foldl, filter, all, map2, map, length)
@@ -41,10 +41,10 @@ verify seq = foldl filterWFF (assignments <| seqVars seq) seq.ante
 -- the substitutions
 match1 : Sequent -> Sequent -> Maybe (Dict String WFF)
 match1 small big = foldl
-    (mergeDef eq)
+    mergeDef
     (Just Dict.empty)
     (map2 WFFTools.match small.ante big.ante)
-    |> mergeDef eq (WFFTools.match small.conse big.conse)
+    |> mergeDef (WFFTools.match small.conse big.conse)
 
 -- Get any non-nothing value
 getAny : List (Maybe a) -> Maybe a

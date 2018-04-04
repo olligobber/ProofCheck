@@ -1,8 +1,9 @@
 module WFF exposing
     ( WFF(..)
     , show
+    , fromUn
+    , fromBin
     , eval
-    , eq
     , neg
     , and
     , or
@@ -18,12 +19,12 @@ Binary (infix) operation
 type WFF
     = Prop String
     | Unary
-        { function : Bool -> Bool
+        { function : Int
         , symbol : String
         , contents : WFF
         }
     | Binary
-        { function : Bool -> Bool -> Bool
+        { function : Int
         , symbol : String
         , first: WFF
         , second : WFF
@@ -42,38 +43,43 @@ safeShow wff = case wff of
     Prop v -> v
     v -> "(" ++ show v ++ ")"
 
+-- Turns an int into a unary operator
+toUn : Int -> Bool -> Bool
+toUn n = case (n%4) of
+    0 -> \_ -> False
+    1 -> identity
+    2 -> not
+    _ -> \_ -> True
+
+-- Turns a unary operator into an int
+fromUn : (Bool -> Bool) -> Int
+fromUn f = case (f False, f True) of
+    (False, False) -> 0
+    (False, True) -> 1
+    (True, False) -> 2
+    (True, True) -> 3
+
+-- Turns an int into a binary operator
+toBin : Int -> Bool -> Bool -> Bool
+toBin n a = case a of
+    True -> toUn (n//4)
+    False -> toUn (n%4)
+
+-- Turns a binary operator into an int
+fromBin : (Bool -> Bool -> Bool) -> Int
+fromBin f = fromUn (f False) + 4 * fromUn (f True)
+
 -- Given a mapping of propositions to values, evaluates a WFF
 eval : (String -> Bool) -> WFF -> Bool
 eval mapping wff = case wff of
     Prop v -> mapping v
-    Unary v -> v.function <| eval mapping v.contents
-    Binary v -> v.function (eval mapping v.first) (eval mapping v.second)
-
--- Determine if WFF are equal
-eq : WFF -> WFF -> Bool
-eq wff1 wff2 = case (wff1, wff2) of
-    (Binary v, Binary u) -> all identity
-        [ v.symbol == u.symbol
-        , v.first == u.first
-        , v.second == u.second
-        , v.function True True == u.function True True
-        , v.function True False == u.function True False
-        , v.function False True == u.function False True
-        , v.function False False == u.function False False
-        ]
-    (Unary v, Unary u) -> all identity
-        [ v.symbol == u.symbol
-        , v.contents == u.contents
-        , v.function True == u.function True
-        , v.function False == u.function False
-        ]
-    (Prop s, Prop t) -> s == t
-    _ -> False
+    Unary v -> toUn v.function <| eval mapping v.contents
+    Binary v -> toBin v.function (eval mapping v.first) (eval mapping v.second)
 
 -- Unary operator "not"
 neg : WFF -> WFF
 neg v = Unary
-    { function = not
+    { function = fromUn not
     , symbol = "~"
     , contents = v
     }
@@ -81,7 +87,7 @@ neg v = Unary
 -- Binary operator "and"
 and : WFF -> WFF -> WFF
 and a b = Binary
-    { function = (&&)
+    { function = fromBin (&&)
     , symbol = "&"
     , first = a
     , second = b
@@ -90,7 +96,7 @@ and a b = Binary
 -- Binary operator "or"
 or : WFF -> WFF -> WFF
 or a b = Binary
-    { function = (||)
+    { function = fromBin (||)
     , symbol = "|"
     , first = a
     , second = b
@@ -99,7 +105,7 @@ or a b = Binary
 -- Binary operator "implies"
 implies : WFF -> WFF -> WFF
 implies a b = Binary
-    { function = (not >> (||))
+    { function = fromBin (not >> (||))
     , symbol = "->"
     , first = a
     , second = b

@@ -6,7 +6,7 @@ module WFFTools exposing
 
 import Set exposing (Set, singleton, union)
 import Dict exposing (Dict, singleton)
-import WFF exposing (WFF(..), eq)
+import WFF exposing (WFF(..))
 import DictMerge exposing (mergeErr)
 
 -- Get all variables from a WFF
@@ -36,7 +36,7 @@ match small big = case (small, big) of
     (Binary v, Binary u) ->
         if v.symbol == u.symbol then
             case (match v.first u.first, match v.second u.second) of
-                (Just d1, Just d2) -> mergeErr eq d1 d2
+                (Just d1, Just d2) -> mergeErr d1 d2
                 _ -> Nothing
         else
             Nothing
