@@ -2,6 +2,8 @@ module CustomSymbol exposing
     ( Symbol
     , makeUnary
     , makeBinary
+    , toSequent1
+    , toSequent2
     )
 
 import WFF exposing (WFF(..), fromUn, fromBin, eval, variables)
@@ -54,3 +56,17 @@ makeBinary propa propb symbol def =
             }
     else
         Nothing
+
+-- Turns a symbol definition into the first sequent
+toSequent1 : Symbol -> Sequent
+toSequent1 symbol =
+    { ante = [symbol.wff]
+    , conse = symbol.definition
+    }
+
+-- Turns a symbol definition into the second sequent
+toSequent2 : Symbol -> Sequent
+toSequent2 symbol =
+    { ante = [symbol.definition]
+    , conse = symbol.wff
+    }

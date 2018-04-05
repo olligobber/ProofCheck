@@ -2,18 +2,21 @@ module Parser exposing (..)
 
 import Char exposing (isUpper, isLower)
 import WFF exposing (WFF(Prop))
+import Result exposing (andThen, map, map2)
+import String exposing (any, all, fromChar, filter, toList)
+import List exposing (take, drop, head)
 
 -- Proposition characters
 isProp : Char -> Bool
-isProp char = Char.isLower char || Char.isUpper char
+isProp char = isLower char || isUpper char
 
 -- Symbol characters
 isSymbol : Char -> Bool
-isSymbol char = String.any ((==) char) "`~!@#$%^&*_+-=[]{}|\\:;\"',<.>/?"
+isSymbol char = any ((==) char) "`~!@#$%^&*_+-=[]{}|\\:;\"',<.>/?"
 
 -- Whitespace
 isNotSpace : Char -> Bool
-isNotSpace char = String.all ((/=) char) " \t\n\r"
+isNotSpace char = all ((/=) char) " \t\n\r"
 
 -- Parse Tree
 type ParseTree
@@ -117,8 +120,7 @@ toCategory next = case next of
 -- Produce error given invalid character
 unexpectedError : Maybe Char -> Result String a
 unexpectedError c = case c of
-    Just char -> Err <| "Parse Error: Unexpected character: "++
-        String.fromChar char
+    Just char -> Err <| "Parse Error: Unexpected character: " ++ fromChar char
     Nothing -> Err <| "Parse Error: Unexpected end of input"
 
 -- Given the next character of the input and a symbol, choose a production rule
@@ -148,15 +150,15 @@ parseStep : State -> Result (Result String ParseTree) State
 parseStep state = case state of
     ([], [], [tree]) -> Err <| Ok tree
     (char::string, (Letter cond)::tokens, trees) -> if cond char then
-            Ok (string, tokens, (Base <| String.fromChar char)::trees)
+            Ok (string, tokens, (Base <| fromChar char)::trees)
         else
             Err <| unexpectedError (Just char)
     (string, (Action num function)::tokens, trees) ->
-        case function <| List.take num trees of
+        case function <| take num trees of
             Err err -> Err <| Err err
-            Ok newtree -> Ok (string, tokens, newtree::(List.drop num trees))
+            Ok newtree -> Ok (string, tokens, newtree::(drop num trees))
     (string, (Symbol symb)::tokens, trees) ->
-        case chooseProd (List.head string) symb of
+        case chooseProd (head string) symb of
             Ok newtokens -> Ok (string, newtokens++tokens, trees)
             Err err -> Err <| Err err
     ([], _, _) -> Err <| unexpectedError Nothing
@@ -166,14 +168,14 @@ parseStep state = case state of
 parseFull : State -> Result (Result String ParseTree) State
 parseFull state =
     parseStep state
-        |> Result.andThen parseFull
+        |> andThen parseFull
 
 -- make a parse tree from a string
 parseTree : String -> Result String ParseTree
 parseTree string = case parseFull
     ( string
-        |> String.filter isNotSpace
-        |> String.toList
+        |> filter isNotSpace
+        |> toList
     , [Symbol A]
     , []) of
         Ok _ -> Err "Parse Error: Parsing finished early"
@@ -188,15 +190,15 @@ convert unaries binaries tree = case tree of
     Unary symb tree -> case unaries symb of
         Nothing -> Err <| "Parse Error: Unrecognised unary operator: " ++
             symb
-        Just f -> Result.map f <| convert unaries binaries tree
+        Just f -> map f <| convert unaries binaries tree
     Binary atree symb btree -> case binaries symb of
         Nothing -> Err <| "Parse Error: Unrecognised binary operator: " ++
             symb
-        Just f -> Result.map2 f
+        Just f -> map2 f
             (convert unaries binaries atree)
             (convert unaries binaries btree)
 
 -- parse string to WFF
 parse : Unaries -> Binaries -> String -> Result String WFF
 parse unaries binaries string = parseTree string
-    |> Result.andThen (convert unaries binaries)
+    |> andThen (convert unaries binaries)
