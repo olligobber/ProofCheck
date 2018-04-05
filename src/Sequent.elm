@@ -11,14 +11,19 @@ module Sequent exposing
     , ae2
     , oi1
     , oi2
+    , ass
+    , cp
+    , raa
+    , oe
     )
 
-import WFF exposing (WFF, eval, and, or, implies, neg, variables, match)
-import PermTools exposing (assignments, permutations)
-import List exposing (foldl, filter, all, map2, map, length)
-import Dict exposing (Dict, get, empty)
+import WFF exposing (WFF(..), eval, and, or, implies, neg, variables, match)
+import List.Extra exposing (permutations)
+import List exposing (foldl, filter, all, map2, length, concatMap, filterMap
+    , range, unzip, map)
+import Dict exposing (Dict, get, empty, insert)
 import Maybe exposing (withDefault, andThen)
-import Set exposing (Set, union, empty)
+import Set exposing (Set, union, empty, foldl)
 import DictMerge exposing (mergeDef)
 
 type alias Sequent =
@@ -33,26 +38,34 @@ satisfies wff assign = eval (\s -> withDefault False (get s assign)) wff
 -- Gets all variables from a sequent
 seqVars : Sequent -> Set String
 seqVars seq = union
-    (foldl (\w -> \v -> union (variables w) v) Set.empty seq.ante)
+    (List.foldl (\w -> \v -> union (variables w) v) Set.empty seq.ante)
     (variables seq.conse)
 
 -- Filters assignments that a wff doesn't satisfy
 filterWFF : WFF -> List (Dict String Bool) -> List (Dict String Bool)
 filterWFF wff list = filter (satisfies wff) list
 
+-- Gets every truth value assignment
+assignments : Set comparable -> List (Dict comparable Bool)
+assignments = Set.foldl
+    (\k -> \list -> concatMap
+        (\assign -> [insert k True assign, insert k False assign])
+        list)
+    [Dict.empty]
+
 -- Check a sequent holds
 verify : Sequent -> Bool
-verify seq = foldl filterWFF (assignments <| seqVars seq) seq.ante
+verify seq = List.foldl filterWFF (assignments <| seqVars seq) seq.ante
     |> all (satisfies seq.conse)
 
 -- Match a sequent to one after substitutions were applied, returning
 -- the substitutions
 match1 : Sequent -> Sequent -> Maybe (Dict String WFF)
-match1 small big = foldl
+match1 small big = List.foldl
     mergeDef
     (Just Dict.empty)
-    (map2 WFFTools.match small.ante big.ante)
-    |> mergeDef (WFFTools.match small.conse big.conse)
+    (map2 WFF.match small.ante big.ante)
+    |> mergeDef (WFF.match small.conse big.conse)
 
 -- Get any non-nothing value
 getAny : List (Maybe a) -> Maybe a
@@ -62,16 +75,21 @@ getAny list = case list of
     x::_ -> x
 
 -- Match a sequent to one after substitutions were applied and the antecedents
--- permuted, returning the substitutions
-match : Sequent -> Sequent -> Maybe (Dict String WFF)
+-- permuted, returning all possible substitutions and permutations
+match : Sequent -> Sequent -> List (List Int, Dict String WFF)
 match small big =
     if length small.ante == length big.ante then
-        getAny
-            <| map
-                (\x -> match1 {small | ante = x} big)
-                (permutations small.ante)
+        filterMap
+            (\(x,p) -> case match1 {small | ante = x} big of
+                Just m -> Just (p, m)
+                Nothing -> Nothing)
+            ((length small.ante)-1
+                |> range 0
+                |> map2 (,) small.ante
+                |> permutations
+                |> map unzip)
     else
-        Nothing
+        []
 
 -- Double Negation sequent 1
 dn1 : Sequent
@@ -143,4 +161,44 @@ oi2 : Sequent
 oi2 =
     { ante = [Prop "B"]
     , conse = or (Prop "A") (Prop "B")
+    }
+
+-- Assumption sequent (requires adding assumptions)
+ass : Sequent
+ass =
+    { ante = []
+    , conse = Prop "A"
+    }
+
+-- Condition proof sequent (requires removing assumptions)
+cp : Sequent
+cp =
+    { ante =
+        [ Prop "A"
+        , Prop "B"
+        ]
+    , conse = implies (Prop "A") (Prop "B")
+    }
+
+-- Reductio Ad Absurdium sequent (requires removing assumptions)
+raa : Sequent
+raa =
+    { ante =
+        [ Prop "A"
+        , and (Prop "B") (neg (Prop "B"))
+        ]
+    , conse = neg (Prop "A")
+    }
+
+-- Or elimination sequent (requires removing assumptions)
+oe : Sequent
+oe =
+    { ante =
+        [ or (Prop "A") (Prop "B")
+        , Prop "A"
+        , Prop "B"
+        , Prop "C"
+        , Prop "C"
+        ]
+    , conse = Prop "C"
     }
