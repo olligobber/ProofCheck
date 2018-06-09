@@ -20,7 +20,7 @@ module Sequent exposing
 import WFF exposing (WFF(..), eval, and, or, implies, neg, variables, match)
 import List.Extra exposing (permutations)
 import List exposing (foldl, filter, all, map2, length, concatMap, filterMap
-    , range, unzip, map)
+    , range, unzip, map, indexedMap)
 import Dict exposing (Dict, get, empty, insert)
 import Maybe exposing (withDefault, andThen)
 import Set exposing (Set, union, empty, foldl)
@@ -80,12 +80,10 @@ match : Sequent -> Sequent -> List (List Int, Dict String WFF)
 match small big =
     if length small.ante == length big.ante then
         filterMap
-            (\(x,p) -> case match1 {small | ante = x} big of
+            (\(p,x) -> case match1 {small | ante = x} big of
                 Just m -> Just (p, m)
                 Nothing -> Nothing)
-            ((length small.ante)-1
-                |> range 0
-                |> map2 (,) small.ante
+            (indexedMap (,) small.ante
                 |> permutations
                 |> map unzip)
     else

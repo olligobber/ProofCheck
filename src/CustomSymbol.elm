@@ -21,12 +21,8 @@ makeUnary prop symbol def =
     if isEmpty <| diff (variables def) (singleton prop) then
         Just
             { wff = Unary
-                { function = fromUn
-                    (\b -> eval
-                        (\c -> case c of
-                            prop -> b
-                            _ -> True)
-                        def)
+                { fn = fromUn
+                    (\b -> eval (always b) def)
                 , symbol = symbol
                 , contents = Prop prop
                 }
@@ -41,12 +37,11 @@ makeBinary propa propb symbol def =
     if isEmpty <| diff (variables def) (fromList [propa, propb]) then
         Just
             { wff = Binary
-                { function = fromBin
+                { fn = fromBin
                     (\a -> \b -> eval
-                        (\c -> case c of
-                            propa -> a
-                            propb -> b
-                            _ -> True)
+                        (\c -> case c == propa of
+                            True -> a
+                            False -> b)
                         def)
                 , symbol = symbol
                 , first = Prop propa

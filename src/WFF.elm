@@ -24,12 +24,12 @@ Binary (infix) operation
 type WFF
     = Prop String
     | Unary
-        { function : Int
+        { fn : Int
         , symbol : String
         , contents : WFF
         }
     | Binary
-        { function : Int
+        { fn : Int
         , symbol : String
         , first: WFF
         , second : WFF
@@ -78,13 +78,13 @@ fromBin f = fromUn (f False) + 4 * fromUn (f True)
 eval : (String -> Bool) -> WFF -> Bool
 eval mapping wff = case wff of
     Prop v -> mapping v
-    Unary v -> toUn v.function <| eval mapping v.contents
-    Binary v -> toBin v.function (eval mapping v.first) (eval mapping v.second)
+    Unary v -> toUn v.fn <| eval mapping v.contents
+    Binary v -> toBin v.fn (eval mapping v.first) (eval mapping v.second)
 
 -- Unary operator "not"
 neg : WFF -> WFF
 neg v = Unary
-    { function = fromUn not
+    { fn = fromUn not
     , symbol = "~"
     , contents = v
     }
@@ -92,7 +92,7 @@ neg v = Unary
 -- Binary operator "and"
 and : WFF -> WFF -> WFF
 and a b = Binary
-    { function = fromBin (&&)
+    { fn = fromBin (&&)
     , symbol = "&"
     , first = a
     , second = b
@@ -101,7 +101,7 @@ and a b = Binary
 -- Binary operator "or"
 or : WFF -> WFF -> WFF
 or a b = Binary
-    { function = fromBin (||)
+    { fn = fromBin (||)
     , symbol = "|"
     , first = a
     , second = b
@@ -110,7 +110,7 @@ or a b = Binary
 -- Binary operator "implies"
 implies : WFF -> WFF -> WFF
 implies a b = Binary
-    { function = fromBin (not >> (||))
+    { fn = fromBin (not >> (||))
     , symbol = "->"
     , first = a
     , second = b
@@ -141,14 +141,14 @@ substitute func wff = case wff of
 match : WFF -> WFF -> Maybe (Dict String WFF)
 match small big = case (small, big) of
     (Binary v, Binary u) ->
-        if v.symbol == u.symbol && v.function == u.function then
+        if v.symbol == u.symbol && v.fn == u.fn then
             case (match v.first u.first, match v.second u.second) of
                 (Just d1, Just d2) -> mergeErr d1 d2
                 _ -> Nothing
         else
             Nothing
     (Unary v, Unary u) ->
-        if v.symbol == u.symbol && v.function == u.function then
+        if v.symbol == u.symbol && v.fn == u.fn then
             match v.contents u.contents
         else
             Nothing
