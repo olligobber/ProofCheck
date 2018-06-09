@@ -1,4 +1,12 @@
-module Proof exposing (..)
+module Proof exposing
+    ( DeductionRule(..)
+    , Deduction
+    , Proof
+    , empty
+    , addSequent
+    , addSymbol
+    , addDeduction
+    )
 
 import WFF exposing (WFF)
 import Sequent exposing (..)
