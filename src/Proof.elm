@@ -6,6 +6,7 @@ module Proof exposing
     , addSequent
     , addSymbol
     , addDeduction
+    , showReason
     )
 
 import WFF exposing (WFF)
@@ -15,6 +16,7 @@ import List exposing (map, foldl, filterMap, concatMap, all, filter, sort)
 import List.Extra exposing ((!!), unique, isSubsequenceOf, notMember)
 import Result exposing (map)
 import Tuple exposing (first)
+import String exposing (join)
 
 type DeductionRule
     = Assumption
@@ -27,7 +29,7 @@ type DeductionRule
     | OrIntroduction
     | OrElimination
     | RAA
-    | Defintion Int
+    | Definition Int
     | Introduction Int
 
 type alias Deduction =
@@ -43,6 +45,29 @@ type alias Proof =
     , lines : List Deduction
     , assumptions : Int
     }
+
+niceList : List a -> String
+niceList x = join ", " (List.map toString x)
+
+showRule : Proof -> DeductionRule -> String
+showRule proof rule = case rule of
+    Assumption -> "A"
+    ModusPonens -> "MP"
+    ModusTollens -> "MT"
+    DoubleNegation -> "DN"
+    ConditionalProof -> "CP"
+    AndIntroduction -> "&I"
+    AndElimination -> "&E"
+    OrIntroduction -> "|I"
+    OrElimination -> "|E"
+    RAA -> "RAA"
+    Definition x -> case proof.symbols !! x of
+        Nothing -> "Internal Error with Symbol Definition"
+        Just symbol -> "Def (" ++ symbol.name ++ ")"
+    Introduction x -> "SI (" ++ toString x ++ ")"
+
+showReason : Proof -> Deduction -> String
+showReason proof ded = showRule proof ded.rule ++ " " ++ niceList ded.reasons
 
 -- Empty proof
 empty : Proof
@@ -98,7 +123,7 @@ ruleSequent proof rule = case rule of
     OrIntroduction      -> [oi1, oi1]
     OrElimination       -> [oe]
     RAA                 -> [raa]
-    Defintion i         -> case proof.symbols !! i of
+    Definition i         -> case proof.symbols !! i of
         Just symb -> [toSequent1 symb, toSequent2 symb]
         Nothing -> []
     Introduction i      -> filterMap ((!!) proof.sequents) [i]

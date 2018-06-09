@@ -1,5 +1,5 @@
-Write something to make custom symbols and sequents interact
-
-Make proof object and functions for adding/removing stuff
-
 Make UI
+- add functionality to add line button
+- add UI for adding sequents and symbols
+
+CSS/Formatting (placement, column widths, monospace font)

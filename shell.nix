@@ -4,6 +4,6 @@
     stdenv.mkDerivation {
         name = "ProofCheck";
         buildInputs = with elmPackages ; [
-            elm-make elm-package elm-repl
+            elm-make elm-reactor elm-package elm-repl
         ];
     }

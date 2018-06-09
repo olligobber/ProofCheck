@@ -11,7 +11,8 @@ import Sequent exposing (Sequent)
 import Set exposing (diff, singleton, fromList, isEmpty)
 
 type alias Symbol =
-    { wff : WFF
+    { name : String
+    , wff : WFF
     , definition : WFF
     }
 
@@ -20,7 +21,8 @@ makeUnary : String -> String -> WFF -> Maybe Symbol
 makeUnary prop symbol def =
     if isEmpty <| diff (variables def) (singleton prop) then
         Just
-            { wff = Unary
+            { name = symbol
+            , wff = Unary
                 { fn = fromUn
                     (\b -> eval (always b) def)
                 , symbol = symbol
@@ -36,7 +38,8 @@ makeBinary : String -> String -> String -> WFF -> Maybe Symbol
 makeBinary propa propb symbol def =
     if isEmpty <| diff (variables def) (fromList [propa, propb]) then
         Just
-            { wff = Binary
+            { name = symbol
+            , wff = Binary
                 { fn = fromBin
                     (\a -> \b -> eval
                         (\c -> case c == propa of
