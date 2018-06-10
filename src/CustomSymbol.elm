@@ -4,11 +4,14 @@ module CustomSymbol exposing
     , makeBinary
     , toSequent1
     , toSequent2
+    , makeMap
     )
 
-import WFF exposing (WFF(..), fromUn, fromBin, eval, variables)
+import WFF exposing
+    (WFF(..), fromUn, fromBin, eval, variables, neg, and, or, implies)
 import Sequent exposing (Sequent)
 import Set exposing (diff, singleton, fromList, isEmpty)
+import Parser exposing (Unaries, Binaries, SymbolMaps)
 
 type alias Symbol =
     { name : String
@@ -68,3 +71,30 @@ toSequent2 symbol =
     { ante = [symbol.definition]
     , conse = symbol.wff
     }
+
+-- Turns a list of sequents into maps for parsing
+makeMap : List Symbol -> SymbolMaps
+makeMap list = case list of
+    [] ->
+        ( \s -> case s of
+            "~" -> Just neg
+            _ -> Nothing
+        , \s -> case s of
+            "|" -> Just or
+            "&" -> Just and
+            "->" -> Just implies
+            _ -> Nothing
+        )
+    symbol::rest -> case (symbol.wff, makeMap rest) of
+        (Prop _,_) -> (always Nothing, always Nothing) -- Should not occur
+        (Unary v, (uns, bins)) ->
+            ( \s -> if s == v.symbol
+                then Just (\x -> Unary { v | contents = x } )
+                else uns s
+            , bins )
+        (Binary v, (uns, bins)) ->
+            ( uns
+            , \s -> if s == v.symbol
+                then Just (\x -> \y -> Binary { v | first = x, second = y} )
+                else bins s
+            )

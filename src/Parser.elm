@@ -1,4 +1,4 @@
-module Parser exposing (..)
+module Parser exposing (Unaries, Binaries, SymbolMaps, parse)
 
 import Char exposing (isUpper, isLower)
 import WFF exposing (WFF(Prop))
@@ -183,22 +183,23 @@ parseTree string = case parseFull
 
 type alias Unaries = String -> Maybe (WFF -> WFF)
 type alias Binaries = String -> Maybe (WFF -> WFF -> WFF)
+type alias SymbolMaps = (Unaries, Binaries)
 
-convert : Unaries -> Binaries -> ParseTree -> Result String WFF
-convert unaries binaries tree = case tree of
+convert : SymbolMaps -> ParseTree -> Result String WFF
+convert (unaries, binaries) tree = case tree of
     Base string -> Ok <| Prop string
     Unary symb tree -> case unaries symb of
         Nothing -> Err <| "Parse Error: Unrecognised unary operator: " ++
             symb
-        Just f -> map f <| convert unaries binaries tree
+        Just f -> map f <| convert (unaries, binaries) tree
     Binary atree symb btree -> case binaries symb of
         Nothing -> Err <| "Parse Error: Unrecognised binary operator: " ++
             symb
         Just f -> map2 f
-            (convert unaries binaries atree)
-            (convert unaries binaries btree)
+            (convert (unaries, binaries) atree)
+            (convert (unaries, binaries) btree)
 
 -- parse string to WFF
-parse : Unaries -> Binaries -> String -> Result String WFF
-parse unaries binaries string = parseTree string
-    |> andThen (convert unaries binaries)
+parse : SymbolMaps -> String -> Result String WFF
+parse maps string = parseTree string
+    |> andThen (convert maps)

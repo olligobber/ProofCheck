@@ -1,7 +1,7 @@
 {
     "version": "0.0.1",
-    "summary": "Automatic proof checker",
-    "repository": "https://github.com/user/project.git",
+    "summary": "Proof Checker for a certain system of Propositional Logic",
+    "repository": "https://github.com/olligobber/ProofCheck.git",
     "license": "Apache-2.0",
     "source-directories": [
         "src"

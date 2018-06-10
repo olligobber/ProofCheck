@@ -67,7 +67,10 @@ showRule proof rule = case rule of
     Introduction x -> "SI (" ++ toString x ++ ")"
 
 showReason : Proof -> Deduction -> String
-showReason proof ded = showRule proof ded.rule ++ " " ++ niceList ded.reasons
+showReason proof ded =
+    showRule proof ded.rule ++
+    " " ++
+    niceList (List.map ((+) 1) ded.reasons)
 
 -- Empty proof
 empty : Proof
@@ -120,7 +123,7 @@ ruleSequent proof rule = case rule of
     ConditionalProof    -> [cp]
     AndIntroduction     -> [ai]
     AndElimination      -> [ae1, ae2]
-    OrIntroduction      -> [oi1, oi1]
+    OrIntroduction      -> [oi1, oi2]
     OrElimination       -> [oe]
     RAA                 -> [raa]
     Definition i         -> case proof.symbols !! i of
@@ -144,14 +147,15 @@ matchDeduction proof deduction = makeSequent proof deduction
     |> Result.map (List.filterMap (applyPerm (proof.lines)))
 
 -- Add a deduction to a proof
-addDeduction : Deduction -> Proof -> Result String Proof
-addDeduction new proof = case (new.rule, matchDeduction proof new) of
+addDeduction : Proof -> Deduction -> Result String Proof
+addDeduction proof new = case (new.rule, matchDeduction proof new) of
     (_, Err err) -> Err err
     (Assumption, _) -> Ok
         { proof
         | lines = proof.lines ++ [
             { new
             | assumptions = [proof.assumptions + 1]
+            , reasons = []
             } ]
         , assumptions = proof.assumptions + 1
         }
