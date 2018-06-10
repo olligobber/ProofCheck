@@ -1,2 +1,2 @@
 build:
-	elm-make src/main.elm --output=index.html
+	elm-make src/main.elm --output=build/main.js
