@@ -47,7 +47,7 @@ type alias Proof =
     }
 
 niceList : List a -> String
-niceList x = join ", " (List.map toString x)
+niceList x = join "," (List.map toString x)
 
 showRule : Proof -> DeductionRule -> String
 showRule proof rule = case rule of

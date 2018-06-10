@@ -118,7 +118,7 @@ simpleReason oldline reason =
 -- Given the current proof, a deduction and its index, renders that deduction
 renderDeduction : Proof -> (Int, Deduction) -> Html LineMsg
 renderDeduction proof (index, ded) = tr []
-    [ td [] [ text <| join ", " (List.map toString ded.assumptions) ]
+    [ td [] [ text <| join "," (List.map toString ded.assumptions) ]
     , td [] [ text <| "(" ++ toString (index+1) ++ ")" ]
     , td [] [ text <| show ded.deduction ]
     , td [] [ text <| showReason proof ded ]

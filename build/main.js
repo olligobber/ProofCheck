@@ -11392,7 +11392,7 @@ var _olligobber$proofcheck$Proof$showRule = F2(
 var _olligobber$proofcheck$Proof$niceList = function (x) {
 	return A2(
 		_elm_lang$core$String$join,
-		', ',
+		',',
 		A2(_elm_lang$core$List$map, _elm_lang$core$Basics$toString, x));
 };
 var _olligobber$proofcheck$Proof$showReason = F2(
@@ -11797,7 +11797,7 @@ var _olligobber$proofcheck$ProofLines$renderDeduction = F2(
 						_0: _elm_lang$html$Html$text(
 							A2(
 								_elm_lang$core$String$join,
-								', ',
+								',',
 								A2(_elm_lang$core$List$map, _elm_lang$core$Basics$toString, _p3.assumptions))),
 						_1: {ctor: '[]'}
 					}),

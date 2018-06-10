@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css?family=Anonymous+Pro');
+
+body {
+    font-family: 'Anonymous Pro', monospace;
+    font-size: 1em;
+}
+
+select {
+    font-family: 'Anonymous Pro', monospace;
+    font-size: 1em;
+}
+
+input[type=text] {
+    font-family: 'Anonymous Pro', monospace;
+    font-size: 1em;
+}
