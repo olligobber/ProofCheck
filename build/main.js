@@ -12092,34 +12092,15 @@ var _olligobber$proofcheck$ProofLines$renderNewLine = F2(
 											_elm_lang$html$Html$input,
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$type_('number'),
+												_0: _elm_lang$html$Html_Attributes$type_('text'),
 												_1: {
 													ctor: '::',
-													_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$ProofLines$ReasonIndex),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Attributes$disabled(!allowIndex),
-														_1: {ctor: '[]'}
-													}
+													_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$ProofLines$References),
+													_1: {ctor: '[]'}
 												}
 											},
 											{ctor: '[]'}),
-										_1: {
-											ctor: '::',
-											_0: A2(
-												_elm_lang$html$Html$input,
-												{
-													ctor: '::',
-													_0: _elm_lang$html$Html_Attributes$type_('text'),
-													_1: {
-														ctor: '::',
-														_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$ProofLines$References),
-														_1: {ctor: '[]'}
-													}
-												},
-												{ctor: '[]'}),
-											_1: {ctor: '[]'}
-										}
+										_1: {ctor: '[]'}
 									}
 								}),
 							_1: {ctor: '[]'}

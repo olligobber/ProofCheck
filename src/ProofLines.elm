@@ -98,11 +98,11 @@ renderNewLine allowIndex curIndex = tr []
                 , "RAA"
                 , "SI"
                 ] )
-        , input
-            [ type_ "number"
-            , onInput ReasonIndex
-            , disabled (not allowIndex)
-            ] []
+        -- , input
+        --     [ type_ "number"
+        --     , onInput ReasonIndex
+        --     , disabled (not allowIndex)
+        --     ] [] TODO
         , input [ type_ "text", onInput References ] []
         ]
     ]
