@@ -1,4 +1,5 @@
 import Html exposing (Html, div, text, button)
+import Html.Attributes exposing (id)
 import Html.Events exposing (onClick)
 
 import Proof exposing (Proof, DeductionRule(..), empty)
@@ -48,6 +49,6 @@ view model = div []
     [ Html.map Lines <| renderLines model.proof model.newLine
     , button [ onClick SubmitLine ] [ text "Add Line" ]
     , case model.latestError of
-        Nothing -> text "" -- TODO make more hidden
-        Just e -> text e -- TODO emphasis
+        Nothing -> div [] []
+        Just e -> div [ id "Error" ] [ text e ]
     ]

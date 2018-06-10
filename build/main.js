@@ -12113,7 +12113,11 @@ var _olligobber$proofcheck$ProofLines$renderLines = F2(
 	function (proof, newline) {
 		return A2(
 			_elm_lang$html$Html$table,
-			{ctor: '[]'},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$id('ProofLines'),
+				_1: {ctor: '[]'}
+			},
 			A3(
 				_elm_lang$core$Basics$flip,
 				F2(
@@ -12210,9 +12214,23 @@ var _olligobber$proofcheck$Main$view = function (model) {
 					_0: function () {
 						var _p2 = model.latestError;
 						if (_p2.ctor === 'Nothing') {
-							return _elm_lang$html$Html$text('');
+							return A2(
+								_elm_lang$html$Html$div,
+								{ctor: '[]'},
+								{ctor: '[]'});
 						} else {
-							return _elm_lang$html$Html$text(_p2._0);
+							return A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$id('Error'),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text(_p2._0),
+									_1: {ctor: '[]'}
+								});
 						}
 					}(),
 					_1: {ctor: '[]'}

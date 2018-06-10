@@ -8,7 +8,7 @@ module ProofLines exposing
     )
 
 import Html exposing (Html, table, tr, td, input, select, option, text)
-import Html.Attributes exposing (type_, value, disabled, selected)
+import Html.Attributes exposing (type_, value, disabled, selected, id)
 import Html.Events exposing (onInput)
 
 import Proof exposing
@@ -132,7 +132,7 @@ renderLines proof newline = proof.lines
     |> flip (++) [ renderNewLine
         (newline.enableIndex)
         ((List.length proof.lines)+1) ]
-    |> table []
+    |> table [ id "ProofLines" ]
 
 -- Turns a list of results into result list, only if all were Ok
 getAll : List (Result x a) -> Result x (List a)
