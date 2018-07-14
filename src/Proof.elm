@@ -64,7 +64,7 @@ showRule proof rule = case rule of
     Definition x -> case proof.symbols !! x of
         Nothing -> "Internal Error with Symbol Definition"
         Just symbol -> "Def (" ++ symbol.name ++ ")"
-    Introduction x -> "SI (" ++ toString x ++ ")"
+    Introduction x -> "SI (" ++ (toString <| x+1) ++ ")"
 
 showReason : Proof -> Deduction -> String
 showReason proof ded =

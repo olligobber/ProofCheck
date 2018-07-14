@@ -7,8 +7,8 @@ module ProofLines exposing
     , submitLine
     )
 
-import Html exposing (Html, table, tr, td, input, select, option, text)
-import Html.Attributes exposing (type_, value, disabled, selected, id)
+import Html exposing (Html, table, tr, td, input, select, option, text, div)
+import Html.Attributes exposing (type_, value, hidden, selected, id)
 import Html.Events exposing (onInput)
 
 import Proof exposing
@@ -56,7 +56,7 @@ updateNewLine message oldline = case message of
         "Def" ->
             { oldline
             | reason = Nothing
-            , handleIndex = Just << Definition
+            , handleIndex = Just << Definition << (\x -> x-1)
             , enableIndex = True
             }
         "DN" -> simpleReason oldline DoubleNegation
@@ -66,7 +66,7 @@ updateNewLine message oldline = case message of
         "SI" ->
             { oldline
             | reason = Nothing
-            , handleIndex = Just << Introduction
+            , handleIndex = Just << Introduction << (\x -> x-1)
             , enableIndex = True
             }
         _ -> oldline
@@ -98,11 +98,14 @@ renderNewLine allowIndex curIndex = tr []
                 , "RAA"
                 , "SI"
                 ] )
-        -- , input
-        --     [ type_ "number"
-        --     , onInput ReasonIndex
-        --     , disabled (not allowIndex)
-        --     ] [] TODO
+        , if allowIndex
+            then
+                input
+                    [ type_ "number"
+                    , onInput ReasonIndex
+                    ] []
+            else
+                div [] []
         , input [ type_ "text", onInput References ] []
         ]
     ]
@@ -156,6 +159,9 @@ submitLine proof newline = Result.map3 (Deduction [])
     (Result.mapError ((++) "Error in formula: ")
         <| parse (makeMap proof.symbols) newline.formula)
     (Result.fromMaybe "Incomplete reason" newline.reason)
-    (Result.mapError ((++) "Error in references: ")
-        <| Result.map (List.map (\x->x-1)) (extractNums newline.references))
+    (extractNums newline.references
+        |> Result.map (List.map (\x -> x-1))
+        |> Result.map sort
+        |> Result.mapError ((++) "Error in references: ")
+    )
     |> Result.andThen (addDeduction proof)

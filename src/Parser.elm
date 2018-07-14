@@ -1,4 +1,9 @@
-module Parser exposing (Unaries, Binaries, SymbolMaps, parse)
+module Parser exposing
+    ( Unaries
+    , Binaries
+    , SymbolMaps
+    , parse
+    )
 
 import Char exposing (isUpper, isLower)
 import WFF exposing (WFF(Prop))
@@ -12,7 +17,7 @@ isProp char = isLower char || isUpper char
 
 -- Symbol characters
 isSymbol : Char -> Bool
-isSymbol char = any ((==) char) "`~!@#$%^&*_+-=[]{}|\\:;\"',<.>/?"
+isSymbol char = any ((==) char) "`~!@#$%^&*_+-=[]{}|\\:;\"'<.>/?"
 
 -- Whitespace
 isNotSpace : Char -> Bool
@@ -166,18 +171,13 @@ parseStep state = case state of
 
 -- repeatedly parseStep until done
 parseFull : State -> Result (Result String ParseTree) State
-parseFull state =
-    parseStep state
-        |> andThen parseFull
+parseFull state = parseStep state |> andThen parseFull
 
 -- make a parse tree from a string
 parseTree : String -> Result String ParseTree
-parseTree string = case parseFull
-    ( string
-        |> filter isNotSpace
-        |> toList
-    , [Symbol A]
-    , []) of
+parseTree string = case filter isNotSpace string of
+    "" -> Err "Parse Error: Empty Input"
+    fstring -> case parseFull (toList fstring, [Symbol A], []) of
         Ok _ -> Err "Parse Error: Parsing finished early"
         Err done -> done
 

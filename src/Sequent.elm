@@ -1,5 +1,6 @@
 module Sequent exposing
     ( Sequent
+    , show
     , verify
     , match
     , dn1
@@ -25,11 +26,18 @@ import Dict exposing (Dict, get, empty, insert)
 import Maybe exposing (withDefault, andThen)
 import Set exposing (Set, union, empty, foldl)
 import DictMerge exposing (mergeDef)
+import String exposing (join)
 
 type alias Sequent =
     { ante : List WFF
     , conse : WFF
     }
+
+show : Sequent -> String
+show seq = seq.ante
+    |> List.map WFF.show
+    |> join ","
+    |> flip (++) (" ⊢ " ++ WFF.show seq.conse)
 
 -- Check a wff satisfies an assignment
 satisfies : WFF -> Dict String Bool -> Bool

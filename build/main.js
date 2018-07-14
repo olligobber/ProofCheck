@@ -10452,6 +10452,22 @@ var _olligobber$proofcheck$Sequent$verify = function (seq) {
 				_olligobber$proofcheck$Sequent$seqVars(seq)),
 			seq.ante));
 };
+var _olligobber$proofcheck$Sequent$show = function (seq) {
+	return A3(
+		_elm_lang$core$Basics$flip,
+		F2(
+			function (x, y) {
+				return A2(_elm_lang$core$Basics_ops['++'], x, y);
+			}),
+		A2(
+			_elm_lang$core$Basics_ops['++'],
+			' ⊢ ',
+			_olligobber$proofcheck$WFF$show(seq.conse)),
+		A2(
+			_elm_lang$core$String$join,
+			',',
+			A2(_elm_lang$core$List$map, _olligobber$proofcheck$WFF$show, seq.ante)));
+};
 var _olligobber$proofcheck$Sequent$Sequent = F2(
 	function (a, b) {
 		return {ante: a, conse: b};
@@ -10531,7 +10547,7 @@ var _olligobber$proofcheck$Parser$isSymbol = function ($char) {
 			function (x, y) {
 				return _elm_lang$core$Native_Utils.eq(x, y);
 			})($char),
-		'`~!@#$%^&*_+-=[]{}|\\:;\"\',<.>/?');
+		'`~!@#$%^&*_+-=[]{}|\\:;\"\'<.>/?');
 };
 var _olligobber$proofcheck$Parser$isProp = function ($char) {
 	return _elm_lang$core$Char$isLower($char) || _elm_lang$core$Char$isUpper($char);
@@ -10933,22 +10949,26 @@ var _olligobber$proofcheck$Parser$parseFull = function (state) {
 		_olligobber$proofcheck$Parser$parseStep(state));
 };
 var _olligobber$proofcheck$Parser$parseTree = function (string) {
-	var _p27 = _olligobber$proofcheck$Parser$parseFull(
-		{
-			ctor: '_Tuple3',
-			_0: _elm_lang$core$String$toList(
-				A2(_elm_lang$core$String$filter, _olligobber$proofcheck$Parser$isNotSpace, string)),
-			_1: {
-				ctor: '::',
-				_0: _olligobber$proofcheck$Parser$Symbol(_olligobber$proofcheck$Parser$A),
-				_1: {ctor: '[]'}
-			},
-			_2: {ctor: '[]'}
-		});
-	if (_p27.ctor === 'Ok') {
-		return _elm_lang$core$Result$Err('Parse Error: Parsing finished early');
+	var _p27 = A2(_elm_lang$core$String$filter, _olligobber$proofcheck$Parser$isNotSpace, string);
+	if (_p27 === '') {
+		return _elm_lang$core$Result$Err('Parse Error: Empty Input');
 	} else {
-		return _p27._0;
+		var _p28 = _olligobber$proofcheck$Parser$parseFull(
+			{
+				ctor: '_Tuple3',
+				_0: _elm_lang$core$String$toList(_p27),
+				_1: {
+					ctor: '::',
+					_0: _olligobber$proofcheck$Parser$Symbol(_olligobber$proofcheck$Parser$A),
+					_1: {ctor: '[]'}
+				},
+				_2: {ctor: '[]'}
+			});
+		if (_p28.ctor === 'Ok') {
+			return _elm_lang$core$Result$Err('Parse Error: Parsing finished early');
+		} else {
+			return _p28._0;
+		}
 	}
 };
 var _olligobber$proofcheck$Parser$parse = F2(
@@ -11385,7 +11405,7 @@ var _olligobber$proofcheck$Proof$showRule = F2(
 					'SI (',
 					A2(
 						_elm_lang$core$Basics_ops['++'],
-						_elm_lang$core$Basics$toString(_p5._0),
+						_elm_lang$core$Basics$toString(_p5._0 + 1),
 						')'));
 		}
 	});
@@ -11774,11 +11794,14 @@ var _olligobber$proofcheck$ProofLines$submitLine = F2(
 						})('Error in references: '),
 					A2(
 						_elm_lang$core$Result$map,
-						_elm_lang$core$List$map(
-							function (x) {
-								return x - 1;
-							}),
-						_olligobber$proofcheck$ProofLines$extractNums(newline.references)))));
+						_elm_lang$core$List$sort,
+						A2(
+							_elm_lang$core$Result$map,
+							_elm_lang$core$List$map(
+								function (x) {
+									return x - 1;
+								}),
+							_olligobber$proofcheck$ProofLines$extractNums(newline.references))))));
 	});
 var _olligobber$proofcheck$ProofLines$renderDeduction = F2(
 	function (proof, _p1) {
@@ -11887,7 +11910,10 @@ var _olligobber$proofcheck$ProofLines$updateNewLine = F2(
 								reason: _elm_lang$core$Maybe$Nothing,
 								handleIndex: function (_p6) {
 									return _elm_lang$core$Maybe$Just(
-										_olligobber$proofcheck$Proof$Definition(_p6));
+										_olligobber$proofcheck$Proof$Definition(
+											function (x) {
+												return x - 1;
+											}(_p6)));
 								},
 								enableIndex: true
 							});
@@ -11906,7 +11932,10 @@ var _olligobber$proofcheck$ProofLines$updateNewLine = F2(
 								reason: _elm_lang$core$Maybe$Nothing,
 								handleIndex: function (_p7) {
 									return _elm_lang$core$Maybe$Just(
-										_olligobber$proofcheck$Proof$Introduction(_p7));
+										_olligobber$proofcheck$Proof$Introduction(
+											function (x) {
+												return x - 1;
+											}(_p7)));
 								},
 								enableIndex: true
 							});
@@ -12088,19 +12117,37 @@ var _olligobber$proofcheck$ProofLines$renderNewLine = F2(
 											})),
 									_1: {
 										ctor: '::',
-										_0: A2(
+										_0: allowIndex ? A2(
 											_elm_lang$html$Html$input,
 											{
 												ctor: '::',
-												_0: _elm_lang$html$Html_Attributes$type_('text'),
+												_0: _elm_lang$html$Html_Attributes$type_('number'),
 												_1: {
 													ctor: '::',
-													_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$ProofLines$References),
+													_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$ProofLines$ReasonIndex),
 													_1: {ctor: '[]'}
 												}
 											},
+											{ctor: '[]'}) : A2(
+											_elm_lang$html$Html$div,
+											{ctor: '[]'},
 											{ctor: '[]'}),
-										_1: {ctor: '[]'}
+										_1: {
+											ctor: '::',
+											_0: A2(
+												_elm_lang$html$Html$input,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$type_('text'),
+													_1: {
+														ctor: '::',
+														_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$ProofLines$References),
+														_1: {ctor: '[]'}
+													}
+												},
+												{ctor: '[]'}),
+											_1: {ctor: '[]'}
+										}
 									}
 								}),
 							_1: {ctor: '[]'}
@@ -12144,43 +12191,307 @@ var _olligobber$proofcheck$ProofLines$renderLines = F2(
 						proof.lines))));
 	});
 
+var _olligobber$proofcheck$NewSequent$foldErrorIndex = F2(
+	function (i, list) {
+		var _p0 = list;
+		if (_p0.ctor === '[]') {
+			return _elm_lang$core$Result$Ok(
+				{ctor: '[]'});
+		} else {
+			if (_p0._0.ctor === 'Ok') {
+				return A2(
+					_elm_lang$core$Result$map,
+					F2(
+						function (x, y) {
+							return {ctor: '::', _0: x, _1: y};
+						})(_p0._0._0),
+					A2(_olligobber$proofcheck$NewSequent$foldErrorIndex, i + 1, _p0._1));
+			} else {
+				return _elm_lang$core$Result$Err(
+					{ctor: '_Tuple2', _0: _p0._0._0, _1: i});
+			}
+		}
+	});
+var _olligobber$proofcheck$NewSequent$foldError = _olligobber$proofcheck$NewSequent$foldErrorIndex(1);
+var _olligobber$proofcheck$NewSequent$extractAssumptions = F2(
+	function (proof, s) {
+		return function (a) {
+			var _p1 = {
+				ctor: '_Tuple2',
+				_0: a,
+				_1: A2(_elm_lang$core$String$split, ',', s)
+			};
+			if (_p1._0.ctor === 'Ok') {
+				return _elm_lang$core$Result$Ok(_p1._0._0);
+			} else {
+				if (((_p1._0._0 === 'Parse Error: Empty Input in assumption 1') && (_p1._1.ctor === '::')) && (_p1._1._1.ctor === '[]')) {
+					return _elm_lang$core$Result$Ok(
+						{ctor: '[]'});
+				} else {
+					return _elm_lang$core$Result$Err(_p1._0._0);
+				}
+			}
+		}(
+			A2(
+				_elm_lang$core$Result$mapError,
+				function (_p2) {
+					var _p3 = _p2;
+					return A2(
+						_elm_lang$core$Basics_ops['++'],
+						_p3._0,
+						A2(
+							_elm_lang$core$Basics_ops['++'],
+							' in assumption ',
+							_elm_lang$core$Basics$toString(_p3._1)));
+				},
+				_olligobber$proofcheck$NewSequent$foldError(
+					A2(
+						_elm_lang$core$List$map,
+						_olligobber$proofcheck$Parser$parse(
+							_olligobber$proofcheck$CustomSymbol$makeMap(proof.symbols)),
+						A2(_elm_lang$core$String$split, ',', s)))));
+	});
+var _olligobber$proofcheck$NewSequent$submitSeq = F2(
+	function (proof, $new) {
+		var _p4 = {
+			ctor: '_Tuple2',
+			_0: A2(_olligobber$proofcheck$NewSequent$extractAssumptions, proof, $new.ante),
+			_1: A2(
+				_olligobber$proofcheck$Parser$parse,
+				_olligobber$proofcheck$CustomSymbol$makeMap(proof.symbols),
+				$new.conse)
+		};
+		if (_p4._0.ctor === 'Err') {
+			return _elm_lang$core$Result$Err(_p4._0._0);
+		} else {
+			if (_p4._1.ctor === 'Err') {
+				return _elm_lang$core$Result$Err(
+					A2(_elm_lang$core$Basics_ops['++'], _p4._1._0, ' in conclusion'));
+			} else {
+				return _elm_lang$core$Result$Ok(
+					{ante: _p4._0._0, conse: _p4._1._0});
+			}
+		}
+	});
+var _olligobber$proofcheck$NewSequent$updateSeq = F3(
+	function (proof, old, msg) {
+		var _p5 = msg;
+		if (_p5.ctor === 'Ante') {
+			return _elm_lang$core$Result$Ok(
+				_elm_lang$core$Native_Utils.update(
+					old,
+					{ante: _p5._0}));
+		} else {
+			return _elm_lang$core$Result$Ok(
+				_elm_lang$core$Native_Utils.update(
+					old,
+					{conse: _p5._0}));
+		}
+	});
+var _olligobber$proofcheck$NewSequent$blank = {ante: '', conse: ''};
+var _olligobber$proofcheck$NewSequent$NewSequent = F2(
+	function (a, b) {
+		return {ante: a, conse: b};
+	});
+var _olligobber$proofcheck$NewSequent$Conse = function (a) {
+	return {ctor: 'Conse', _0: a};
+};
+var _olligobber$proofcheck$NewSequent$Ante = function (a) {
+	return {ctor: 'Ante', _0: a};
+};
+var _olligobber$proofcheck$NewSequent$renderNewSeq = function ($new) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$id('NewSequent'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$input,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$type_('text'),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$NewSequent$Ante),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$value($new.ante),
+							_1: {ctor: '[]'}
+						}
+					}
+				},
+				{ctor: '[]'}),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(' ⊢ '),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$input,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$type_('text'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$NewSequent$Conse),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$value($new.conse),
+									_1: {ctor: '[]'}
+								}
+							}
+						},
+						{ctor: '[]'}),
+					_1: {ctor: '[]'}
+				}
+			}
+		});
+};
+var _olligobber$proofcheck$NewSequent$renderSequents = F2(
+	function (proof, $new) {
+		return A3(
+			_elm_lang$core$Basics$flip,
+			F2(
+				function (x, y) {
+					return {ctor: '::', _0: x, _1: y};
+				}),
+			{
+				ctor: '::',
+				_0: _olligobber$proofcheck$NewSequent$renderNewSeq($new),
+				_1: {ctor: '[]'}
+			},
+			A2(
+				_elm_lang$html$Html$table,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$id('Sequents'),
+					_1: {ctor: '[]'}
+				},
+				A2(
+					_elm_lang$core$List$map,
+					function (_p6) {
+						var _p7 = _p6;
+						return A2(
+							_elm_lang$html$Html$tr,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$td,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text(_p7._1),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text(
+												A2(
+													_elm_lang$core$Basics_ops['++'],
+													'(',
+													A2(
+														_elm_lang$core$Basics_ops['++'],
+														_elm_lang$core$Basics$toString(_p7._0 + 1),
+														')'))),
+											_1: {ctor: '[]'}
+										}),
+									_1: {ctor: '[]'}
+								}
+							});
+					},
+					A2(
+						_elm_lang$core$List$indexedMap,
+						F2(
+							function (v0, v1) {
+								return {ctor: '_Tuple2', _0: v0, _1: v1};
+							}),
+						A2(_elm_lang$core$List$map, _olligobber$proofcheck$Sequent$show, proof.sequents)))));
+	});
+
 var _olligobber$proofcheck$Main$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
-		if (_p0.ctor === 'Lines') {
-			return _elm_lang$core$Native_Utils.update(
-				model,
-				{
-					newLine: A2(_olligobber$proofcheck$ProofLines$updateNewLine, _p0._0, model.newLine)
-				});
-		} else {
-			var _p1 = A2(_olligobber$proofcheck$ProofLines$submitLine, model.proof, model.newLine);
-			if (_p1.ctor === 'Err') {
+		switch (_p0.ctor) {
+			case 'Lines':
 				return _elm_lang$core$Native_Utils.update(
 					model,
 					{
-						latestError: _elm_lang$core$Maybe$Just(_p1._0)
+						newLine: A2(_olligobber$proofcheck$ProofLines$updateNewLine, _p0._0, model.newLine)
 					});
-			} else {
-				return {
-					history: {ctor: '::', _0: model.proof, _1: model.history},
-					proof: _p1._0,
-					latestError: _elm_lang$core$Maybe$Nothing,
-					newLine: _olligobber$proofcheck$ProofLines$blank
-				};
-			}
+			case 'SubmitLine':
+				var _p1 = A2(_olligobber$proofcheck$ProofLines$submitLine, model.proof, model.newLine);
+				if (_p1.ctor === 'Err') {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							latestError: _elm_lang$core$Maybe$Just(_p1._0)
+						});
+				} else {
+					return {
+						history: {ctor: '::', _0: model.proof, _1: model.history},
+						proof: _p1._0,
+						latestError: _elm_lang$core$Maybe$Nothing,
+						newLine: _olligobber$proofcheck$ProofLines$blank,
+						newSeq: model.newSeq
+					};
+				}
+			case 'NewSeq':
+				var _p2 = A3(_olligobber$proofcheck$NewSequent$updateSeq, model.proof, model.newSeq, _p0._0);
+				if (_p2.ctor === 'Err') {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							latestError: _elm_lang$core$Maybe$Just(_p2._0)
+						});
+				} else {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{latestError: _elm_lang$core$Maybe$Nothing, newSeq: _p2._0});
+				}
+			default:
+				var _p3 = A2(_olligobber$proofcheck$NewSequent$submitSeq, model.proof, model.newSeq);
+				if (_p3.ctor === 'Err') {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							latestError: _elm_lang$core$Maybe$Just(_p3._0)
+						});
+				} else {
+					return {
+						history: {ctor: '::', _0: model.proof, _1: model.history},
+						proof: A2(_olligobber$proofcheck$Proof$addSequent, _p3._0, model.proof),
+						latestError: _elm_lang$core$Maybe$Nothing,
+						newLine: model.newLine,
+						newSeq: _olligobber$proofcheck$NewSequent$blank
+					};
+				}
 		}
 	});
 var _olligobber$proofcheck$Main$start = {
 	proof: _olligobber$proofcheck$Proof$empty,
 	history: {ctor: '[]'},
 	latestError: _elm_lang$core$Maybe$Nothing,
-	newLine: _olligobber$proofcheck$ProofLines$blank
+	newLine: _olligobber$proofcheck$ProofLines$blank,
+	newSeq: _olligobber$proofcheck$NewSequent$blank
 };
-var _olligobber$proofcheck$Main$Model = F4(
-	function (a, b, c, d) {
-		return {proof: a, history: b, latestError: c, newLine: d};
+var _olligobber$proofcheck$Main$Model = F5(
+	function (a, b, c, d, e) {
+		return {proof: a, history: b, latestError: c, newLine: d, newSeq: e};
 	});
+var _olligobber$proofcheck$Main$AddSequent = {ctor: 'AddSequent'};
+var _olligobber$proofcheck$Main$NewSeq = function (a) {
+	return {ctor: 'NewSeq', _0: a};
+};
 var _olligobber$proofcheck$Main$SubmitLine = {ctor: 'SubmitLine'};
 var _olligobber$proofcheck$Main$Lines = function (a) {
 	return {ctor: 'Lines', _0: a};
@@ -12192,48 +12503,73 @@ var _olligobber$proofcheck$Main$view = function (model) {
 		{
 			ctor: '::',
 			_0: A2(
-				_elm_lang$html$Html$map,
-				_olligobber$proofcheck$Main$Lines,
-				A2(_olligobber$proofcheck$ProofLines$renderLines, model.proof, model.newLine)),
+				_elm_lang$html$Html$div,
+				{ctor: '[]'},
+				A2(
+					_elm_lang$core$List$map,
+					_elm_lang$html$Html$map(_olligobber$proofcheck$Main$NewSeq),
+					A2(_olligobber$proofcheck$NewSequent$renderSequents, model.proof, model.newSeq))),
 			_1: {
 				ctor: '::',
 				_0: A2(
 					_elm_lang$html$Html$button,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$SubmitLine),
+						_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$AddSequent),
 						_1: {ctor: '[]'}
 					},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text('Add Line'),
+						_0: _elm_lang$html$Html$text('Add Sequent'),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
 					ctor: '::',
-					_0: function () {
-						var _p2 = model.latestError;
-						if (_p2.ctor === 'Nothing') {
-							return A2(
-								_elm_lang$html$Html$div,
-								{ctor: '[]'},
-								{ctor: '[]'});
-						} else {
-							return A2(
-								_elm_lang$html$Html$div,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$id('Error'),
-									_1: {ctor: '[]'}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text(_p2._0),
-									_1: {ctor: '[]'}
-								});
+					_0: A2(
+						_elm_lang$html$Html$map,
+						_olligobber$proofcheck$Main$Lines,
+						A2(_olligobber$proofcheck$ProofLines$renderLines, model.proof, model.newLine)),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$button,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$SubmitLine),
+								_1: {ctor: '[]'}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('Add Line'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: function () {
+								var _p4 = model.latestError;
+								if (_p4.ctor === 'Nothing') {
+									return A2(
+										_elm_lang$html$Html$div,
+										{ctor: '[]'},
+										{ctor: '[]'});
+								} else {
+									return A2(
+										_elm_lang$html$Html$div,
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$id('Error'),
+											_1: {ctor: '[]'}
+										},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text(_p4._0),
+											_1: {ctor: '[]'}
+										});
+								}
+							}(),
+							_1: {ctor: '[]'}
 						}
-					}(),
-					_1: {ctor: '[]'}
+					}
 				}
 			}
 		});
