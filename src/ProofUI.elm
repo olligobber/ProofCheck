@@ -16,9 +16,10 @@ import Proof exposing
 import WFF exposing (show)
 import Parser exposing (parse)
 import CustomSymbol exposing (makeMap)
+import SequentUI exposing (selectSeq)
+import SymbolUI exposing (selectSym)
 import String exposing (join, toInt)
 import List exposing (indexedMap, sort)
-import SequentUI exposing (selectSeq)
 
 type alias NewLine =
     { formula : String
@@ -105,7 +106,7 @@ renderNewLine indexing proof = tr []
                 ] )
         , case indexing of
             NoIndexing -> text ""
-            SymIndexing -> text "" -- TODO
+            SymIndexing -> selectSym ReasonIndex proof
             SeqIndexing -> selectSeq ReasonIndex proof
         , input [ type_ "text", onInput References ] []
         ]

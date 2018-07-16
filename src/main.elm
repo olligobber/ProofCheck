@@ -2,11 +2,13 @@ import Html exposing (Html, div, text, button)
 import Html.Attributes exposing (id)
 import Html.Events exposing (onClick)
 
-import Proof exposing (Proof, DeductionRule(..), empty, addSequent)
+import Proof exposing (Proof, DeductionRule(..), empty, addSequent, addSymbol)
 import ProofUI exposing
     (NewLine, LineMsg(..), renderLines, blank, updateNewLine, submitLine)
 import SequentUI exposing
     (NewSequent, SequentMsg, blank, updateSeq, renderSequents, submitSeq)
+import SymbolUI exposing
+    (NewSymbol, SymbolMsg, blank, updateSym, renderSymbols, submitSym)
 
 main : Program Never Model Msg
 main = Html.beginnerProgram
@@ -21,6 +23,7 @@ type alias Model =
     , latestError : Maybe String
     , newLine : NewLine
     , newSeq : NewSequent
+    , newSym : NewSymbol
     }
 
 start : Model
@@ -30,6 +33,7 @@ start =
     , latestError = Nothing
     , newLine = ProofUI.blank
     , newSeq = SequentUI.blank
+    , newSym = SymbolUI.blank
     }
 
 type Msg
@@ -37,6 +41,8 @@ type Msg
     | SubmitLine
     | NewSeq SequentMsg
     | AddSequent
+    | NewSym SymbolMsg
+    | AddSymbol
 
 update : Msg -> Model -> Model
 update msg model = case msg of
@@ -44,27 +50,39 @@ update msg model = case msg of
     SubmitLine -> case submitLine model.proof model.newLine of
         Err s -> { model | latestError = Just s }
         Ok p ->
-            { history = model.proof :: model.history
+            { model
+            | history = model.proof :: model.history
             , proof = p
             , latestError = Nothing
             , newLine = ProofUI.blank
-            , newSeq = model.newSeq
             }
     NewSeq seqmsg -> { model | newSeq = updateSeq model.newSeq seqmsg }
     AddSequent -> case submitSeq model.proof model.newSeq of
         Err s -> { model | latestError = Just s }
         Ok n ->
-            { history = model.proof :: model.history
+            { model
+            | history = model.proof :: model.history
             , proof = addSequent n model.proof
             , latestError = Nothing
-            , newLine = model.newLine
             , newSeq = SequentUI.blank
+            }
+    NewSym symmsg -> { model | newSym = updateSym model.newSym symmsg }
+    AddSymbol -> case submitSym model.proof model.newSym of
+        Err s -> { model | latestError = Just s }
+        Ok n ->
+            { model
+            | history = model.proof :: model.history
+            , proof = addSymbol n model.proof
+            , latestError = Nothing
+            , newSym = SymbolUI.blank
             }
 
 view : Model -> Html Msg
 view model = div []
     [ Html.map NewSeq <| div [] (renderSequents model.proof model.newSeq)
     , button [ onClick AddSequent ] [ text "Add Sequent" ]
+    , Html.map NewSym <| div [] (renderSymbols model.proof model.newSym)
+    , button [ onClick AddSymbol ] [ text "Add Symbol" ]
     , Html.map Lines <| renderLines model.proof model.newLine
     , button [ onClick SubmitLine ] [ text "Add Line" ]
     , case model.latestError of

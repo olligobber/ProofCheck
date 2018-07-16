@@ -88,9 +88,7 @@ submitSeq proof new = case
         (Ok a, Ok c) -> Ok { ante = a, conse = c }
 
 selectSeq : (String -> msg) -> Proof -> Html msg
-selectSeq f proof = case proof.sequents of
-    [] -> text "No Sequents Available"
-    seqs -> List.map Sequent.show seqs
+selectSeq f proof = List.map Sequent.show proof.sequents
         |> indexedMap (\i -> \s -> option [value (toString i)] [text s])
         |> (::) (option [disabled True, selected True] [text "Choose One"])
         |> select [onInput f]

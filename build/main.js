@@ -11088,7 +11088,7 @@ var _olligobber$proofcheck$CustomSymbol$makeBinary = F4(
 							_0: propb,
 							_1: {ctor: '[]'}
 						}
-					}))) ? _elm_lang$core$Maybe$Just(
+					}))) ? _elm_lang$core$Result$Ok(
 			{
 				name: symbol,
 				wff: _olligobber$proofcheck$WFF$Binary(
@@ -11113,7 +11113,7 @@ var _olligobber$proofcheck$CustomSymbol$makeBinary = F4(
 						second: _olligobber$proofcheck$WFF$Prop(propb)
 					}),
 				definition: def
-			}) : _elm_lang$core$Maybe$Nothing;
+			}) : _elm_lang$core$Result$Err('Extra propositions found in symbol definition');
 	});
 var _olligobber$proofcheck$CustomSymbol$makeUnary = F3(
 	function (prop, symbol, def) {
@@ -11121,7 +11121,7 @@ var _olligobber$proofcheck$CustomSymbol$makeUnary = F3(
 			A2(
 				_elm_lang$core$Set$diff,
 				_olligobber$proofcheck$WFF$variables(def),
-				_elm_lang$core$Set$singleton(prop))) ? _elm_lang$core$Maybe$Just(
+				_elm_lang$core$Set$singleton(prop))) ? _elm_lang$core$Result$Ok(
 			{
 				name: symbol,
 				wff: _olligobber$proofcheck$WFF$Unary(
@@ -11137,7 +11137,7 @@ var _olligobber$proofcheck$CustomSymbol$makeUnary = F3(
 						contents: _olligobber$proofcheck$WFF$Prop(prop)
 					}),
 				definition: def
-			}) : _elm_lang$core$Maybe$Nothing;
+			}) : _elm_lang$core$Result$Err('Extra propositions found in symbol definition');
 	});
 var _olligobber$proofcheck$CustomSymbol$Symbol = F3(
 	function (a, b, c) {
@@ -11733,77 +11733,72 @@ var _olligobber$proofcheck$Proof$addDeduction = F2(
 
 var _olligobber$proofcheck$SequentUI$selectSeq = F2(
 	function (f, proof) {
-		var _p0 = proof.sequents;
-		if (_p0.ctor === '[]') {
-			return _elm_lang$html$Html$text('No Sequents Available');
-		} else {
-			return A2(
-				_elm_lang$html$Html$select,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Events$onInput(f),
-					_1: {ctor: '[]'}
-				},
+		return A2(
+			_elm_lang$html$Html$select,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onInput(f),
+				_1: {ctor: '[]'}
+			},
+			A2(
+				F2(
+					function (x, y) {
+						return {ctor: '::', _0: x, _1: y};
+					}),
 				A2(
-					F2(
-						function (x, y) {
-							return {ctor: '::', _0: x, _1: y};
-						}),
-					A2(
-						_elm_lang$html$Html$option,
-						{
+					_elm_lang$html$Html$option,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$disabled(true),
+						_1: {
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$disabled(true),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$selected(true),
-								_1: {ctor: '[]'}
-							}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text('Choose One'),
+							_0: _elm_lang$html$Html_Attributes$selected(true),
 							_1: {ctor: '[]'}
+						}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Choose One'),
+						_1: {ctor: '[]'}
+					}),
+				A2(
+					_elm_lang$core$List$indexedMap,
+					F2(
+						function (i, s) {
+							return A2(
+								_elm_lang$html$Html$option,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$value(
+										_elm_lang$core$Basics$toString(i)),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text(s),
+									_1: {ctor: '[]'}
+								});
 						}),
-					A2(
-						_elm_lang$core$List$indexedMap,
-						F2(
-							function (i, s) {
-								return A2(
-									_elm_lang$html$Html$option,
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$value(
-											_elm_lang$core$Basics$toString(i)),
-										_1: {ctor: '[]'}
-									},
-									{
-										ctor: '::',
-										_0: _elm_lang$html$Html$text(s),
-										_1: {ctor: '[]'}
-									});
-							}),
-						A2(_elm_lang$core$List$map, _olligobber$proofcheck$Sequent$show, _p0))));
-		}
+					A2(_elm_lang$core$List$map, _olligobber$proofcheck$Sequent$show, proof.sequents))));
 	});
 var _olligobber$proofcheck$SequentUI$foldErrorIndex = F2(
 	function (i, list) {
-		var _p1 = list;
-		if (_p1.ctor === '[]') {
+		var _p0 = list;
+		if (_p0.ctor === '[]') {
 			return _elm_lang$core$Result$Ok(
 				{ctor: '[]'});
 		} else {
-			if (_p1._0.ctor === 'Ok') {
+			if (_p0._0.ctor === 'Ok') {
 				return A2(
 					_elm_lang$core$Result$map,
 					F2(
 						function (x, y) {
 							return {ctor: '::', _0: x, _1: y};
-						})(_p1._0._0),
-					A2(_olligobber$proofcheck$SequentUI$foldErrorIndex, i + 1, _p1._1));
+						})(_p0._0._0),
+					A2(_olligobber$proofcheck$SequentUI$foldErrorIndex, i + 1, _p0._1));
 			} else {
 				return _elm_lang$core$Result$Err(
-					{ctor: '_Tuple2', _0: _p1._0._0, _1: i});
+					{ctor: '_Tuple2', _0: _p0._0._0, _1: i});
 			}
 		}
 	});
@@ -11811,33 +11806,33 @@ var _olligobber$proofcheck$SequentUI$foldError = _olligobber$proofcheck$SequentU
 var _olligobber$proofcheck$SequentUI$extractAssumptions = F2(
 	function (proof, s) {
 		return function (a) {
-			var _p2 = {
+			var _p1 = {
 				ctor: '_Tuple2',
 				_0: a,
 				_1: A2(_elm_lang$core$String$split, ',', s)
 			};
-			if (_p2._0.ctor === 'Ok') {
-				return _elm_lang$core$Result$Ok(_p2._0._0);
+			if (_p1._0.ctor === 'Ok') {
+				return _elm_lang$core$Result$Ok(_p1._0._0);
 			} else {
-				if (((_p2._0._0 === 'Parse Error: Empty Input in assumption 1') && (_p2._1.ctor === '::')) && (_p2._1._1.ctor === '[]')) {
+				if (((_p1._0._0 === 'Parse Error: Empty Input in assumption 1') && (_p1._1.ctor === '::')) && (_p1._1._1.ctor === '[]')) {
 					return _elm_lang$core$Result$Ok(
 						{ctor: '[]'});
 				} else {
-					return _elm_lang$core$Result$Err(_p2._0._0);
+					return _elm_lang$core$Result$Err(_p1._0._0);
 				}
 			}
 		}(
 			A2(
 				_elm_lang$core$Result$mapError,
-				function (_p3) {
-					var _p4 = _p3;
+				function (_p2) {
+					var _p3 = _p2;
 					return A2(
 						_elm_lang$core$Basics_ops['++'],
-						_p4._0,
+						_p3._0,
 						A2(
 							_elm_lang$core$Basics_ops['++'],
 							' in assumption ',
-							_elm_lang$core$Basics$toString(_p4._1)));
+							_elm_lang$core$Basics$toString(_p3._1)));
 				},
 				_olligobber$proofcheck$SequentUI$foldError(
 					A2(
@@ -11848,7 +11843,7 @@ var _olligobber$proofcheck$SequentUI$extractAssumptions = F2(
 	});
 var _olligobber$proofcheck$SequentUI$submitSeq = F2(
 	function (proof, $new) {
-		var _p5 = {
+		var _p4 = {
 			ctor: '_Tuple2',
 			_0: A2(_olligobber$proofcheck$SequentUI$extractAssumptions, proof, $new.ante),
 			_1: A2(
@@ -11856,29 +11851,29 @@ var _olligobber$proofcheck$SequentUI$submitSeq = F2(
 				_olligobber$proofcheck$CustomSymbol$makeMap(proof.symbols),
 				$new.conse)
 		};
-		if (_p5._0.ctor === 'Err') {
-			return _elm_lang$core$Result$Err(_p5._0._0);
+		if (_p4._0.ctor === 'Err') {
+			return _elm_lang$core$Result$Err(_p4._0._0);
 		} else {
-			if (_p5._1.ctor === 'Err') {
+			if (_p4._1.ctor === 'Err') {
 				return _elm_lang$core$Result$Err(
-					A2(_elm_lang$core$Basics_ops['++'], _p5._1._0, ' in conclusion'));
+					A2(_elm_lang$core$Basics_ops['++'], _p4._1._0, ' in conclusion'));
 			} else {
 				return _elm_lang$core$Result$Ok(
-					{ante: _p5._0._0, conse: _p5._1._0});
+					{ante: _p4._0._0, conse: _p4._1._0});
 			}
 		}
 	});
 var _olligobber$proofcheck$SequentUI$updateSeq = F2(
 	function (old, msg) {
-		var _p6 = msg;
-		if (_p6.ctor === 'Ante') {
+		var _p5 = msg;
+		if (_p5.ctor === 'Ante') {
 			return _elm_lang$core$Native_Utils.update(
 				old,
-				{ante: _p6._0});
+				{ante: _p5._0});
 		} else {
 			return _elm_lang$core$Native_Utils.update(
 				old,
-				{conse: _p6._0});
+				{conse: _p5._0});
 		}
 	});
 var _olligobber$proofcheck$SequentUI$blank = {ante: '', conse: ''};
@@ -11984,6 +11979,291 @@ var _olligobber$proofcheck$SequentUI$renderSequents = F2(
 							});
 					},
 					A2(_elm_lang$core$List$map, _olligobber$proofcheck$Sequent$show, proof.sequents))));
+	});
+
+var _olligobber$proofcheck$SymbolUI$selectSym = F2(
+	function (f, proof) {
+		return A2(
+			_elm_lang$html$Html$select,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Events$onInput(f),
+				_1: {ctor: '[]'}
+			},
+			A2(
+				F2(
+					function (x, y) {
+						return {ctor: '::', _0: x, _1: y};
+					}),
+				A2(
+					_elm_lang$html$Html$option,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$disabled(true),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$selected(true),
+							_1: {ctor: '[]'}
+						}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Choose One'),
+						_1: {ctor: '[]'}
+					}),
+				A2(
+					_elm_lang$core$List$indexedMap,
+					F2(
+						function (i, s) {
+							return A2(
+								_elm_lang$html$Html$option,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$value(
+										_elm_lang$core$Basics$toString(i)),
+									_1: {ctor: '[]'}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text(s),
+									_1: {ctor: '[]'}
+								});
+						}),
+					A2(
+						_elm_lang$core$List$map,
+						function (_) {
+							return _.name;
+						},
+						proof.symbols))));
+	});
+var _olligobber$proofcheck$SymbolUI$submitSym = F2(
+	function (proof, $new) {
+		var _p0 = {
+			ctor: '_Tuple3',
+			_0: $new.binary,
+			_1: A2(_elm_lang$core$String$filter, _olligobber$proofcheck$Parser$isSymbol, $new.name),
+			_2: A2(
+				_olligobber$proofcheck$Parser$parse,
+				_olligobber$proofcheck$CustomSymbol$makeMap(proof.symbols),
+				$new.definition)
+		};
+		if (_p0._2.ctor === 'Err') {
+			return _elm_lang$core$Result$Err(_p0._2._0);
+		} else {
+			if (_p0._0 === false) {
+				return A3(_olligobber$proofcheck$CustomSymbol$makeUnary, 'A', _p0._1, _p0._2._0);
+			} else {
+				return A4(_olligobber$proofcheck$CustomSymbol$makeBinary, 'A', 'B', _p0._1, _p0._2._0);
+			}
+		}
+	});
+var _olligobber$proofcheck$SymbolUI$updateSym = F2(
+	function (old, msg) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
+			case 'Name':
+				return _elm_lang$core$Native_Utils.update(
+					old,
+					{
+						name: A2(_elm_lang$core$String$filter, _olligobber$proofcheck$Parser$isSymbol, _p1._0)
+					});
+			case 'Def':
+				return _elm_lang$core$Native_Utils.update(
+					old,
+					{definition: _p1._0});
+			default:
+				return _elm_lang$core$Native_Utils.eq(_p1._0, 'B') ? _elm_lang$core$Native_Utils.update(
+					old,
+					{binary: true}) : _elm_lang$core$Native_Utils.update(
+					old,
+					{binary: false});
+		}
+	});
+var _olligobber$proofcheck$SymbolUI$blank = {name: '', definition: '', binary: true};
+var _olligobber$proofcheck$SymbolUI$NewSymbol = F3(
+	function (a, b, c) {
+		return {name: a, definition: b, binary: c};
+	});
+var _olligobber$proofcheck$SymbolUI$Binary = function (a) {
+	return {ctor: 'Binary', _0: a};
+};
+var _olligobber$proofcheck$SymbolUI$Def = function (a) {
+	return {ctor: 'Def', _0: a};
+};
+var _olligobber$proofcheck$SymbolUI$Name = function (a) {
+	return {ctor: 'Name', _0: a};
+};
+var _olligobber$proofcheck$SymbolUI$renderNewSym = function ($new) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$id('NewSymbol'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$select,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$SymbolUI$Binary),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$option,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$value('B'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$selected($new.binary),
+								_1: {ctor: '[]'}
+							}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Binary'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$option,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$value('U'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$selected(!$new.binary),
+									_1: {ctor: '[]'}
+								}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('Unary'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {ctor: '[]'}
+					}
+				}),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html$text(
+					$new.binary ? 'A' : ''),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$input,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$type_('text'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$SymbolUI$Name),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$value($new.name),
+									_1: {ctor: '[]'}
+								}
+							}
+						},
+						{ctor: '[]'}),
+					_1: {
+						ctor: '::',
+						_0: _elm_lang$html$Html$text(
+							$new.binary ? 'B' : 'A'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html$text(' ≡ '),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$input,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$type_('text'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$SymbolUI$Def),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$value($new.definition),
+												_1: {ctor: '[]'}
+											}
+										}
+									},
+									{ctor: '[]'}),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			}
+		});
+};
+var _olligobber$proofcheck$SymbolUI$renderSymbols = F2(
+	function (proof, $new) {
+		return A3(
+			_elm_lang$core$Basics$flip,
+			F2(
+				function (x, y) {
+					return {ctor: '::', _0: x, _1: y};
+				}),
+			{
+				ctor: '::',
+				_0: _olligobber$proofcheck$SymbolUI$renderNewSym($new),
+				_1: {ctor: '[]'}
+			},
+			A2(
+				_elm_lang$html$Html$table,
+				{ctor: '[]'},
+				A2(
+					_elm_lang$core$List$map,
+					function (s) {
+						return A2(
+							_elm_lang$html$Html$tr,
+							{ctor: '[]'},
+							{
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$td,
+									{ctor: '[]'},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text(
+											_olligobber$proofcheck$WFF$show(s.wff)),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: A2(
+										_elm_lang$html$Html$td,
+										{ctor: '[]'},
+										{
+											ctor: '::',
+											_0: _elm_lang$html$Html$text(' ≡ '),
+											_1: {ctor: '[]'}
+										}),
+									_1: {
+										ctor: '::',
+										_0: A2(
+											_elm_lang$html$Html$td,
+											{ctor: '[]'},
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html$text(
+													_olligobber$proofcheck$WFF$show(s.definition)),
+												_1: {ctor: '[]'}
+											}),
+										_1: {ctor: '[]'}
+									}
+								}
+							});
+					},
+					proof.symbols)));
 	});
 
 var _olligobber$proofcheck$ProofUI$getAll = function (list) {
@@ -12287,7 +12567,7 @@ var _olligobber$proofcheck$ProofUI$renderNewLine = F2(
 												case 'NoIndexing':
 													return _elm_lang$html$Html$text('');
 												case 'SymIndexing':
-													return _elm_lang$html$Html$text('');
+													return A2(_olligobber$proofcheck$SymbolUI$selectSym, _olligobber$proofcheck$ProofUI$ReasonIndex, proof);
 												default:
 													return A2(_olligobber$proofcheck$SequentUI$selectSeq, _olligobber$proofcheck$ProofUI$ReasonIndex, proof);
 											}
@@ -12461,13 +12741,14 @@ var _olligobber$proofcheck$Main$update = F2(
 							latestError: _elm_lang$core$Maybe$Just(_p1._0)
 						});
 				} else {
-					return {
-						history: {ctor: '::', _0: model.proof, _1: model.history},
-						proof: _p1._0,
-						latestError: _elm_lang$core$Maybe$Nothing,
-						newLine: _olligobber$proofcheck$ProofUI$blank,
-						newSeq: model.newSeq
-					};
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							history: {ctor: '::', _0: model.proof, _1: model.history},
+							proof: _p1._0,
+							latestError: _elm_lang$core$Maybe$Nothing,
+							newLine: _olligobber$proofcheck$ProofUI$blank
+						});
 				}
 			case 'NewSeq':
 				return _elm_lang$core$Native_Utils.update(
@@ -12475,7 +12756,7 @@ var _olligobber$proofcheck$Main$update = F2(
 					{
 						newSeq: A2(_olligobber$proofcheck$SequentUI$updateSeq, model.newSeq, _p0._0)
 					});
-			default:
+			case 'AddSequent':
 				var _p2 = A2(_olligobber$proofcheck$SequentUI$submitSeq, model.proof, model.newSeq);
 				if (_p2.ctor === 'Err') {
 					return _elm_lang$core$Native_Utils.update(
@@ -12484,13 +12765,38 @@ var _olligobber$proofcheck$Main$update = F2(
 							latestError: _elm_lang$core$Maybe$Just(_p2._0)
 						});
 				} else {
-					return {
-						history: {ctor: '::', _0: model.proof, _1: model.history},
-						proof: A2(_olligobber$proofcheck$Proof$addSequent, _p2._0, model.proof),
-						latestError: _elm_lang$core$Maybe$Nothing,
-						newLine: model.newLine,
-						newSeq: _olligobber$proofcheck$SequentUI$blank
-					};
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							history: {ctor: '::', _0: model.proof, _1: model.history},
+							proof: A2(_olligobber$proofcheck$Proof$addSequent, _p2._0, model.proof),
+							latestError: _elm_lang$core$Maybe$Nothing,
+							newSeq: _olligobber$proofcheck$SequentUI$blank
+						});
+				}
+			case 'NewSym':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						newSym: A2(_olligobber$proofcheck$SymbolUI$updateSym, model.newSym, _p0._0)
+					});
+			default:
+				var _p3 = A2(_olligobber$proofcheck$SymbolUI$submitSym, model.proof, model.newSym);
+				if (_p3.ctor === 'Err') {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							latestError: _elm_lang$core$Maybe$Just(_p3._0)
+						});
+				} else {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							history: {ctor: '::', _0: model.proof, _1: model.history},
+							proof: A2(_olligobber$proofcheck$Proof$addSymbol, _p3._0, model.proof),
+							latestError: _elm_lang$core$Maybe$Nothing,
+							newSym: _olligobber$proofcheck$SymbolUI$blank
+						});
 				}
 		}
 	});
@@ -12499,12 +12805,17 @@ var _olligobber$proofcheck$Main$start = {
 	history: {ctor: '[]'},
 	latestError: _elm_lang$core$Maybe$Nothing,
 	newLine: _olligobber$proofcheck$ProofUI$blank,
-	newSeq: _olligobber$proofcheck$SequentUI$blank
+	newSeq: _olligobber$proofcheck$SequentUI$blank,
+	newSym: _olligobber$proofcheck$SymbolUI$blank
 };
-var _olligobber$proofcheck$Main$Model = F5(
-	function (a, b, c, d, e) {
-		return {proof: a, history: b, latestError: c, newLine: d, newSeq: e};
+var _olligobber$proofcheck$Main$Model = F6(
+	function (a, b, c, d, e, f) {
+		return {proof: a, history: b, latestError: c, newLine: d, newSeq: e, newSym: f};
 	});
+var _olligobber$proofcheck$Main$AddSymbol = {ctor: 'AddSymbol'};
+var _olligobber$proofcheck$Main$NewSym = function (a) {
+	return {ctor: 'NewSym', _0: a};
+};
 var _olligobber$proofcheck$Main$AddSequent = {ctor: 'AddSequent'};
 var _olligobber$proofcheck$Main$NewSeq = function (a) {
 	return {ctor: 'NewSeq', _0: a};
@@ -12544,44 +12855,69 @@ var _olligobber$proofcheck$Main$view = function (model) {
 					ctor: '::',
 					_0: A2(
 						_elm_lang$html$Html$map,
-						_olligobber$proofcheck$Main$Lines,
-						A2(_olligobber$proofcheck$ProofUI$renderLines, model.proof, model.newLine)),
+						_olligobber$proofcheck$Main$NewSym,
+						A2(
+							_elm_lang$html$Html$div,
+							{ctor: '[]'},
+							A2(_olligobber$proofcheck$SymbolUI$renderSymbols, model.proof, model.newSym))),
 					_1: {
 						ctor: '::',
 						_0: A2(
 							_elm_lang$html$Html$button,
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$SubmitLine),
+								_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$AddSymbol),
 								_1: {ctor: '[]'}
 							},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text('Add Line'),
+								_0: _elm_lang$html$Html$text('Add Symbol'),
 								_1: {ctor: '[]'}
 							}),
 						_1: {
 							ctor: '::',
-							_0: function () {
-								var _p3 = model.latestError;
-								if (_p3.ctor === 'Nothing') {
-									return _elm_lang$html$Html$text('');
-								} else {
-									return A2(
-										_elm_lang$html$Html$div,
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html_Attributes$id('Error'),
-											_1: {ctor: '[]'}
-										},
-										{
-											ctor: '::',
-											_0: _elm_lang$html$Html$text(_p3._0),
-											_1: {ctor: '[]'}
-										});
+							_0: A2(
+								_elm_lang$html$Html$map,
+								_olligobber$proofcheck$Main$Lines,
+								A2(_olligobber$proofcheck$ProofUI$renderLines, model.proof, model.newLine)),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$button,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$SubmitLine),
+										_1: {ctor: '[]'}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('Add Line'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {
+									ctor: '::',
+									_0: function () {
+										var _p4 = model.latestError;
+										if (_p4.ctor === 'Nothing') {
+											return _elm_lang$html$Html$text('');
+										} else {
+											return A2(
+												_elm_lang$html$Html$div,
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html_Attributes$id('Error'),
+													_1: {ctor: '[]'}
+												},
+												{
+													ctor: '::',
+													_0: _elm_lang$html$Html$text(_p4._0),
+													_1: {ctor: '[]'}
+												});
+										}
+									}(),
+									_1: {ctor: '[]'}
 								}
-							}(),
-							_1: {ctor: '[]'}
+							}
 						}
 					}
 				}

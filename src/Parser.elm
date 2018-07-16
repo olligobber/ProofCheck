@@ -3,6 +3,7 @@ module Parser exposing
     , Binaries
     , SymbolMaps
     , parse
+    , isSymbol
     )
 
 import Char exposing (isUpper, isLower)

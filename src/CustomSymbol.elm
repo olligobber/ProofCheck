@@ -20,10 +20,10 @@ type alias Symbol =
     }
 
 -- Construct a unary symbol, nothing if extra variables found
-makeUnary : String -> String -> WFF -> Maybe Symbol
+makeUnary : String -> String -> WFF -> Result String Symbol
 makeUnary prop symbol def =
     if isEmpty <| diff (variables def) (singleton prop) then
-        Just
+        Ok
             { name = symbol
             , wff = Unary
                 { fn = fromUn
@@ -34,13 +34,13 @@ makeUnary prop symbol def =
             , definition = def
             }
     else
-        Nothing
+        Err "Extra propositions found in symbol definition"
 
 -- Construct a binary symbol, nothing if extra variables found
-makeBinary : String -> String -> String -> WFF -> Maybe Symbol
+makeBinary : String -> String -> String -> WFF -> Result String Symbol
 makeBinary propa propb symbol def =
     if isEmpty <| diff (variables def) (fromList [propa, propb]) then
-        Just
+        Ok
             { name = symbol
             , wff = Binary
                 { fn = fromBin
@@ -56,7 +56,7 @@ makeBinary propa propb symbol def =
             , definition = def
             }
     else
-        Nothing
+        Err "Extra propositions found in symbol definition"
 
 -- Turns a symbol definition into the first sequent
 toSequent1 : Symbol -> Sequent
