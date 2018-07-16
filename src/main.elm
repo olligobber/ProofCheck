@@ -3,9 +3,9 @@ import Html.Attributes exposing (id)
 import Html.Events exposing (onClick)
 
 import Proof exposing (Proof, DeductionRule(..), empty, addSequent)
-import ProofLines exposing
+import ProofUI exposing
     (NewLine, LineMsg(..), renderLines, blank, updateNewLine, submitLine)
-import NewSequent exposing
+import SequentUI exposing
     (NewSequent, SequentMsg, blank, updateSeq, renderSequents, submitSeq)
 
 main : Program Never Model Msg
@@ -28,8 +28,8 @@ start =
     { proof = empty
     , history = []
     , latestError = Nothing
-    , newLine = ProofLines.blank
-    , newSeq = NewSequent.blank
+    , newLine = ProofUI.blank
+    , newSeq = SequentUI.blank
     }
 
 type Msg
@@ -47,12 +47,10 @@ update msg model = case msg of
             { history = model.proof :: model.history
             , proof = p
             , latestError = Nothing
-            , newLine = ProofLines.blank
+            , newLine = ProofUI.blank
             , newSeq = model.newSeq
             }
-    NewSeq seqmsg -> case updateSeq model.proof model.newSeq seqmsg of
-        Err s -> { model | latestError = Just s }
-        Ok n -> { model | latestError = Nothing, newSeq = n }
+    NewSeq seqmsg -> { model | newSeq = updateSeq model.newSeq seqmsg }
     AddSequent -> case submitSeq model.proof model.newSeq of
         Err s -> { model | latestError = Just s }
         Ok n ->
@@ -60,16 +58,16 @@ update msg model = case msg of
             , proof = addSequent n model.proof
             , latestError = Nothing
             , newLine = model.newLine
-            , newSeq = NewSequent.blank
+            , newSeq = SequentUI.blank
             }
 
 view : Model -> Html Msg
 view model = div []
-    [ div [] <| List.map (Html.map NewSeq) (renderSequents model.proof model.newSeq)
+    [ Html.map NewSeq <| div [] (renderSequents model.proof model.newSeq)
     , button [ onClick AddSequent ] [ text "Add Sequent" ]
     , Html.map Lines <| renderLines model.proof model.newLine
     , button [ onClick SubmitLine ] [ text "Add Line" ]
     , case model.latestError of
-        Nothing -> div [] []
+        Nothing -> text ""
         Just e -> div [ id "Error" ] [ text e ]
     ]

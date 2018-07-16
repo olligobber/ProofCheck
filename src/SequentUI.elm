@@ -1,15 +1,16 @@
-module NewSequent exposing
+module SequentUI exposing
     ( NewSequent
     , SequentMsg
     , blank
     , updateSeq
     , renderSequents
     , submitSeq
+    , selectSeq
     )
 
-import Html exposing (Html, table, tr, td, text, input, button, div)
-import Html.Attributes exposing (type_, value, id)
-import Html.Events exposing (onInput, onClick)
+import Html exposing (Html, table, tr, td, text, input, div, option, select)
+import Html.Attributes exposing (type_, value, id, disabled, selected)
+import Html.Events exposing (onInput)
 
 import WFF exposing (WFF, show)
 import Sequent exposing (Sequent, show)
@@ -18,6 +19,7 @@ import String exposing (join, split)
 import Parser exposing (parse)
 import CustomSymbol exposing (makeMap)
 import List exposing (indexedMap)
+import String exposing (toInt)
 
 type alias NewSequent =
     { ante : String
@@ -34,10 +36,10 @@ blank =
     , conse = ""
     }
 
-updateSeq : Proof -> NewSequent -> SequentMsg -> Result String NewSequent
-updateSeq proof old msg = case msg of
-    Ante s -> Ok { old | ante = s }
-    Conse s -> Ok { old | conse = s }
+updateSeq : NewSequent -> SequentMsg -> NewSequent
+updateSeq old msg = case msg of
+    Ante s -> { old | ante = s }
+    Conse s -> { old | conse = s }
 
 renderNewSeq : NewSequent -> Html SequentMsg
 renderNewSeq new = div [ id "NewSequent" ]
@@ -49,14 +51,13 @@ renderNewSeq new = div [ id "NewSequent" ]
 renderSequents : Proof -> NewSequent -> List (Html SequentMsg)
 renderSequents proof new = proof.sequents
     |> List.map Sequent.show
-    |> indexedMap (,)
-    |> List.map (\(i,s) -> tr []
-        [ td [] [ text s ]
-        , td [] [ text <| "(" ++ (toString <| i+1) ++ ")" ]
+    |> List.map (\s -> tr []
+        [ td [] [ text s ] -- TODO improve alignment
         ] )
     |> table [ id "Sequents" ]
     |> flip (::) [renderNewSeq new]
 
+-- Folds a list of results, returning the first error and its index
 foldError : List (Result a b) -> Result (a, Int) (List b)
 foldError = foldErrorIndex 1
 
@@ -85,3 +86,11 @@ submitSeq proof new = case
         (Err e, _) -> Err e
         (_, Err f) -> Err <| f ++ " in conclusion"
         (Ok a, Ok c) -> Ok { ante = a, conse = c }
+
+selectSeq : (String -> msg) -> Proof -> Html msg
+selectSeq f proof = case proof.sequents of
+    [] -> text "No Sequents Available"
+    seqs -> List.map Sequent.show seqs
+        |> indexedMap (\i -> \s -> option [value (toString i)] [text s])
+        |> (::) (option [disabled True, selected True] [text "Choose One"])
+        |> select [onInput f]

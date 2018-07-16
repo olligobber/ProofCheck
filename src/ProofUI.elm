@@ -1,4 +1,4 @@
-module ProofLines exposing
+module ProofUI exposing
     ( NewLine
     , LineMsg(..)
     , renderLines
@@ -7,7 +7,7 @@ module ProofLines exposing
     , submitLine
     )
 
-import Html exposing (Html, table, tr, td, input, select, option, text, div)
+import Html exposing (Html, table, tr, td, input, select, option, text)
 import Html.Attributes exposing (type_, value, hidden, selected, id)
 import Html.Events exposing (onInput)
 
@@ -18,13 +18,13 @@ import Parser exposing (parse)
 import CustomSymbol exposing (makeMap)
 import String exposing (join, toInt)
 import List exposing (indexedMap, sort)
-import List.Extra exposing (unique)
+import SequentUI exposing (selectSeq)
 
 type alias NewLine =
     { formula : String
     , reason : Maybe DeductionRule
     , handleIndex : Int -> Maybe DeductionRule
-    , enableIndex : Bool
+    , indexing : Indexing
     , references : String
     }
 
@@ -33,7 +33,7 @@ blank =
     { formula = ""
     , reason = Just Assumption
     , handleIndex = always Nothing
-    , enableIndex = False
+    , indexing = NoIndexing
     , references = ""
     }
 
@@ -42,6 +42,11 @@ type LineMsg
     | Reason String
     | ReasonIndex String
     | References String
+
+type Indexing
+    = SeqIndexing
+    | SymIndexing
+    | NoIndexing
 
 updateNewLine : LineMsg -> NewLine -> NewLine
 updateNewLine message oldline = case message of
@@ -56,8 +61,8 @@ updateNewLine message oldline = case message of
         "Def" ->
             { oldline
             | reason = Nothing
-            , handleIndex = Just << Definition << (\x -> x-1)
-            , enableIndex = True
+            , handleIndex = Just << Definition
+            , indexing = SymIndexing
             }
         "DN" -> simpleReason oldline DoubleNegation
         "MP" -> simpleReason oldline ModusPonens
@@ -66,8 +71,8 @@ updateNewLine message oldline = case message of
         "SI" ->
             { oldline
             | reason = Nothing
-            , handleIndex = Just << Introduction << (\x -> x-1)
-            , enableIndex = True
+            , handleIndex = Just << Introduction
+            , indexing = SeqIndexing
             }
         _ -> oldline
     ReasonIndex s -> case toInt s of
@@ -77,10 +82,10 @@ updateNewLine message oldline = case message of
 
 {-  Given whether a reason index should be shown and the current line number,
     renders the new line input -}
-renderNewLine : Bool -> Int -> Html LineMsg
-renderNewLine allowIndex curIndex = tr []
+renderNewLine : Indexing -> Proof -> Html LineMsg
+renderNewLine indexing proof = tr []
     [ td [] []
-    , td [] [ text <| "(" ++ toString curIndex ++ ")" ]
+    , td [] [ text <| "(" ++ toString ((List.length proof.lines)+1) ++ ")" ]
     , td [] [ input [ type_ "text", onInput Formula ] [] ]
     , td []
         [ select [ onInput Reason ]
@@ -98,14 +103,10 @@ renderNewLine allowIndex curIndex = tr []
                 , "RAA"
                 , "SI"
                 ] )
-        , if allowIndex
-            then
-                input
-                    [ type_ "number"
-                    , onInput ReasonIndex
-                    ] []
-            else
-                div [] []
+        , case indexing of
+            NoIndexing -> text ""
+            SymIndexing -> text "" -- TODO
+            SeqIndexing -> selectSeq ReasonIndex proof
         , input [ type_ "text", onInput References ] []
         ]
     ]
@@ -115,7 +116,7 @@ simpleReason oldline reason =
     { oldline
     | reason = Just reason
     , handleIndex = always (Just reason)
-    , enableIndex = False
+    , indexing = NoIndexing
     }
 
 -- Given the current proof, a deduction and its index, renders that deduction
@@ -132,9 +133,7 @@ renderLines : Proof -> NewLine -> Html LineMsg
 renderLines proof newline = proof.lines
     |> indexedMap (,)
     |> List.map (renderDeduction proof)
-    |> flip (++) [ renderNewLine
-        (newline.enableIndex)
-        ((List.length proof.lines)+1) ]
+    |> flip (++) [ renderNewLine newline.indexing proof ]
     |> table [ id "ProofLines" ]
 
 -- Turns a list of results into result list, only if all were Ok
