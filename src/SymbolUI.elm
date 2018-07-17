@@ -9,7 +9,7 @@ module SymbolUI exposing
     )
 
 import Html exposing (Html, table, tr, td, text, input, div, option, select)
-import Html.Attributes exposing (type_, value, id, selected, disabled)
+import Html.Attributes exposing (type_, value, id, selected, disabled, class)
 import Html.Events exposing (onInput)
 
 import WFF exposing (show)
@@ -48,27 +48,40 @@ updateSym old msg = case msg of
             { old | binary = False }
 
 renderNewSym : NewSymbol -> Html SymbolMsg
-renderNewSym new = div [ id "NewSymbol" ]
-    [ select [ onInput Binary ]
+renderNewSym new = tr [ id "NewSymbol" ]
+    [ td [] [ select [ onInput Binary, id "OperatorSelect" ]
         [ option [ value "B", selected new.binary ] [ text "Binary" ]
         , option [ value "U", selected (not new.binary) ] [ text "Unary" ]
+        ] ]
+    , td [ class "SymbolName" ]
+        [ text (if new.binary then "A" else "")
+        , input
+            [ type_ "text"
+            , onInput Name
+            , value new.name
+            , id "ChooseName"
+            ] []
+        , text (if new.binary then "B" else "A")
         ]
-    , text (if new.binary then "A" else "")
-    , input [ type_ "text", onInput Name, value new.name ] []
-    , text (if new.binary then "B" else "A")
-    , text " ≡ "
-    , input [ type_ "text", onInput Def, value new.definition ] []
+    , td [ class "EquivSymbol" ] [text " ≡ "]
+    , td [ class "SymbolDef" ] [ input
+        [ type_ "text"
+        , onInput Def
+        , value new.definition
+        , id "SetDef"
+        ] [] ]
     ]
 
-renderSymbols : Proof -> NewSymbol -> List (Html SymbolMsg)
+renderSymbols : Proof -> NewSymbol -> Html SymbolMsg
 renderSymbols proof new = proof.symbols
     |> List.map (\s -> tr []
-        [ td [] [text (show s.wff)]
-        , td [] [text " ≡ "]
-        , td [] [text (show s.definition)]
+        [ td [] []
+        , td [ class "SymbolName" ] [text (show s.wff)]
+        , td [ class "EquivSymbol" ] [text " ≡ "]
+        , td [ class "SymbolDef" ] [text (show s.definition)]
         ] )
-    |> table []
-    |> flip (::) [renderNewSym new]
+    |> flip (++) [renderNewSym new]
+    |> table [ id "SymbolList" ]
 
 submitSym : Proof -> NewSymbol -> Result String Symbol
 submitSym proof new = case
@@ -80,8 +93,11 @@ submitSym proof new = case
         (False, n, Ok d) -> makeUnary "A" n d
         (True, n, Ok d) -> makeBinary "A" "B" n d
 
-selectSym : (String -> msg) -> Proof -> Html msg
-selectSym f proof = List.map .name proof.symbols
-    |> indexedMap (\i -> \s -> option [value (toString i)] [text s])
-    |> (::) (option [disabled True, selected True] [text "Choose One"])
-    |> select [onInput f]
+selectSym : Proof -> Html String
+selectSym proof = case proof.symbols of
+    [] -> select [ id "SymbolDropdown" ]
+        [ option [ disabled True, selected True ] [ text "No Symbols" ] ]
+    syms -> List.map .name syms
+        |> indexedMap (\i -> \s -> option [value (toString i)] [text s])
+        |> (::) (option [disabled True, selected True] [text "Choose One"])
+        |> select [ onInput identity, id "SymbolDropdown" ]

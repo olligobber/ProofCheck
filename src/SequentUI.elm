@@ -9,11 +9,11 @@ module SequentUI exposing
     )
 
 import Html exposing (Html, table, tr, td, text, input, div, option, select)
-import Html.Attributes exposing (type_, value, id, disabled, selected)
+import Html.Attributes exposing (type_, value, id, disabled, selected, class)
 import Html.Events exposing (onInput)
 
 import WFF exposing (WFF, show)
-import Sequent exposing (Sequent, show)
+import Sequent exposing (Sequent, show, partShow)
 import Proof exposing (Proof)
 import String exposing (join, split)
 import Parser exposing (parse)
@@ -42,20 +42,32 @@ updateSeq old msg = case msg of
     Conse s -> { old | conse = s }
 
 renderNewSeq : NewSequent -> Html SequentMsg
-renderNewSeq new = div [ id "NewSequent" ]
-        [ input [ type_ "text", onInput Ante, value new.ante ] []
-        , text " ⊢ "
-        , input [ type_ "text", onInput Conse, value new.conse ] []
+renderNewSeq new = tr [ id "NewSequent" ]
+        [ td [ class "Ante" ] [ input
+            [ type_ "text"
+            , onInput Ante
+            , value new.ante
+            , id "AnteInput"
+            ] [] ]
+        , td [ class "SeqSymbol" ] [ text " ⊢ " ]
+        , td [ class "Conse" ] [ input
+            [ type_ "text"
+            , onInput Conse
+            , value new.conse
+            , id "ConseInput"
+            ] [] ]
         ]
 
-renderSequents : Proof -> NewSequent -> List (Html SequentMsg)
+renderSequents : Proof -> NewSequent -> Html SequentMsg
 renderSequents proof new = proof.sequents
-    |> List.map Sequent.show
-    |> List.map (\s -> tr []
-        [ td [] [ text s ] -- TODO improve alignment
+    |> List.map Sequent.partShow
+    |> List.map (\(a,c) -> tr []
+        [ td [ class "Ante" ] [ text a ]
+        , td [ class "SeqSymbol" ] [ text " ⊢ " ]
+        , td [ class "Conse" ] [ text c ]
         ] )
-    |> table [ id "Sequents" ]
-    |> flip (::) [renderNewSeq new]
+    |> flip (++) [renderNewSeq new]
+    |> table [ id "SequentList" ]
 
 -- Folds a list of results, returning the first error and its index
 foldError : List (Result a b) -> Result (a, Int) (List b)
@@ -87,8 +99,11 @@ submitSeq proof new = case
         (_, Err f) -> Err <| f ++ " in conclusion"
         (Ok a, Ok c) -> Ok { ante = a, conse = c }
 
-selectSeq : (String -> msg) -> Proof -> Html msg
-selectSeq f proof = List.map Sequent.show proof.sequents
+selectSeq : Proof -> Html String
+selectSeq proof = case proof.sequents of
+    [] -> select [ id "SequentDropdown" ]
+        [ option [ disabled True, selected True ] [ text "No Sequents" ] ]
+    seqs -> List.map Sequent.show seqs
         |> indexedMap (\i -> \s -> option [value (toString i)] [text s])
         |> (::) (option [disabled True, selected True] [text "Choose One"])
-        |> select [onInput f]
+        |> select [ onInput identity, id "SequentDropdown" ]

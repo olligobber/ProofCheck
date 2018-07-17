@@ -1,5 +1,6 @@
 module Sequent exposing
     ( Sequent
+    , partShow
     , show
     , verify
     , match
@@ -34,10 +35,15 @@ type alias Sequent =
     }
 
 show : Sequent -> String
-show seq = seq.ante
-    |> List.map WFF.show
-    |> join ","
-    |> flip (++) (" ⊢ " ++ WFF.show seq.conse)
+show seq = case partShow seq of
+    ("", c) -> "⊢ " ++ c
+    (a, c) -> a ++ " ⊢ " ++ c
+
+partShow : Sequent -> (String, String)
+partShow seq =
+    ( join "," <| List.map WFF.show seq.ante
+    , WFF.show seq.conse
+    )
 
 -- Check a wff satisfies an assignment
 satisfies : WFF -> Dict String Bool -> Bool

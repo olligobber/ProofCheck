@@ -77,14 +77,29 @@ update msg model = case msg of
             , newSym = SymbolUI.blank
             }
 
+sequentBox : Model -> Html Msg
+sequentBox model = div [ id "SequentBox" ]
+    [ Html.map NewSeq <| renderSequents model.proof model.newSeq
+    , button [ onClick AddSequent, id "AddSequent" ] [ text "Add Sequent" ]
+    ]
+
+symbolBox : Model -> Html Msg
+symbolBox model = div [ id "SymbolBox" ]
+    [ Html.map NewSym <| renderSymbols model.proof model.newSym
+    , button [ onClick AddSymbol, id "AddSymbol" ] [ text "Add Symbol" ]
+    ]
+
+proofBox : Model -> Html Msg
+proofBox model = div [ id "ProofBox" ]
+    [ Html.map Lines <| renderLines model.proof model.newLine
+    , button [ onClick SubmitLine, id "AddLine" ] [ text "Add Line" ]
+    ]
+
 view : Model -> Html Msg
-view model = div []
-    [ Html.map NewSeq <| div [] (renderSequents model.proof model.newSeq)
-    , button [ onClick AddSequent ] [ text "Add Sequent" ]
-    , Html.map NewSym <| div [] (renderSymbols model.proof model.newSym)
-    , button [ onClick AddSymbol ] [ text "Add Symbol" ]
-    , Html.map Lines <| renderLines model.proof model.newLine
-    , button [ onClick SubmitLine ] [ text "Add Line" ]
+view model = div [ id "Main" ]
+    [ sequentBox model
+    , symbolBox model
+    , proofBox model
     , case model.latestError of
         Nothing -> text ""
         Just e -> div [ id "Error" ] [ text e ]
