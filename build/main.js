@@ -12950,7 +12950,15 @@ var _olligobber$proofcheck$ProofUI$renderNewLine = F2(
 																			_0: 'long',
 																			_1: _elm_lang$core$Native_Utils.eq(indexing, _olligobber$proofcheck$ProofUI$NoIndexing)
 																		},
-																		_1: {ctor: '[]'}
+																		_1: {
+																			ctor: '::',
+																			_0: {
+																				ctor: '_Tuple2',
+																				_0: 'short',
+																				_1: !_elm_lang$core$Native_Utils.eq(indexing, _olligobber$proofcheck$ProofUI$NoIndexing)
+																			},
+																			_1: {ctor: '[]'}
+																		}
 																	}),
 																_1: {ctor: '[]'}
 															}
