@@ -7,7 +7,8 @@ module ProofUI exposing
     , submitLine
     )
 
-import Html exposing (Html, table, tr, td, input, select, option, text)
+import Html exposing
+    (Html, table, tr, td, th, input, select, option, text, div)
 import Html.Attributes exposing (type_, value, hidden, selected, id, class)
 import Html.Events exposing (onInput)
 
@@ -106,10 +107,12 @@ renderNewLine indexing proof = tr [ id "new-line" ]
                 , "RAA"
                 , "SI"
                 ] )
-        , case indexing of
-            NoIndexing -> text ""
-            SymIndexing -> Html.map ReasonIndex <| selectSym proof
-            SeqIndexing -> Html.map ReasonIndex <| selectSeq proof
+        , div [ id "input-dropdown" ] [
+            case indexing of
+                NoIndexing -> text ""
+                SymIndexing -> Html.map ReasonIndex <| selectSym proof
+                SeqIndexing -> Html.map ReasonIndex <| selectSeq proof
+            ]
         , input [ type_ "text", onInput References, id "reference-input" ] []
         ]
     ]
@@ -132,10 +135,19 @@ renderDeduction proof index ded = tr []
     , td [ class "reason" ] [ text <| showReason proof ded ]
     ]
 
+lineHeading : Html LineMsg
+lineHeading = tr []
+    [ th [ class "assumptions" ] [ text "Assumptions" ]
+    , th [ class "line-number" ] [ text "Line No." ]
+    , th [ class "formula" ] [ text "Formula" ]
+    , th [ class "reason" ] [ text "Reason" ]
+    ]
+
 -- Render the current proof as a table
 renderLines : Proof -> NewLine -> Html LineMsg
 renderLines proof newline = proof.lines
     |> indexedMap (renderDeduction proof)
+    |> (::) lineHeading
     |> flip (++) [ renderNewLine newline.indexing proof ]
     |> table [ id "proof-lines" ]
 

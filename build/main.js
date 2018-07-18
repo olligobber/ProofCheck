@@ -12567,6 +12567,70 @@ var _olligobber$proofcheck$ProofUI$submitLine = F2(
 								}),
 							_olligobber$proofcheck$ProofUI$extractNums(newline.references))))));
 	});
+var _olligobber$proofcheck$ProofUI$lineHeading = A2(
+	_elm_lang$html$Html$tr,
+	{ctor: '[]'},
+	{
+		ctor: '::',
+		_0: A2(
+			_elm_lang$html$Html$th,
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('assumptions'),
+				_1: {ctor: '[]'}
+			},
+			{
+				ctor: '::',
+				_0: _elm_lang$html$Html$text('Assumptions'),
+				_1: {ctor: '[]'}
+			}),
+		_1: {
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$th,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('line-number'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('Line No.'),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$th,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('formula'),
+						_1: {ctor: '[]'}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Formula'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$th,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class('reason'),
+							_1: {ctor: '[]'}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Reason'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {ctor: '[]'}
+				}
+			}
+		}
+	});
 var _olligobber$proofcheck$ProofUI$renderDeduction = F3(
 	function (proof, index, ded) {
 		return A2(
@@ -12827,23 +12891,34 @@ var _olligobber$proofcheck$ProofUI$renderNewLine = F2(
 											})),
 									_1: {
 										ctor: '::',
-										_0: function () {
-											var _p1 = indexing;
-											switch (_p1.ctor) {
-												case 'NoIndexing':
-													return _elm_lang$html$Html$text('');
-												case 'SymIndexing':
-													return A2(
-														_elm_lang$html$Html$map,
-														_olligobber$proofcheck$ProofUI$ReasonIndex,
-														_olligobber$proofcheck$SymbolUI$selectSym(proof));
-												default:
-													return A2(
-														_elm_lang$html$Html$map,
-														_olligobber$proofcheck$ProofUI$ReasonIndex,
-														_olligobber$proofcheck$SequentUI$selectSeq(proof));
-											}
-										}(),
+										_0: A2(
+											_elm_lang$html$Html$div,
+											{
+												ctor: '::',
+												_0: _elm_lang$html$Html_Attributes$id('input-dropdown'),
+												_1: {ctor: '[]'}
+											},
+											{
+												ctor: '::',
+												_0: function () {
+													var _p1 = indexing;
+													switch (_p1.ctor) {
+														case 'NoIndexing':
+															return _elm_lang$html$Html$text('');
+														case 'SymIndexing':
+															return A2(
+																_elm_lang$html$Html$map,
+																_olligobber$proofcheck$ProofUI$ReasonIndex,
+																_olligobber$proofcheck$SymbolUI$selectSym(proof));
+														default:
+															return A2(
+																_elm_lang$html$Html$map,
+																_olligobber$proofcheck$ProofUI$ReasonIndex,
+																_olligobber$proofcheck$SequentUI$selectSeq(proof));
+													}
+												}(),
+												_1: {ctor: '[]'}
+											}),
 										_1: {
 											ctor: '::',
 											_0: A2(
@@ -12893,9 +12968,15 @@ var _olligobber$proofcheck$ProofUI$renderLines = F2(
 					_1: {ctor: '[]'}
 				},
 				A2(
-					_elm_lang$core$List$indexedMap,
-					_olligobber$proofcheck$ProofUI$renderDeduction(proof),
-					proof.lines)));
+					F2(
+						function (x, y) {
+							return {ctor: '::', _0: x, _1: y};
+						}),
+					_olligobber$proofcheck$ProofUI$lineHeading,
+					A2(
+						_elm_lang$core$List$indexedMap,
+						_olligobber$proofcheck$ProofUI$renderDeduction(proof),
+						proof.lines))));
 	});
 var _olligobber$proofcheck$ProofUI$NoIndexing = {ctor: 'NoIndexing'};
 var _olligobber$proofcheck$ProofUI$blank = {
@@ -12992,6 +13073,225 @@ var _olligobber$proofcheck$ProofUI$updateNewLine = F2(
 		}
 	});
 
+var _olligobber$proofcheck$Main$Model = F8(
+	function (a, b, c, d, e, f, g, h) {
+		return {proof: a, history: b, future: c, latestError: d, newLine: e, newSeq: f, newSym: g, activeWindow: h};
+	});
+var _olligobber$proofcheck$Main$Open = function (a) {
+	return {ctor: 'Open', _0: a};
+};
+var _olligobber$proofcheck$Main$Redo = {ctor: 'Redo'};
+var _olligobber$proofcheck$Main$Undo = {ctor: 'Undo'};
+var _olligobber$proofcheck$Main$New = {ctor: 'New'};
+var _olligobber$proofcheck$Main$AddSymbol = {ctor: 'AddSymbol'};
+var _olligobber$proofcheck$Main$NewSym = function (a) {
+	return {ctor: 'NewSym', _0: a};
+};
+var _olligobber$proofcheck$Main$AddSequent = {ctor: 'AddSequent'};
+var _olligobber$proofcheck$Main$NewSeq = function (a) {
+	return {ctor: 'NewSeq', _0: a};
+};
+var _olligobber$proofcheck$Main$SubmitLine = {ctor: 'SubmitLine'};
+var _olligobber$proofcheck$Main$Lines = function (a) {
+	return {ctor: 'Lines', _0: a};
+};
+var _olligobber$proofcheck$Main$proofBox = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$id('proof-box'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$map,
+				_olligobber$proofcheck$Main$Lines,
+				A2(_olligobber$proofcheck$ProofUI$renderLines, model.proof, model.newLine)),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$button,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$SubmitLine),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$id('add-line'),
+							_1: {ctor: '[]'}
+						}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('Add Line'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {ctor: '[]'}
+			}
+		});
+};
+var _olligobber$proofcheck$Main$SymbolWindow = {ctor: 'SymbolWindow'};
+var _olligobber$proofcheck$Main$SequentWindow = {ctor: 'SequentWindow'};
+var _olligobber$proofcheck$Main$menu = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$id('menu'),
+			_1: {ctor: '[]'}
+		},
+		{
+			ctor: '::',
+			_0: A2(
+				_elm_lang$html$Html$span,
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html_Attributes$class('menu-heading'),
+					_1: {ctor: '[]'}
+				},
+				{
+					ctor: '::',
+					_0: _elm_lang$html$Html$text('MENU'),
+					_1: {ctor: '[]'}
+				}),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$div,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Attributes$class('menu-button'),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$id('new-button'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$New),
+								_1: {ctor: '[]'}
+							}
+						}
+					},
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html$text('New'),
+						_1: {ctor: '[]'}
+					}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$div,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$class(
+								_elm_lang$core$Native_Utils.eq(
+									model.history,
+									{ctor: '[]'}) ? 'menu-button-disabled' : 'menu-button'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$id('undo-button'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$Undo),
+									_1: {ctor: '[]'}
+								}
+							}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Undo'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: A2(
+							_elm_lang$html$Html$div,
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class(
+									_elm_lang$core$Native_Utils.eq(
+										model.future,
+										{ctor: '[]'}) ? 'menu-button-disabled' : 'menu-button'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$id('redo-button'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$Redo),
+										_1: {ctor: '[]'}
+									}
+								}
+							},
+							{
+								ctor: '::',
+								_0: _elm_lang$html$Html$text('Redo'),
+								_1: {ctor: '[]'}
+							}),
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('menu-button'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$id('symbol-window-button'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(
+												_olligobber$proofcheck$Main$Open(_olligobber$proofcheck$Main$SymbolWindow)),
+											_1: {ctor: '[]'}
+										}
+									}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('Symbols'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$div,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('menu-button'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$id('sequent-window-button'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onClick(
+													_olligobber$proofcheck$Main$Open(_olligobber$proofcheck$Main$SequentWindow)),
+												_1: {ctor: '[]'}
+											}
+										}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('Sequents'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
+						}
+					}
+				}
+			}
+		});
+};
+var _olligobber$proofcheck$Main$NoWindow = {ctor: 'NoWindow'};
+var _olligobber$proofcheck$Main$start = {
+	proof: _olligobber$proofcheck$Proof$empty,
+	history: {ctor: '[]'},
+	future: {ctor: '[]'},
+	latestError: _elm_lang$core$Maybe$Nothing,
+	newLine: _olligobber$proofcheck$ProofUI$blank,
+	newSeq: _olligobber$proofcheck$SequentUI$blank,
+	newSym: _olligobber$proofcheck$SymbolUI$blank,
+	activeWindow: _olligobber$proofcheck$Main$NoWindow
+};
 var _olligobber$proofcheck$Main$update = F2(
 	function (msg, model) {
 		var _p0 = msg;
@@ -13071,6 +13371,12 @@ var _olligobber$proofcheck$Main$update = F2(
 							newSym: _olligobber$proofcheck$SymbolUI$blank
 						});
 				}
+			case 'New':
+				return _elm_lang$core$Native_Utils.update(
+					_olligobber$proofcheck$Main$start,
+					{
+						history: {ctor: '::', _0: model.proof, _1: model.history}
+					});
 			case 'Undo':
 				var _p4 = model.history;
 				if (_p4.ctor === '[]') {
@@ -13103,201 +13409,6 @@ var _olligobber$proofcheck$Main$update = F2(
 					{activeWindow: _p0._0});
 		}
 	});
-var _olligobber$proofcheck$Main$Model = F8(
-	function (a, b, c, d, e, f, g, h) {
-		return {proof: a, history: b, future: c, latestError: d, newLine: e, newSeq: f, newSym: g, activeWindow: h};
-	});
-var _olligobber$proofcheck$Main$Open = function (a) {
-	return {ctor: 'Open', _0: a};
-};
-var _olligobber$proofcheck$Main$Redo = {ctor: 'Redo'};
-var _olligobber$proofcheck$Main$Undo = {ctor: 'Undo'};
-var _olligobber$proofcheck$Main$AddSymbol = {ctor: 'AddSymbol'};
-var _olligobber$proofcheck$Main$NewSym = function (a) {
-	return {ctor: 'NewSym', _0: a};
-};
-var _olligobber$proofcheck$Main$AddSequent = {ctor: 'AddSequent'};
-var _olligobber$proofcheck$Main$NewSeq = function (a) {
-	return {ctor: 'NewSeq', _0: a};
-};
-var _olligobber$proofcheck$Main$SubmitLine = {ctor: 'SubmitLine'};
-var _olligobber$proofcheck$Main$Lines = function (a) {
-	return {ctor: 'Lines', _0: a};
-};
-var _olligobber$proofcheck$Main$proofBox = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$id('proof-box'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$map,
-				_olligobber$proofcheck$Main$Lines,
-				A2(_olligobber$proofcheck$ProofUI$renderLines, model.proof, model.newLine)),
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$button,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$SubmitLine),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$id('add-line'),
-							_1: {ctor: '[]'}
-						}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text('Add Line'),
-						_1: {ctor: '[]'}
-					}),
-				_1: {ctor: '[]'}
-			}
-		});
-};
-var _olligobber$proofcheck$Main$SymbolWindow = {ctor: 'SymbolWindow'};
-var _olligobber$proofcheck$Main$SequentWindow = {ctor: 'SequentWindow'};
-var _olligobber$proofcheck$Main$menu = function (model) {
-	return A2(
-		_elm_lang$html$Html$div,
-		{
-			ctor: '::',
-			_0: _elm_lang$html$Html_Attributes$id('menu'),
-			_1: {ctor: '[]'}
-		},
-		{
-			ctor: '::',
-			_0: A2(
-				_elm_lang$html$Html$span,
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('menu-heading'),
-					_1: {ctor: '[]'}
-				},
-				{
-					ctor: '::',
-					_0: _elm_lang$html$Html$text('MENU'),
-					_1: {ctor: '[]'}
-				}),
-			_1: {
-				ctor: '::',
-				_0: A2(
-					_elm_lang$html$Html$div,
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class(
-							_elm_lang$core$Native_Utils.eq(
-								model.history,
-								{ctor: '[]'}) ? 'menu-button-disabled' : 'menu-button'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$id('undo-button'),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$Undo),
-								_1: {ctor: '[]'}
-							}
-						}
-					},
-					{
-						ctor: '::',
-						_0: _elm_lang$html$Html$text('Undo'),
-						_1: {ctor: '[]'}
-					}),
-				_1: {
-					ctor: '::',
-					_0: A2(
-						_elm_lang$html$Html$div,
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class(
-								_elm_lang$core$Native_Utils.eq(
-									model.future,
-									{ctor: '[]'}) ? 'menu-button-disabled' : 'menu-button'),
-							_1: {
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$id('redo-button'),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$Redo),
-									_1: {ctor: '[]'}
-								}
-							}
-						},
-						{
-							ctor: '::',
-							_0: _elm_lang$html$Html$text('Redo'),
-							_1: {ctor: '[]'}
-						}),
-					_1: {
-						ctor: '::',
-						_0: A2(
-							_elm_lang$html$Html$div,
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$class('menu-button'),
-								_1: {
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$id('symbol-window-button'),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$html$Html_Events$onClick(
-											_olligobber$proofcheck$Main$Open(_olligobber$proofcheck$Main$SymbolWindow)),
-										_1: {ctor: '[]'}
-									}
-								}
-							},
-							{
-								ctor: '::',
-								_0: _elm_lang$html$Html$text('Symbols'),
-								_1: {ctor: '[]'}
-							}),
-						_1: {
-							ctor: '::',
-							_0: A2(
-								_elm_lang$html$Html$div,
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$class('menu-button'),
-									_1: {
-										ctor: '::',
-										_0: _elm_lang$html$Html_Attributes$id('sequent-window-button'),
-										_1: {
-											ctor: '::',
-											_0: _elm_lang$html$Html_Events$onClick(
-												_olligobber$proofcheck$Main$Open(_olligobber$proofcheck$Main$SequentWindow)),
-											_1: {ctor: '[]'}
-										}
-									}
-								},
-								{
-									ctor: '::',
-									_0: _elm_lang$html$Html$text('Sequents'),
-									_1: {ctor: '[]'}
-								}),
-							_1: {ctor: '[]'}
-						}
-					}
-				}
-			}
-		});
-};
-var _olligobber$proofcheck$Main$NoWindow = {ctor: 'NoWindow'};
-var _olligobber$proofcheck$Main$start = {
-	proof: _olligobber$proofcheck$Proof$empty,
-	history: {ctor: '[]'},
-	future: {ctor: '[]'},
-	latestError: _elm_lang$core$Maybe$Nothing,
-	newLine: _olligobber$proofcheck$ProofUI$blank,
-	newSeq: _olligobber$proofcheck$SequentUI$blank,
-	newSym: _olligobber$proofcheck$SymbolUI$blank,
-	activeWindow: _olligobber$proofcheck$Main$NoWindow
-};
 var _olligobber$proofcheck$Main$closeButton = A2(
 	_elm_lang$html$Html$button,
 	{
