@@ -4,11 +4,11 @@ A Context Free Grammar (CFG) for general Well Formed Formulas (WFF), implemented
 
 ## Character sets
 
-In this document, `s` represents symbol characters, `` `~!@#$%^&*_+-=[]{}|\:;\"',<.>/? ``, and `p` represents upper and lowercase letters.
+In this document, `s` represents symbol characters, `` `~!@#$%^&*_+-=[]{}|\:;"'<.>/? ``, and `p` represents upper and lowercase letters.
 
 ## Pre-Processing
 
-Before parsing a WFF, all space characters, ` \t\n\r`, are removed from the string.
+Before parsing a WFF, all whitespace characters, ` \t\n\r`, are removed from the string.
 
 ## Simple CFG
 
