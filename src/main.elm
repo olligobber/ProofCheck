@@ -1,4 +1,4 @@
-import Html exposing (Html, div, text, button)
+import Html exposing (Html, div, text, button, span)
 import Html.Attributes exposing (id, class, disabled)
 import Html.Events exposing (onClick)
 
@@ -143,7 +143,8 @@ proofBox model = div [ id "proof-box" ]
 
 menu : Model -> Html Msg
 menu model = div [ id "menu" ]
-    [ div
+    [ span [ class "menu-heading" ] [ text "MENU" ]
+    , div
         [ class <|
             if model.history == [] then
                 "menu-button-disabled"
