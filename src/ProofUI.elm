@@ -108,11 +108,15 @@ renderNewLine indexing proof = tr [ id "new-line" ]
                 , "RAA"
                 , "SI"
                 ] )
-        , div [ id "input-dropdown" ] [
-            case indexing of
-                NoIndexing -> text ""
-                SymIndexing -> Html.map ReasonIndex <| selectSym proof
-                SeqIndexing -> Html.map ReasonIndex <| selectSeq proof
+        , div
+            [ id "input-dropdown"
+            , classList [("short", indexing /= NoIndexing)]
+            ]
+            [
+                case indexing of
+                    NoIndexing -> text ""
+                    SymIndexing -> Html.map ReasonIndex <| selectSym proof
+                    SeqIndexing -> Html.map ReasonIndex <| selectSeq proof
             ]
         , input
             [ type_ "text"
@@ -120,7 +124,6 @@ renderNewLine indexing proof = tr [ id "new-line" ]
             , id "reference-input"
             , classList
                 [ ("long", indexing == NoIndexing)
-                , ("short", indexing /= NoIndexing)
                 ]
             ] []
         ]
