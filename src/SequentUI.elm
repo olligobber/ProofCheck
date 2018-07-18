@@ -42,19 +42,19 @@ updateSeq old msg = case msg of
     Conse s -> { old | conse = s }
 
 renderNewSeq : NewSequent -> Html SequentMsg
-renderNewSeq new = tr [ id "NewSequent" ]
-        [ td [ class "Ante" ] [ input
+renderNewSeq new = tr [ id "new-sequent" ]
+        [ td [ class "ante" ] [ input
             [ type_ "text"
             , onInput Ante
             , value new.ante
-            , id "AnteInput"
+            , id "ante-input"
             ] [] ]
-        , td [ class "SeqSymbol" ] [ text " ⊢ " ]
-        , td [ class "Conse" ] [ input
+        , td [ class "seq-symbol" ] [ text " ⊢ " ]
+        , td [ class "conse" ] [ input
             [ type_ "text"
             , onInput Conse
             , value new.conse
-            , id "ConseInput"
+            , id "conse-input"
             ] [] ]
         ]
 
@@ -62,12 +62,12 @@ renderSequents : Proof -> NewSequent -> Html SequentMsg
 renderSequents proof new = proof.sequents
     |> List.map Sequent.partShow
     |> List.map (\(a,c) -> tr []
-        [ td [ class "Ante" ] [ text a ]
-        , td [ class "SeqSymbol" ] [ text " ⊢ " ]
-        , td [ class "Conse" ] [ text c ]
+        [ td [ class "ante" ] [ text a ]
+        , td [ class "seq-symbol" ] [ text " ⊢ " ]
+        , td [ class "conse" ] [ text c ]
         ] )
     |> flip (++) [renderNewSeq new]
-    |> table [ id "SequentList" ]
+    |> table [ id "sequent-list" ]
 
 -- Folds a list of results, returning the first error and its index
 foldError : List (Result a b) -> Result (a, Int) (List b)
@@ -101,9 +101,9 @@ submitSeq proof new = case
 
 selectSeq : Proof -> Html String
 selectSeq proof = case proof.sequents of
-    [] -> select [ id "SequentDropdown" ]
+    [] -> select [ id "sequent-dropdown" ]
         [ option [ disabled True, selected True ] [ text "No Sequents" ] ]
     seqs -> List.map Sequent.show seqs
         |> indexedMap (\i -> \s -> option [value (toString i)] [text s])
         |> (::) (option [disabled True, selected True] [text "Choose One"])
-        |> select [ onInput identity, id "SequentDropdown" ]
+        |> select [ onInput identity, id "sequent-dropdown" ]

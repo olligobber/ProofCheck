@@ -41,34 +41,30 @@ updateSym : NewSymbol -> SymbolMsg -> NewSymbol
 updateSym old msg = case msg of
     Name s -> { old | name = filter isSymbol s }
     Def s -> { old | definition = s }
-    Binary s ->
-        if s == "B" then
-            { old | binary = True }
-        else
-            { old | binary = False }
+    Binary s -> { old | binary = s == "B" }
 
 renderNewSym : NewSymbol -> Html SymbolMsg
-renderNewSym new = tr [ id "NewSymbol" ]
-    [ td [] [ select [ onInput Binary, id "OperatorSelect" ]
+renderNewSym new = tr [ id "new-symbol" ]
+    [ td [] [ select [ onInput Binary, id "operator-select" ]
         [ option [ value "B", selected new.binary ] [ text "Binary" ]
         , option [ value "U", selected (not new.binary) ] [ text "Unary" ]
         ] ]
-    , td [ class "SymbolName" ]
+    , td [ class "symbol-name" ]
         [ text (if new.binary then "A" else "")
         , input
             [ type_ "text"
             , onInput Name
             , value new.name
-            , id "ChooseName"
+            , id "choose-name"
             ] []
         , text (if new.binary then "B" else "A")
         ]
-    , td [ class "EquivSymbol" ] [text " ≡ "]
-    , td [ class "SymbolDef" ] [ input
+    , td [ class "equiv-symbol" ] [text " ≡ "]
+    , td [ class "symbol-def" ] [ input
         [ type_ "text"
         , onInput Def
         , value new.definition
-        , id "SetDef"
+        , id "set-def"
         ] [] ]
     ]
 
@@ -76,12 +72,12 @@ renderSymbols : Proof -> NewSymbol -> Html SymbolMsg
 renderSymbols proof new = proof.symbols
     |> List.map (\s -> tr []
         [ td [] []
-        , td [ class "SymbolName" ] [text (show s.wff)]
-        , td [ class "EquivSymbol" ] [text " ≡ "]
-        , td [ class "SymbolDef" ] [text (show s.definition)]
+        , td [ class "symbol-name" ] [text (show s.wff)]
+        , td [ class "equiv-symbol" ] [text " ≡ "]
+        , td [ class "symbol-def" ] [text (show s.definition)]
         ] )
     |> flip (++) [renderNewSym new]
-    |> table [ id "SymbolList" ]
+    |> table [ id "symbol-list" ]
 
 submitSym : Proof -> NewSymbol -> Result String Symbol
 submitSym proof new = case
@@ -95,9 +91,9 @@ submitSym proof new = case
 
 selectSym : Proof -> Html String
 selectSym proof = case proof.symbols of
-    [] -> select [ id "SymbolDropdown" ]
+    [] -> select [ id "symbol-dropdown" ]
         [ option [ disabled True, selected True ] [ text "No Symbols" ] ]
     syms -> List.map .name syms
         |> indexedMap (\i -> \s -> option [value (toString i)] [text s])
         |> (::) (option [disabled True, selected True] [text "Choose One"])
-        |> select [ onInput identity, id "SymbolDropdown" ]
+        |> select [ onInput identity, id "symbol-dropdown" ]

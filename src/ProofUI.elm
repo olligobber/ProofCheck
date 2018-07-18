@@ -84,14 +84,14 @@ updateNewLine message oldline = case message of
 {-  Given whether a reason index should be shown and the current line number,
     renders the new line input -}
 renderNewLine : Indexing -> Proof -> Html LineMsg
-renderNewLine indexing proof = tr [ id "NewLine" ]
-    [ td [ class "Assumptions" ] []
-    , td [ class "LineNumber" ]
+renderNewLine indexing proof = tr [ id "new-line" ]
+    [ td [ class "assumptions" ] []
+    , td [ class "line-number" ]
         [ text <| "(" ++ toString ((List.length proof.lines)+1) ++ ")" ]
-    , td [ class "Formula" ]
-        [ input [ type_ "text", onInput Formula, id "FormulaInput" ] [] ]
-    , td [ class "Reason" ]
-        [ select [ onInput Reason, id "ReasonDropdown" ]
+    , td [ class "formula" ]
+        [ input [ type_ "text", onInput Formula, id "formula-input" ] [] ]
+    , td [ class "reason" ]
+        [ select [ onInput Reason, id "reason-dropdown" ]
             ( List.map (\x -> option [value x, selected (x=="A")] [text x])
                 [ "&E"
                 , "&I"
@@ -110,7 +110,7 @@ renderNewLine indexing proof = tr [ id "NewLine" ]
             NoIndexing -> text ""
             SymIndexing -> Html.map ReasonIndex <| selectSym proof
             SeqIndexing -> Html.map ReasonIndex <| selectSeq proof
-        , input [ type_ "text", onInput References, id "ReferenceInput" ] []
+        , input [ type_ "text", onInput References, id "reference-input" ] []
         ]
     ]
 
@@ -125,11 +125,11 @@ simpleReason oldline reason =
 -- Given the current proof, a deduction and its index, renders that deduction
 renderDeduction : Proof -> Int -> Deduction -> Html LineMsg
 renderDeduction proof index ded = tr []
-    [ td [ class "Assumptions" ]
+    [ td [ class "assumptions" ]
         [ text <| join "," (List.map toString ded.assumptions) ]
-    , td [ class "LineNumber" ] [ text <| "(" ++ toString (index+1) ++ ")" ]
-    , td [ class "Formula" ] [ text <| show ded.deduction ]
-    , td [ class "Reason" ] [ text <| showReason proof ded ]
+    , td [ class "line-number" ] [ text <| "(" ++ toString (index+1) ++ ")" ]
+    , td [ class "formula" ] [ text <| show ded.deduction ]
+    , td [ class "reason" ] [ text <| showReason proof ded ]
     ]
 
 -- Render the current proof as a table
@@ -137,7 +137,7 @@ renderLines : Proof -> NewLine -> Html LineMsg
 renderLines proof newline = proof.lines
     |> indexedMap (renderDeduction proof)
     |> flip (++) [ renderNewLine newline.indexing proof ]
-    |> table [ id "ProofLines" ]
+    |> table [ id "proof-lines" ]
 
 -- Turns a list of results into result list, only if all were Ok
 getAll : List (Result x a) -> Result x (List a)

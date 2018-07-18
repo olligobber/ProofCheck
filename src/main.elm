@@ -1,5 +1,5 @@
 import Html exposing (Html, div, text, button)
-import Html.Attributes exposing (id)
+import Html.Attributes exposing (id, class, disabled)
 import Html.Events exposing (onClick)
 
 import Proof exposing (Proof, DeductionRule(..), empty, addSequent, addSymbol)
@@ -20,20 +20,24 @@ main = Html.beginnerProgram
 type alias Model =
     { proof : Proof
     , history : List Proof
+    , future : List Proof
     , latestError : Maybe String
     , newLine : NewLine
     , newSeq : NewSequent
     , newSym : NewSymbol
+    , activeWindow : Window
     }
 
 start : Model
 start =
     { proof = empty
     , history = []
+    , future = []
     , latestError = Nothing
     , newLine = ProofUI.blank
     , newSeq = SequentUI.blank
     , newSym = SymbolUI.blank
+    , activeWindow = NoWindow
     }
 
 type Msg
@@ -43,6 +47,14 @@ type Msg
     | AddSequent
     | NewSym SymbolMsg
     | AddSymbol
+    | Undo
+    | Redo
+    | Open Window
+
+type Window
+    = NoWindow
+    | SequentWindow
+    | SymbolWindow
 
 update : Msg -> Model -> Model
 update msg model = case msg of
@@ -52,6 +64,7 @@ update msg model = case msg of
         Ok p ->
             { model
             | history = model.proof :: model.history
+            , future = []
             , proof = p
             , latestError = Nothing
             , newLine = ProofUI.blank
@@ -62,6 +75,7 @@ update msg model = case msg of
         Ok n ->
             { model
             | history = model.proof :: model.history
+            , future = []
             , proof = addSequent n model.proof
             , latestError = Nothing
             , newSeq = SequentUI.blank
@@ -72,35 +86,93 @@ update msg model = case msg of
         Ok n ->
             { model
             | history = model.proof :: model.history
+            , future = []
             , proof = addSymbol n model.proof
             , latestError = Nothing
             , newSym = SymbolUI.blank
             }
+    Undo -> case model.history of
+        [] -> model
+        (x::xs) ->
+            { model
+            | history = xs
+            , future = model.proof::model.future
+            , proof = x
+            }
+    Redo -> case model.future of
+        [] -> model
+        (x::xs) ->
+            { model
+            | history = model.proof::model.history
+            , future = xs
+            , proof = x
+            }
+    Open x -> { model | activeWindow = x }
+
+closeButton : Html Msg
+closeButton = button
+    [ onClick <| Open NoWindow
+    , id "close-button"
+    ] [ text "X" ]
 
 sequentBox : Model -> Html Msg
-sequentBox model = div [ id "SequentBox" ]
+sequentBox model = div [ class "floating", id "sequent-box" ]
     [ Html.map NewSeq <| renderSequents model.proof model.newSeq
-    , button [ onClick AddSequent, id "AddSequent" ] [ text "Add Sequent" ]
+    , button [ onClick AddSequent, id "add-sequent" ] [ text "Add Sequent" ]
+    , closeButton
     ]
 
 symbolBox : Model -> Html Msg
-symbolBox model = div [ id "SymbolBox" ]
+symbolBox model = div [ class "floating", id "symbol-box" ]
     [ Html.map NewSym <| renderSymbols model.proof model.newSym
-    , button [ onClick AddSymbol, id "AddSymbol" ] [ text "Add Symbol" ]
+    , button [ onClick AddSymbol, id "add-symbol" ] [ text "Add Symbol" ]
+    , closeButton
     ]
 
+activeBox : Model -> Html Msg
+activeBox model = case model.activeWindow of
+    NoWindow -> text ""
+    SequentWindow -> sequentBox model
+    SymbolWindow -> symbolBox model
+
 proofBox : Model -> Html Msg
-proofBox model = div [ id "ProofBox" ]
+proofBox model = div [ id "proof-box" ]
     [ Html.map Lines <| renderLines model.proof model.newLine
-    , button [ onClick SubmitLine, id "AddLine" ] [ text "Add Line" ]
+    , button [ onClick SubmitLine, id "add-line" ] [ text "Add Line" ]
+    ]
+
+menu : Model -> Html Msg
+menu model = div [ id "menu" ]
+    [ div
+        [ class "menu-button"
+        , id "undo-button"
+        , disabled <| model.history == []
+        , onClick Undo
+        ] [ text "Undo" ]
+    , div
+        [ class "menu-button"
+        , id "redo-button"
+        , disabled <| model.future == []
+        , onClick Redo
+        ] [ text "Redo" ]
+    , div
+        [ class "menu-button"
+        , id "symbol-window-button"
+        , onClick <| Open SymbolWindow
+        ] [ text "Symbols" ]
+    , div
+        [ class "menu-button"
+        , id "sequent-window-button"
+        , onClick <| Open SequentWindow
+        ] [ text "Sequents" ]
     ]
 
 view : Model -> Html Msg
-view model = div [ id "Main" ]
-    [ sequentBox model
-    , symbolBox model
+view model = div [ id "main" ]
+    [ menu model
+    , activeBox model
     , proofBox model
     , case model.latestError of
         Nothing -> text ""
-        Just e -> div [ id "Error" ] [ text e ]
+        Just e -> div [ id "error" ] [ text e ]
     ]
