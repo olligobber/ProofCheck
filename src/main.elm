@@ -145,8 +145,7 @@ proofBox model = div [ id "proof-box" ]
 
 menu : Model -> Html Msg
 menu model = div [ id "menu" ]
-    [ span [ class "menu-heading" ] [ text "MENU" ]
-    , div
+    [ div
         [ class "menu-button"
         , id "new-button"
         , onClick New
