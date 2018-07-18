@@ -9,7 +9,8 @@ module ProofUI exposing
 
 import Html exposing
     (Html, table, tr, td, th, input, select, option, text, div)
-import Html.Attributes exposing (type_, value, hidden, selected, id, class)
+import Html.Attributes exposing
+    (type_, value, hidden, selected, id, class, classList)
 import Html.Events exposing (onInput)
 
 import Proof exposing
@@ -113,7 +114,14 @@ renderNewLine indexing proof = tr [ id "new-line" ]
                 SymIndexing -> Html.map ReasonIndex <| selectSym proof
                 SeqIndexing -> Html.map ReasonIndex <| selectSeq proof
             ]
-        , input [ type_ "text", onInput References, id "reference-input" ] []
+        , input
+            [ type_ "text"
+            , onInput References
+            , id "reference-input"
+            , classList
+                [ ("long", indexing == NoIndexing)
+                ]
+            ] []
         ]
     ]
 

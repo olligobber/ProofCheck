@@ -12727,6 +12727,14 @@ var _olligobber$proofcheck$ProofUI$Reason = function (a) {
 var _olligobber$proofcheck$ProofUI$Formula = function (a) {
 	return {ctor: 'Formula', _0: a};
 };
+var _olligobber$proofcheck$ProofUI$NoIndexing = {ctor: 'NoIndexing'};
+var _olligobber$proofcheck$ProofUI$blank = {
+	formula: '',
+	reason: _elm_lang$core$Maybe$Just(_olligobber$proofcheck$Proof$Assumption),
+	handleIndex: _elm_lang$core$Basics$always(_elm_lang$core$Maybe$Nothing),
+	indexing: _olligobber$proofcheck$ProofUI$NoIndexing,
+	references: ''
+};
 var _olligobber$proofcheck$ProofUI$renderNewLine = F2(
 	function (indexing, proof) {
 		return A2(
@@ -12932,7 +12940,20 @@ var _olligobber$proofcheck$ProofUI$renderNewLine = F2(
 														_1: {
 															ctor: '::',
 															_0: _elm_lang$html$Html_Attributes$id('reference-input'),
-															_1: {ctor: '[]'}
+															_1: {
+																ctor: '::',
+																_0: _elm_lang$html$Html_Attributes$classList(
+																	{
+																		ctor: '::',
+																		_0: {
+																			ctor: '_Tuple2',
+																			_0: 'long',
+																			_1: _elm_lang$core$Native_Utils.eq(indexing, _olligobber$proofcheck$ProofUI$NoIndexing)
+																		},
+																		_1: {ctor: '[]'}
+																	}),
+																_1: {ctor: '[]'}
+															}
 														}
 													}
 												},
@@ -12978,14 +12999,6 @@ var _olligobber$proofcheck$ProofUI$renderLines = F2(
 						_olligobber$proofcheck$ProofUI$renderDeduction(proof),
 						proof.lines))));
 	});
-var _olligobber$proofcheck$ProofUI$NoIndexing = {ctor: 'NoIndexing'};
-var _olligobber$proofcheck$ProofUI$blank = {
-	formula: '',
-	reason: _elm_lang$core$Maybe$Just(_olligobber$proofcheck$Proof$Assumption),
-	handleIndex: _elm_lang$core$Basics$always(_elm_lang$core$Maybe$Nothing),
-	indexing: _olligobber$proofcheck$ProofUI$NoIndexing,
-	references: ''
-};
 var _olligobber$proofcheck$ProofUI$simpleReason = F2(
 	function (oldline, reason) {
 		return _elm_lang$core$Native_Utils.update(
@@ -13147,7 +13160,20 @@ var _olligobber$proofcheck$Main$menu = function (model) {
 				_elm_lang$html$Html$div,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class('menu-button'),
+					_0: _elm_lang$html$Html_Attributes$classList(
+						{
+							ctor: '::',
+							_0: {ctor: '_Tuple2', _0: 'menu-button', _1: true},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'disabled',
+									_1: _elm_lang$core$Native_Utils.eq(model.proof, _olligobber$proofcheck$Proof$empty)
+								},
+								_1: {ctor: '[]'}
+							}
+						}),
 					_1: {
 						ctor: '::',
 						_0: _elm_lang$html$Html_Attributes$id('new-button'),
@@ -13381,7 +13407,7 @@ var _olligobber$proofcheck$Main$update = F2(
 						});
 				}
 			case 'New':
-				return _elm_lang$core$Native_Utils.update(
+				return _elm_lang$core$Native_Utils.eq(model.proof, _olligobber$proofcheck$Proof$empty) ? model : _elm_lang$core$Native_Utils.update(
 					_olligobber$proofcheck$Main$start,
 					{
 						history: {ctor: '::', _0: model.proof, _1: model.history}
