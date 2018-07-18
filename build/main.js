@@ -13173,26 +13173,15 @@ var _olligobber$proofcheck$Main$menu = function (model) {
 		{
 			ctor: '::',
 			_0: A2(
-				_elm_lang$html$Html$div,
+				_elm_lang$html$Html$span,
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html_Attributes$class(
-						_elm_lang$core$Native_Utils.eq(
-							model.history,
-							{ctor: '[]'}) ? 'menu-button-disabled' : 'menu-button'),
-					_1: {
-						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$id('undo-button'),
-						_1: {
-							ctor: '::',
-							_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$Undo),
-							_1: {ctor: '[]'}
-						}
-					}
+					_0: _elm_lang$html$Html_Attributes$class('menu-heading'),
+					_1: {ctor: '[]'}
 				},
 				{
 					ctor: '::',
-					_0: _elm_lang$html$Html$text('Undo'),
+					_0: _elm_lang$html$Html$text('MENU'),
 					_1: {ctor: '[]'}
 				}),
 			_1: {
@@ -13203,21 +13192,21 @@ var _olligobber$proofcheck$Main$menu = function (model) {
 						ctor: '::',
 						_0: _elm_lang$html$Html_Attributes$class(
 							_elm_lang$core$Native_Utils.eq(
-								model.future,
+								model.history,
 								{ctor: '[]'}) ? 'menu-button-disabled' : 'menu-button'),
 						_1: {
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$id('redo-button'),
+							_0: _elm_lang$html$Html_Attributes$id('undo-button'),
 							_1: {
 								ctor: '::',
-								_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$Redo),
+								_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$Undo),
 								_1: {ctor: '[]'}
 							}
 						}
 					},
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html$text('Redo'),
+						_0: _elm_lang$html$Html$text('Undo'),
 						_1: {ctor: '[]'}
 					}),
 				_1: {
@@ -13226,21 +13215,23 @@ var _olligobber$proofcheck$Main$menu = function (model) {
 						_elm_lang$html$Html$div,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class('menu-button'),
+							_0: _elm_lang$html$Html_Attributes$class(
+								_elm_lang$core$Native_Utils.eq(
+									model.future,
+									{ctor: '[]'}) ? 'menu-button-disabled' : 'menu-button'),
 							_1: {
 								ctor: '::',
-								_0: _elm_lang$html$Html_Attributes$id('symbol-window-button'),
+								_0: _elm_lang$html$Html_Attributes$id('redo-button'),
 								_1: {
 									ctor: '::',
-									_0: _elm_lang$html$Html_Events$onClick(
-										_olligobber$proofcheck$Main$Open(_olligobber$proofcheck$Main$SymbolWindow)),
+									_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$Redo),
 									_1: {ctor: '[]'}
 								}
 							}
 						},
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html$text('Symbols'),
+							_0: _elm_lang$html$Html$text('Redo'),
 							_1: {ctor: '[]'}
 						}),
 					_1: {
@@ -13252,21 +13243,45 @@ var _olligobber$proofcheck$Main$menu = function (model) {
 								_0: _elm_lang$html$Html_Attributes$class('menu-button'),
 								_1: {
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$id('sequent-window-button'),
+									_0: _elm_lang$html$Html_Attributes$id('symbol-window-button'),
 									_1: {
 										ctor: '::',
 										_0: _elm_lang$html$Html_Events$onClick(
-											_olligobber$proofcheck$Main$Open(_olligobber$proofcheck$Main$SequentWindow)),
+											_olligobber$proofcheck$Main$Open(_olligobber$proofcheck$Main$SymbolWindow)),
 										_1: {ctor: '[]'}
 									}
 								}
 							},
 							{
 								ctor: '::',
-								_0: _elm_lang$html$Html$text('Sequents'),
+								_0: _elm_lang$html$Html$text('Symbols'),
 								_1: {ctor: '[]'}
 							}),
-						_1: {ctor: '[]'}
+						_1: {
+							ctor: '::',
+							_0: A2(
+								_elm_lang$html$Html$div,
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$class('menu-button'),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$id('sequent-window-button'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Events$onClick(
+												_olligobber$proofcheck$Main$Open(_olligobber$proofcheck$Main$SequentWindow)),
+											_1: {ctor: '[]'}
+										}
+									}
+								},
+								{
+									ctor: '::',
+									_0: _elm_lang$html$Html$text('Sequents'),
+									_1: {ctor: '[]'}
+								}),
+							_1: {ctor: '[]'}
+						}
 					}
 				}
 			}
