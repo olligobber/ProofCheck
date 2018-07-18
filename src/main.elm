@@ -47,6 +47,7 @@ type Msg
     | AddSequent
     | NewSym SymbolMsg
     | AddSymbol
+    | New
     | Undo
     | Redo
     | Open Window
@@ -91,6 +92,7 @@ update msg model = case msg of
             , latestError = Nothing
             , newSym = SymbolUI.blank
             }
+    New -> { start | history = model.proof :: model.history }
     Undo -> case model.history of
         [] -> model
         (x::xs) ->
@@ -144,6 +146,11 @@ proofBox model = div [ id "proof-box" ]
 menu : Model -> Html Msg
 menu model = div [ id "menu" ]
     [ span [ class "menu-heading" ] [ text "MENU" ]
+    , div
+        [ class "menu-button"
+        , id "new-button"
+        , onClick New
+        ] [ text "New" ]
     , div
         [ class <|
             if model.history == [] then
