@@ -1,26 +1,15 @@
-@import url('https://fonts.googleapis.com/css?family=Anonymous+Pro');
+#menu {
+  display: inline-block;
+  position: relative;
+  padding: 0 2em;
+  width: 10em;
+  height: 100vh;
+  float: left;
+  background-color: rgba(99, 95, 102, 0.2);
+  line-height: 2em; }
 
-body {
-    font-family: 'Anonymous Pro', monospace;
-    font-size: 1em;
-}
+#proof-box {
+  float: left;
+  padding: 2em; }
 
-select {
-    font-family: 'Anonymous Pro', monospace;
-    font-size: 1em;
-}
-
-input[type=text] {
-    font-family: 'Anonymous Pro', monospace;
-    font-size: 1em;
-}
-
-#error {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    padding: 0.5em;
-    background-color: #ff7777;
-    text-align: center;
-}
+/*# sourceMappingURL=style.css.map */
