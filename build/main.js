@@ -13169,10 +13169,22 @@ var _olligobber$proofcheck$Main$menu = function (model) {
 					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
-						_0: _elm_lang$html$Html_Attributes$class(
-							_elm_lang$core$Native_Utils.eq(
-								model.history,
-								{ctor: '[]'}) ? 'menu-button-disabled' : 'menu-button'),
+						_0: _elm_lang$html$Html_Attributes$classList(
+							{
+								ctor: '::',
+								_0: {ctor: '_Tuple2', _0: 'menu-button', _1: true},
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '_Tuple2',
+										_0: 'disabled',
+										_1: _elm_lang$core$Native_Utils.eq(
+											model.history,
+											{ctor: '[]'})
+									},
+									_1: {ctor: '[]'}
+								}
+							}),
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$id('undo-button'),
@@ -13194,10 +13206,22 @@ var _olligobber$proofcheck$Main$menu = function (model) {
 						_elm_lang$html$Html$div,
 						{
 							ctor: '::',
-							_0: _elm_lang$html$Html_Attributes$class(
-								_elm_lang$core$Native_Utils.eq(
-									model.future,
-									{ctor: '[]'}) ? 'menu-button-disabled' : 'menu-button'),
+							_0: _elm_lang$html$Html_Attributes$classList(
+								{
+									ctor: '::',
+									_0: {ctor: '_Tuple2', _0: 'menu-button', _1: true},
+									_1: {
+										ctor: '::',
+										_0: {
+											ctor: '_Tuple2',
+											_0: 'disabled',
+											_1: _elm_lang$core$Native_Utils.eq(
+												model.future,
+												{ctor: '[]'})
+										},
+										_1: {ctor: '[]'}
+									}
+								}),
 							_1: {
 								ctor: '::',
 								_0: _elm_lang$html$Html_Attributes$id('redo-button'),
