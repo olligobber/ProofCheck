@@ -92,7 +92,11 @@ update msg model = case msg of
             , latestError = Nothing
             , newSym = SymbolUI.blank
             }
-    New -> { start | history = model.proof :: model.history }
+    New ->
+        if model.proof == Proof.empty then
+            model
+        else
+            { start | history = model.proof :: model.history }
     Undo -> case model.history of
         [] -> model
         (x::xs) ->
@@ -146,7 +150,10 @@ proofBox model = div [ id "proof-box" ]
 menu : Model -> Html Msg
 menu model = div [ id "menu" ]
     [ div
-        [ class "menu-button"
+        [ classList
+            [ ("menu-button", True)
+            , ("disabled", model.proof == Proof.empty)
+            ]
         , id "new-button"
         , onClick New
         ] [ text "New" ]
