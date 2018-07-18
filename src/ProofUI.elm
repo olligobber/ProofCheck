@@ -120,6 +120,7 @@ renderNewLine indexing proof = tr [ id "new-line" ]
             , id "reference-input"
             , classList
                 [ ("long", indexing == NoIndexing)
+                , ("short", indexing /= NoIndexing)
                 ]
             ] []
         ]
