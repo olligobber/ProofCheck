@@ -144,15 +144,21 @@ proofBox model = div [ id "proof-box" ]
 menu : Model -> Html Msg
 menu model = div [ id "menu" ]
     [ div
-        [ class "menu-button"
+        [ class <|
+            if model.history == [] then
+                "menu-button-disabled"
+            else
+                "menu-button"
         , id "undo-button"
-        , disabled <| model.history == []
         , onClick Undo
         ] [ text "Undo" ]
     , div
-        [ class "menu-button"
+        [ class <|
+            if model.future == [] then
+                "menu-button-disabled"
+            else
+                "menu-button"
         , id "redo-button"
-        , disabled <| model.future == []
         , onClick Redo
         ] [ text "Redo" ]
     , div
