@@ -2,19 +2,87 @@
   @return rgba(99, 95, 102, $opacity)
 };
 
+.no-display {
+  display: none;
+}
+
+html, body, #elm-app, #main {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  color: dark-grey();
+}
 
 #menu {
   display: inline-block;
   position: relative;
-  padding: 0 2em;
-  width: 10em;
-  height: 100vh;
+  padding: 0 5%;
+  width: 10%;
+  height: 100%;
   float: left;
-  background-color: dark-grey(.2);
+  background-color: dark-grey(.1);
   line-height: 2em;
+  text-align: center;
+
+  .menu-heading {
+    display: inline-block;
+    margin-top: 2em;
+    width: 100%;
+    border-bottom: 1px solid dark-grey(.5);
+    opacity: .5;
+  }
 }
 
 #proof-box {
   float: left;
-  padding: 2em;
+  padding: 5%;
+  width: 70%;
+  line-height: 2em;
+
+  #proof-lines, #new-line {
+    width: 100%;
+  }
+
+  td {
+    padding: 1%;
+  }
+
+  .assumptions {
+    width: 5%;
+  }
+
+  .line-number {
+    width: 5%;
+  }
+
+  .formula {
+    width: 44%;
+  }
+
+  .reason {
+    width: 38%;
+  }
+
+  #formula-input {
+    width: 100%;
+  }
+
+  #reason-dropdown {
+    width: 30%;
+  }
+
+  #symbol-dropdown {
+    width: 30%;
+  }
+
+  #reference-input {
+    width: 40%;
+  }
+
+  #add-line {
+    width: 20%;
+    margin: 0 40%;
+  }
 }

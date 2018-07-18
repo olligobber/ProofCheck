@@ -1,15 +1,57 @@
+.no-display {
+  display: none; }
+
+html, body, #elm-app, #main {
+  width: 100%;
+  height: 100%; }
+
+body {
+  color: #635f66; }
+
 #menu {
   display: inline-block;
   position: relative;
-  padding: 0 2em;
-  width: 10em;
-  height: 100vh;
+  padding: 0 5%;
+  width: 10%;
+  height: 100%;
   float: left;
-  background-color: rgba(99, 95, 102, 0.2);
-  line-height: 2em; }
+  background-color: rgba(99, 95, 102, 0.1);
+  line-height: 2em;
+  text-align: center; }
+  #menu .menu-heading {
+    display: inline-block;
+    margin-top: 2em;
+    width: 100%;
+    border-bottom: 1px solid rgba(99, 95, 102, 0.5);
+    opacity: .5; }
 
 #proof-box {
   float: left;
-  padding: 2em; }
+  padding: 5%;
+  width: 70%;
+  line-height: 2em; }
+  #proof-box #proof-lines, #proof-box #new-line {
+    width: 100%; }
+  #proof-box td {
+    padding: 1%; }
+  #proof-box .assumptions {
+    width: 5%; }
+  #proof-box .line-number {
+    width: 5%; }
+  #proof-box .formula {
+    width: 44%; }
+  #proof-box .reason {
+    width: 38%; }
+  #proof-box #formula-input {
+    width: 100%; }
+  #proof-box #reason-dropdown {
+    width: 30%; }
+  #proof-box #symbol-dropdown {
+    width: 30%; }
+  #proof-box #reference-input {
+    width: 40%; }
+  #proof-box #add-line {
+    width: 20%;
+    margin: 0 40%; }
 
 /*# sourceMappingURL=style.css.map */
