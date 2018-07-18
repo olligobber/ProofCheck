@@ -1,5 +1,5 @@
 import Html exposing (Html, div, text, button, span)
-import Html.Attributes exposing (id, class, disabled)
+import Html.Attributes exposing (id, class, disabled, classList)
 import Html.Events exposing (onClick)
 
 import Proof exposing (Proof, DeductionRule(..), empty, addSequent, addSymbol)
@@ -151,20 +151,18 @@ menu model = div [ id "menu" ]
         , onClick New
         ] [ text "New" ]
     , div
-        [ class <|
-            if model.history == [] then
-                "menu-button-disabled"
-            else
-                "menu-button"
+        [ classList
+            [ ("menu-button", True)
+            , ("disabled", model.history == [])
+            ]
         , id "undo-button"
         , onClick Undo
         ] [ text "Undo" ]
     , div
-        [ class <|
-            if model.future == [] then
-                "menu-button-disabled"
-            else
-                "menu-button"
+        [ classList
+            [ ("menu-button", True)
+            , ("disabled", model.future == [])
+            ]
         , id "redo-button"
         , onClick Redo
         ] [ text "Redo" ]
