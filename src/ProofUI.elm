@@ -110,7 +110,7 @@ renderNewLine indexing proof = tr [ id "new-line" ]
                 ] )
         , div
             [ id "input-dropdown"
-            , classList [("short", indexing /= NoIndexing)]
+            , classList [("short", indexing == NoIndexing)]
             ]
             [
                 case indexing of
