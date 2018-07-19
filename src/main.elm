@@ -119,7 +119,7 @@ closeButton : Html Msg
 closeButton = button
     [ onClick <| Open NoWindow
     , id "close-button"
-    ] [ text "X" ]
+    ] [ text "Close" ]
 
 sequentBox : Model -> Html Msg
 sequentBox model = div [ class "floating", id "sequent-box" ]

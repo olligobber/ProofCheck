@@ -13471,7 +13471,7 @@ var _olligobber$proofcheck$Main$closeButton = A2(
 	},
 	{
 		ctor: '::',
-		_0: _elm_lang$html$Html$text('X'),
+		_0: _elm_lang$html$Html$text('Close'),
 		_1: {ctor: '[]'}
 	});
 var _olligobber$proofcheck$Main$sequentBox = function (model) {
