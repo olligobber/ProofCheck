@@ -116,7 +116,7 @@ update msg model = case msg of
     Open x -> { model | activeWindow = x }
 
 closeButton : Html Msg
-closeButton = button
+closeButton = div
     [ onClick <| Open NoWindow
     , id "close-button"
     ] [ text "Close" ]
@@ -124,14 +124,14 @@ closeButton = button
 sequentBox : Model -> Html Msg
 sequentBox model = div [ class "floating", id "sequent-box" ]
     [ Html.map NewSeq <| renderSequents model.proof model.newSeq
-    , button [ onClick AddSequent, id "add-sequent" ] [ text "Add Sequent" ]
+    , div [ onClick AddSequent, id "add-sequent" ] [ text "Add Sequent" ]
     , closeButton
     ]
 
 symbolBox : Model -> Html Msg
 symbolBox model = div [ class "floating", id "symbol-box" ]
     [ Html.map NewSym <| renderSymbols model.proof model.newSym
-    , button [ onClick AddSymbol, id "add-symbol" ] [ text "Add Symbol" ]
+    , div [ onClick AddSymbol, id "add-symbol" ] [ text "Add Symbol" ]
     , closeButton
     ]
 

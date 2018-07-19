@@ -13458,7 +13458,7 @@ var _olligobber$proofcheck$Main$update = F2(
 		}
 	});
 var _olligobber$proofcheck$Main$closeButton = A2(
-	_elm_lang$html$Html$button,
+	_elm_lang$html$Html$div,
 	{
 		ctor: '::',
 		_0: _elm_lang$html$Html_Events$onClick(
@@ -13495,7 +13495,7 @@ var _olligobber$proofcheck$Main$sequentBox = function (model) {
 			_1: {
 				ctor: '::',
 				_0: A2(
-					_elm_lang$html$Html$button,
+					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$AddSequent),
@@ -13539,7 +13539,7 @@ var _olligobber$proofcheck$Main$symbolBox = function (model) {
 			_1: {
 				ctor: '::',
 				_0: A2(
-					_elm_lang$html$Html$button,
+					_elm_lang$html$Html$div,
 					{
 						ctor: '::',
 						_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$AddSymbol),
