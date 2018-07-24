@@ -1,6 +1,6 @@
 module ProofJson exposing
     ( tojson
-    -- , fromjson
+    , fromjson
     )
 
 import Json.Encode exposing (Value)
