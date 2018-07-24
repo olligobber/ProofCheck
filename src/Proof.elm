@@ -7,6 +7,7 @@ module Proof exposing
     , addSymbol
     , addDeduction
     , showReason
+    , addAll
     )
 
 import WFF exposing (WFF)
@@ -248,3 +249,15 @@ addDeduction proof new = case (new.rule, matchDeduction proof new) of
                         |> unique
                     } ]
                 }
+
+addAll : List Symbol -> List Sequent -> List Deduction -> Proof ->
+    Result String Proof
+addAll symbols sequents lines proof = foldl addSymbol proof symbols
+    |> (\proof -> foldl addSequent proof sequents)
+    |> (\proof -> foldl
+        ( \newline -> \result -> case result of
+            Err e -> Err e
+            Ok proof -> addDeduction proof newline )
+        (Ok proof)
+        lines
+    )

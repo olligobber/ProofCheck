@@ -4,6 +4,7 @@ module CustomSymbol exposing
     , makeBinary
     , toSequent1
     , toSequent2
+    , augmentMap
     , makeMap
     )
 
@@ -72,6 +73,26 @@ toSequent2 symbol =
     , conse = symbol.wff
     }
 
+-- Adds a symbol to symbolmaps
+augmentMap : Symbol -> SymbolMaps -> SymbolMaps
+augmentMap symbol (unaries, binaries) = case symbol.wff of
+    Prop _ -> (unaries, binaries) -- Should not occur
+    Unary v ->
+        ( \s ->
+            if s == v.symbol then
+                Just (\x -> Unary {v | contents = x})
+            else
+                unaries s
+        , binaries )
+    Binary v ->
+        ( unaries
+        , \s ->
+            if s == v.symbol then
+                Just (\x -> \y -> Binary {v | first = x, second = y})
+            else
+                binaries s
+        )
+
 -- Turns a list of sequents into maps for parsing
 makeMap : List Symbol -> SymbolMaps
 makeMap list = case list of
@@ -85,16 +106,4 @@ makeMap list = case list of
             "->" -> Just implies
             _ -> Nothing
         )
-    symbol::rest -> case (symbol.wff, makeMap rest) of
-        (Prop _,_) -> (always Nothing, always Nothing) -- Should not occur
-        (Unary v, (uns, bins)) ->
-            ( \s -> if s == v.symbol
-                then Just (\x -> Unary { v | contents = x } )
-                else uns s
-            , bins )
-        (Binary v, (uns, bins)) ->
-            ( uns
-            , \s -> if s == v.symbol
-                then Just (\x -> \y -> Binary { v | first = x, second = y} )
-                else bins s
-            )
+    symbol::rest -> augmentMap symbol <| makeMap rest

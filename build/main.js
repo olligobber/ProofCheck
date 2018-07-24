@@ -10984,22 +10984,64 @@ var _olligobber$proofcheck$Parser$parse = F2(
 			_olligobber$proofcheck$Parser$parseTree(string));
 	});
 
+var _olligobber$proofcheck$CustomSymbol$augmentMap = F2(
+	function (symbol, _p0) {
+		var _p1 = _p0;
+		var _p6 = _p1._0;
+		var _p5 = _p1._1;
+		var _p2 = symbol.wff;
+		switch (_p2.ctor) {
+			case 'Prop':
+				return {ctor: '_Tuple2', _0: _p6, _1: _p5};
+			case 'Unary':
+				var _p3 = _p2._0;
+				return {
+					ctor: '_Tuple2',
+					_0: function (s) {
+						return _elm_lang$core$Native_Utils.eq(s, _p3.symbol) ? _elm_lang$core$Maybe$Just(
+							function (x) {
+								return _olligobber$proofcheck$WFF$Unary(
+									_elm_lang$core$Native_Utils.update(
+										_p3,
+										{contents: x}));
+							}) : _p6(s);
+					},
+					_1: _p5
+				};
+			default:
+				var _p4 = _p2._0;
+				return {
+					ctor: '_Tuple2',
+					_0: _p6,
+					_1: function (s) {
+						return _elm_lang$core$Native_Utils.eq(s, _p4.symbol) ? _elm_lang$core$Maybe$Just(
+							F2(
+								function (x, y) {
+									return _olligobber$proofcheck$WFF$Binary(
+										_elm_lang$core$Native_Utils.update(
+											_p4,
+											{first: x, second: y}));
+								})) : _p5(s);
+					}
+				};
+		}
+	});
 var _olligobber$proofcheck$CustomSymbol$makeMap = function (list) {
-	var _p0 = list;
-	if (_p0.ctor === '[]') {
+	var _p7 = list;
+	if (_p7.ctor === '[]') {
 		return {
 			ctor: '_Tuple2',
 			_0: function (s) {
-				var _p1 = s;
-				if (_p1 === '~') {
+				var _p8 = s;
+				if (_p8 === '~') {
 					return _elm_lang$core$Maybe$Just(_olligobber$proofcheck$WFF$neg);
 				} else {
 					return _elm_lang$core$Maybe$Nothing;
 				}
 			},
 			_1: function (s) {
-				var _p2 = s;
-				switch (_p2) {
+				var _p9 = s;
+				switch (_p9) {
 					case '|':
 						return _elm_lang$core$Maybe$Just(_olligobber$proofcheck$WFF$or);
 					case '&':
@@ -11012,50 +11054,10 @@ var _olligobber$proofcheck$CustomSymbol$makeMap = function (list) {
 			}
 		};
 	} else {
-		var _p3 = {
-			ctor: '_Tuple2',
-			_0: _p0._0.wff,
-			_1: _olligobber$proofcheck$CustomSymbol$makeMap(_p0._1)
-		};
-		switch (_p3._0.ctor) {
-			case 'Prop':
-				return {
-					ctor: '_Tuple2',
-					_0: _elm_lang$core$Basics$always(_elm_lang$core$Maybe$Nothing),
-					_1: _elm_lang$core$Basics$always(_elm_lang$core$Maybe$Nothing)
-				};
-			case 'Unary':
-				var _p4 = _p3._0._0;
-				return {
-					ctor: '_Tuple2',
-					_0: function (s) {
-						return _elm_lang$core$Native_Utils.eq(s, _p4.symbol) ? _elm_lang$core$Maybe$Just(
-							function (x) {
-								return _olligobber$proofcheck$WFF$Unary(
-									_elm_lang$core$Native_Utils.update(
-										_p4,
-										{contents: x}));
-							}) : _p3._1._0(s);
-					},
-					_1: _p3._1._1
-				};
-			default:
-				var _p5 = _p3._0._0;
-				return {
-					ctor: '_Tuple2',
-					_0: _p3._1._0,
-					_1: function (s) {
-						return _elm_lang$core$Native_Utils.eq(s, _p5.symbol) ? _elm_lang$core$Maybe$Just(
-							F2(
-								function (x, y) {
-									return _olligobber$proofcheck$WFF$Binary(
-										_elm_lang$core$Native_Utils.update(
-											_p5,
-											{first: x, second: y}));
-								})) : _p3._1._1(s);
-					}
-				};
-		}
+		return A2(
+			_olligobber$proofcheck$CustomSymbol$augmentMap,
+			_p7._0,
+			_olligobber$proofcheck$CustomSymbol$makeMap(_p7._1));
 	}
 };
 var _olligobber$proofcheck$CustomSymbol$toSequent2 = function (symbol) {
@@ -11104,8 +11106,8 @@ var _olligobber$proofcheck$CustomSymbol$makeBinary = F4(
 									return A2(
 										_olligobber$proofcheck$WFF$eval,
 										function (c) {
-											var _p6 = _elm_lang$core$Native_Utils.eq(c, propa);
-											if (_p6 === true) {
+											var _p10 = _elm_lang$core$Native_Utils.eq(c, propa);
+											if (_p10 === true) {
 												return a;
 											} else {
 												return b;
@@ -11734,6 +11736,28 @@ var _olligobber$proofcheck$Proof$addDeduction = F2(
 					}
 			}
 		}
+	});
+var _olligobber$proofcheck$Proof$addAll = F4(
+	function (symbols, sequents, lines, proof) {
+		return function (proof) {
+			return A3(
+				_elm_lang$core$List$foldl,
+				F2(
+					function (newline, result) {
+						var _p23 = result;
+						if (_p23.ctor === 'Err') {
+							return _elm_lang$core$Result$Err(_p23._0);
+						} else {
+							return A2(_olligobber$proofcheck$Proof$addDeduction, _p23._0, newline);
+						}
+					}),
+				_elm_lang$core$Result$Ok(proof),
+				lines);
+		}(
+			function (proof) {
+				return A3(_elm_lang$core$List$foldl, _olligobber$proofcheck$Proof$addSequent, proof, sequents);
+			}(
+				A3(_elm_lang$core$List$foldl, _olligobber$proofcheck$Proof$addSymbol, proof, symbols)));
 	});
 
 var _olligobber$proofcheck$SequentUI$selectSeq = function (proof) {
@@ -13099,10 +13123,557 @@ var _olligobber$proofcheck$ProofUI$updateNewLine = F2(
 		}
 	});
 
-var _olligobber$proofcheck$Main$Model = F8(
-	function (a, b, c, d, e, f, g, h) {
-		return {proof: a, history: b, future: c, latestError: d, newLine: e, newSeq: f, newSym: g, activeWindow: h};
+var _olligobber$proofcheck$WFFJson$fromjson = function (maps) {
+	return A2(
+		_elm_lang$core$Json_Decode$andThen,
+		function (wff) {
+			var _p0 = A2(_olligobber$proofcheck$Parser$parse, maps, wff);
+			if (_p0.ctor === 'Ok') {
+				return _elm_lang$core$Json_Decode$succeed(_p0._0);
+			} else {
+				return _elm_lang$core$Json_Decode$fail(_p0._0);
+			}
+		},
+		_elm_lang$core$Json_Decode$string);
+};
+var _olligobber$proofcheck$WFFJson$tojson = function (wff) {
+	return _elm_lang$core$Json_Encode$string(
+		_olligobber$proofcheck$WFF$show(wff));
+};
+
+var _olligobber$proofcheck$SymbolJson$fromDecoded = F2(
+	function (maps, decoded) {
+		var _p0 = decoded;
+		if (_p0.ctor === 'UnaryDecoded') {
+			var _p1 = _p0._0;
+			return A2(
+				_elm_lang$core$Result$andThen,
+				A2(_olligobber$proofcheck$CustomSymbol$makeUnary, _p1.prop, _p1.symbol),
+				A2(_olligobber$proofcheck$Parser$parse, maps, _p1.wff));
+		} else {
+			var _p2 = _p0._0;
+			return A2(
+				_elm_lang$core$Result$andThen,
+				A3(_olligobber$proofcheck$CustomSymbol$makeBinary, _p2.propa, _p2.propb, _p2.symbol),
+				A2(_olligobber$proofcheck$Parser$parse, maps, _p2.wff));
+		}
 	});
+var _olligobber$proofcheck$SymbolJson$allfromDecoded = function (list) {
+	return A2(
+		_elm_lang$core$Result$map,
+		_elm_lang$core$List$reverse,
+		A2(
+			_elm_lang$core$Result$map,
+			_elm_lang$core$Tuple$first,
+			A3(
+				_elm_lang$core$List$foldl,
+				F2(
+					function (decoded, x) {
+						var _p3 = x;
+						if (_p3.ctor === 'Err') {
+							return _elm_lang$core$Result$Err(_p3._0);
+						} else {
+							var _p6 = _p3._0._1;
+							var _p4 = A2(_olligobber$proofcheck$SymbolJson$fromDecoded, _p6, decoded);
+							if (_p4.ctor === 'Err') {
+								return _elm_lang$core$Result$Err(_p4._0);
+							} else {
+								var _p5 = _p4._0;
+								return _elm_lang$core$Result$Ok(
+									{
+										ctor: '_Tuple2',
+										_0: {ctor: '::', _0: _p5, _1: _p3._0._0},
+										_1: A2(_olligobber$proofcheck$CustomSymbol$augmentMap, _p5, _p6)
+									});
+							}
+						}
+					}),
+				_elm_lang$core$Result$Ok(
+					{
+						ctor: '_Tuple2',
+						_0: {ctor: '[]'},
+						_1: _olligobber$proofcheck$CustomSymbol$makeMap(
+							{ctor: '[]'})
+					}),
+				list)));
+};
+var _olligobber$proofcheck$SymbolJson$tojson = function (s) {
+	var _p7 = s.wff;
+	switch (_p7.ctor) {
+		case 'Prop':
+			return _elm_lang$core$Result$Err('Error: symbol is a proposition');
+		case 'Unary':
+			var _p9 = _p7._0;
+			var _p8 = _p9.contents;
+			if (_p8.ctor === 'Prop') {
+				return _elm_lang$core$Result$Ok(
+					_elm_lang$core$Json_Encode$object(
+						{
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'symbol',
+								_1: _elm_lang$core$Json_Encode$string(_p9.symbol)
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'prop',
+									_1: _elm_lang$core$Json_Encode$string(_p8._0)
+								},
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '_Tuple2',
+										_0: 'definition',
+										_1: _olligobber$proofcheck$WFFJson$tojson(s.definition)
+									},
+									_1: {ctor: '[]'}
+								}
+							}
+						}));
+			} else {
+				return _elm_lang$core$Result$Err('Error: unary operator does not contain proposition');
+			}
+		default:
+			var _p11 = _p7._0;
+			var _p10 = {ctor: '_Tuple2', _0: _p11.first, _1: _p11.second};
+			if (((_p10.ctor === '_Tuple2') && (_p10._0.ctor === 'Prop')) && (_p10._1.ctor === 'Prop')) {
+				return _elm_lang$core$Result$Ok(
+					_elm_lang$core$Json_Encode$object(
+						{
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'symbol',
+								_1: _elm_lang$core$Json_Encode$string(_p11.symbol)
+							},
+							_1: {
+								ctor: '::',
+								_0: {
+									ctor: '_Tuple2',
+									_0: 'propa',
+									_1: _elm_lang$core$Json_Encode$string(_p10._0._0)
+								},
+								_1: {
+									ctor: '::',
+									_0: {
+										ctor: '_Tuple2',
+										_0: 'propb',
+										_1: _elm_lang$core$Json_Encode$string(_p10._1._0)
+									},
+									_1: {
+										ctor: '::',
+										_0: {
+											ctor: '_Tuple2',
+											_0: 'definition',
+											_1: _olligobber$proofcheck$WFFJson$tojson(s.definition)
+										},
+										_1: {ctor: '[]'}
+									}
+								}
+							}
+						}));
+			} else {
+				return _elm_lang$core$Result$Err('Error: binary operator does not contain propositions');
+			}
+	}
+};
+var _olligobber$proofcheck$SymbolJson$fromResult = function (x) {
+	var _p12 = x;
+	if (_p12.ctor === 'Ok') {
+		return _elm_lang$core$Json_Decode$succeed(_p12._0);
+	} else {
+		return _elm_lang$core$Json_Decode$fail(_p12._0);
+	}
+};
+var _olligobber$proofcheck$SymbolJson$BinaryDecoded = function (a) {
+	return {ctor: 'BinaryDecoded', _0: a};
+};
+var _olligobber$proofcheck$SymbolJson$UnaryDecoded = function (a) {
+	return {ctor: 'UnaryDecoded', _0: a};
+};
+var _olligobber$proofcheck$SymbolJson$toDecoded = _elm_lang$core$Json_Decode$oneOf(
+	{
+		ctor: '::',
+		_0: A4(
+			_elm_lang$core$Json_Decode$map3,
+			F3(
+				function (x, y, z) {
+					return _olligobber$proofcheck$SymbolJson$UnaryDecoded(
+						{symbol: x, prop: y, wff: z});
+				}),
+			A2(_elm_lang$core$Json_Decode$field, 'symbol', _elm_lang$core$Json_Decode$string),
+			A2(_elm_lang$core$Json_Decode$field, 'prop', _elm_lang$core$Json_Decode$string),
+			A2(_elm_lang$core$Json_Decode$field, 'definition', _elm_lang$core$Json_Decode$string)),
+		_1: {
+			ctor: '::',
+			_0: A5(
+				_elm_lang$core$Json_Decode$map4,
+				F4(
+					function (w, x, y, z) {
+						return _olligobber$proofcheck$SymbolJson$BinaryDecoded(
+							{symbol: w, propa: x, propb: y, wff: z});
+					}),
+				A2(_elm_lang$core$Json_Decode$field, 'symbol', _elm_lang$core$Json_Decode$string),
+				A2(_elm_lang$core$Json_Decode$field, 'propa', _elm_lang$core$Json_Decode$string),
+				A2(_elm_lang$core$Json_Decode$field, 'propb', _elm_lang$core$Json_Decode$string),
+				A2(_elm_lang$core$Json_Decode$field, 'definition', _elm_lang$core$Json_Decode$string)),
+			_1: {ctor: '[]'}
+		}
+	});
+var _olligobber$proofcheck$SymbolJson$fromjson = function (maps) {
+	return A2(
+		_elm_lang$core$Json_Decode$andThen,
+		_olligobber$proofcheck$SymbolJson$fromResult,
+		A2(
+			_elm_lang$core$Json_Decode$map,
+			_olligobber$proofcheck$SymbolJson$fromDecoded(maps),
+			_olligobber$proofcheck$SymbolJson$toDecoded));
+};
+var _olligobber$proofcheck$SymbolJson$allfromjson = A2(
+	_elm_lang$core$Json_Decode$andThen,
+	function (_p13) {
+		return _olligobber$proofcheck$SymbolJson$fromResult(
+			_olligobber$proofcheck$SymbolJson$allfromDecoded(_p13));
+	},
+	_elm_lang$core$Json_Decode$list(_olligobber$proofcheck$SymbolJson$toDecoded));
+
+var _olligobber$proofcheck$SequentJson$fromjson = function (maps) {
+	return A3(
+		_elm_lang$core$Json_Decode$map2,
+		_olligobber$proofcheck$Sequent$Sequent,
+		A2(
+			_elm_lang$core$Json_Decode$field,
+			'ante',
+			_elm_lang$core$Json_Decode$list(
+				_olligobber$proofcheck$WFFJson$fromjson(maps))),
+		A2(
+			_elm_lang$core$Json_Decode$field,
+			'conse',
+			_olligobber$proofcheck$WFFJson$fromjson(maps)));
+};
+var _olligobber$proofcheck$SequentJson$tojson = function (s) {
+	return _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'ante',
+				_1: _elm_lang$core$Json_Encode$list(
+					A2(_elm_lang$core$List$map, _olligobber$proofcheck$WFFJson$tojson, s.ante))
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'conse',
+					_1: _olligobber$proofcheck$WFFJson$tojson(s.conse)
+				},
+				_1: {ctor: '[]'}
+			}
+		});
+};
+
+var _olligobber$proofcheck$ProofJson$getAll = function (list) {
+	var _p0 = list;
+	if (_p0.ctor === '[]') {
+		return _elm_lang$core$Result$Ok(
+			{ctor: '[]'});
+	} else {
+		if (_p0._0.ctor === 'Err') {
+			return _elm_lang$core$Result$Err(_p0._0._0);
+		} else {
+			return A2(
+				_elm_lang$core$Result$map,
+				F2(
+					function (x, y) {
+						return {ctor: '::', _0: x, _1: y};
+					})(_p0._0._0),
+				_olligobber$proofcheck$ProofJson$getAll(_p0._1));
+		}
+	}
+};
+var _olligobber$proofcheck$ProofJson$mustBe = F2(
+	function (expected, result) {
+		return _elm_lang$core$Json_Decode$andThen(
+			function (val) {
+				return _elm_lang$core$Native_Utils.eq(val, expected) ? _elm_lang$core$Json_Decode$succeed(result) : _elm_lang$core$Json_Decode$fail('Unexpected value');
+			});
+	});
+var _olligobber$proofcheck$ProofJson$rulefromjson = _elm_lang$core$Json_Decode$oneOf(
+	{
+		ctor: '::',
+		_0: A3(_olligobber$proofcheck$ProofJson$mustBe, 'A', _olligobber$proofcheck$Proof$Assumption, _elm_lang$core$Json_Decode$string),
+		_1: {
+			ctor: '::',
+			_0: A3(_olligobber$proofcheck$ProofJson$mustBe, 'MP', _olligobber$proofcheck$Proof$ModusPonens, _elm_lang$core$Json_Decode$string),
+			_1: {
+				ctor: '::',
+				_0: A3(_olligobber$proofcheck$ProofJson$mustBe, 'MT', _olligobber$proofcheck$Proof$ModusTollens, _elm_lang$core$Json_Decode$string),
+				_1: {
+					ctor: '::',
+					_0: A3(_olligobber$proofcheck$ProofJson$mustBe, 'DN', _olligobber$proofcheck$Proof$DoubleNegation, _elm_lang$core$Json_Decode$string),
+					_1: {
+						ctor: '::',
+						_0: A3(_olligobber$proofcheck$ProofJson$mustBe, 'CP', _olligobber$proofcheck$Proof$ConditionalProof, _elm_lang$core$Json_Decode$string),
+						_1: {
+							ctor: '::',
+							_0: A3(_olligobber$proofcheck$ProofJson$mustBe, '&I', _olligobber$proofcheck$Proof$AndIntroduction, _elm_lang$core$Json_Decode$string),
+							_1: {
+								ctor: '::',
+								_0: A3(_olligobber$proofcheck$ProofJson$mustBe, '&E', _olligobber$proofcheck$Proof$AndElimination, _elm_lang$core$Json_Decode$string),
+								_1: {
+									ctor: '::',
+									_0: A3(_olligobber$proofcheck$ProofJson$mustBe, '|I', _olligobber$proofcheck$Proof$OrIntroduction, _elm_lang$core$Json_Decode$string),
+									_1: {
+										ctor: '::',
+										_0: A3(_olligobber$proofcheck$ProofJson$mustBe, '|E', _olligobber$proofcheck$Proof$OrElimination, _elm_lang$core$Json_Decode$string),
+										_1: {
+											ctor: '::',
+											_0: A3(_olligobber$proofcheck$ProofJson$mustBe, 'RAA', _olligobber$proofcheck$Proof$RAA, _elm_lang$core$Json_Decode$string),
+											_1: {
+												ctor: '::',
+												_0: A3(
+													_elm_lang$core$Json_Decode$map2,
+													F2(
+														function (x, y) {
+															return x(y);
+														}),
+													_elm_lang$core$Json_Decode$oneOf(
+														{
+															ctor: '::',
+															_0: A3(
+																_olligobber$proofcheck$ProofJson$mustBe,
+																'Def',
+																_olligobber$proofcheck$Proof$Definition,
+																A2(_elm_lang$core$Json_Decode$field, 'rule', _elm_lang$core$Json_Decode$string)),
+															_1: {
+																ctor: '::',
+																_0: A3(
+																	_olligobber$proofcheck$ProofJson$mustBe,
+																	'SI',
+																	_olligobber$proofcheck$Proof$Introduction,
+																	A2(_elm_lang$core$Json_Decode$field, 'rule', _elm_lang$core$Json_Decode$string)),
+																_1: {ctor: '[]'}
+															}
+														}),
+													A2(_elm_lang$core$Json_Decode$field, 'number', _elm_lang$core$Json_Decode$int)),
+												_1: {ctor: '[]'}
+											}
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	});
+var _olligobber$proofcheck$ProofJson$deductionfromjson = function (maps) {
+	return A4(
+		_elm_lang$core$Json_Decode$map3,
+		_olligobber$proofcheck$Proof$Deduction(
+			{ctor: '[]'}),
+		A2(
+			_elm_lang$core$Json_Decode$field,
+			'formula',
+			_olligobber$proofcheck$WFFJson$fromjson(maps)),
+		A2(_elm_lang$core$Json_Decode$field, 'rule', _olligobber$proofcheck$ProofJson$rulefromjson),
+		A2(
+			_elm_lang$core$Json_Decode$field,
+			'references',
+			_elm_lang$core$Json_Decode$list(_elm_lang$core$Json_Decode$int)));
+};
+var _olligobber$proofcheck$ProofJson$ruletojson = function (rule) {
+	var _p1 = rule;
+	switch (_p1.ctor) {
+		case 'Assumption':
+			return _elm_lang$core$Json_Encode$string('A');
+		case 'ModusPonens':
+			return _elm_lang$core$Json_Encode$string('MP');
+		case 'ModusTollens':
+			return _elm_lang$core$Json_Encode$string('MT');
+		case 'DoubleNegation':
+			return _elm_lang$core$Json_Encode$string('DN');
+		case 'ConditionalProof':
+			return _elm_lang$core$Json_Encode$string('CP');
+		case 'AndIntroduction':
+			return _elm_lang$core$Json_Encode$string('&I');
+		case 'AndElimination':
+			return _elm_lang$core$Json_Encode$string('&E');
+		case 'OrIntroduction':
+			return _elm_lang$core$Json_Encode$string('|I');
+		case 'OrElimination':
+			return _elm_lang$core$Json_Encode$string('|E');
+		case 'RAA':
+			return _elm_lang$core$Json_Encode$string('RAA');
+		case 'Definition':
+			return _elm_lang$core$Json_Encode$object(
+				{
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'rule',
+						_1: _elm_lang$core$Json_Encode$string('Def')
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'number',
+							_1: _elm_lang$core$Json_Encode$int(_p1._0)
+						},
+						_1: {ctor: '[]'}
+					}
+				});
+		default:
+			return _elm_lang$core$Json_Encode$object(
+				{
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'rule',
+						_1: _elm_lang$core$Json_Encode$string('SI')
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'number',
+							_1: _elm_lang$core$Json_Encode$int(_p1._0)
+						},
+						_1: {ctor: '[]'}
+					}
+				});
+	}
+};
+var _olligobber$proofcheck$ProofJson$deductiontojson = function (deduction) {
+	return _elm_lang$core$Json_Encode$object(
+		{
+			ctor: '::',
+			_0: {
+				ctor: '_Tuple2',
+				_0: 'formula',
+				_1: _olligobber$proofcheck$WFFJson$tojson(deduction.deduction)
+			},
+			_1: {
+				ctor: '::',
+				_0: {
+					ctor: '_Tuple2',
+					_0: 'rule',
+					_1: _olligobber$proofcheck$ProofJson$ruletojson(deduction.rule)
+				},
+				_1: {
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'references',
+						_1: _elm_lang$core$Json_Encode$list(
+							A2(_elm_lang$core$List$map, _elm_lang$core$Json_Encode$int, deduction.reasons))
+					},
+					_1: {ctor: '[]'}
+				}
+			}
+		});
+};
+var _olligobber$proofcheck$ProofJson$tojson = function (proof) {
+	var _p2 = _olligobber$proofcheck$ProofJson$getAll(
+		A2(_elm_lang$core$List$map, _olligobber$proofcheck$SymbolJson$tojson, proof.symbols));
+	if (_p2.ctor === 'Err') {
+		return _elm_lang$core$Result$Err(_p2._0);
+	} else {
+		return _elm_lang$core$Result$Ok(
+			_elm_lang$core$Json_Encode$object(
+				{
+					ctor: '::',
+					_0: {
+						ctor: '_Tuple2',
+						_0: 'symbols',
+						_1: _elm_lang$core$Json_Encode$list(_p2._0)
+					},
+					_1: {
+						ctor: '::',
+						_0: {
+							ctor: '_Tuple2',
+							_0: 'sequents',
+							_1: _elm_lang$core$Json_Encode$list(
+								A2(_elm_lang$core$List$map, _olligobber$proofcheck$SequentJson$tojson, proof.sequents))
+						},
+						_1: {
+							ctor: '::',
+							_0: {
+								ctor: '_Tuple2',
+								_0: 'lines',
+								_1: _elm_lang$core$Json_Encode$list(
+									A2(_elm_lang$core$List$map, _olligobber$proofcheck$ProofJson$deductiontojson, proof.lines))
+							},
+							_1: {ctor: '[]'}
+						}
+					}
+				}));
+	}
+};
+var _olligobber$proofcheck$ProofJson$fromResult = function (x) {
+	var _p3 = x;
+	if (_p3.ctor === 'Ok') {
+		return _elm_lang$core$Json_Decode$succeed(_p3._0);
+	} else {
+		return _elm_lang$core$Json_Decode$fail(_p3._0);
+	}
+};
+var _olligobber$proofcheck$ProofJson$fromjson = A2(
+	_elm_lang$core$Json_Decode$andThen,
+	function (symbols) {
+		var maps = _olligobber$proofcheck$CustomSymbol$makeMap(symbols);
+		return A2(
+			_elm_lang$core$Json_Decode$andThen,
+			_olligobber$proofcheck$ProofJson$fromResult,
+			A3(
+				_elm_lang$core$Json_Decode$map2,
+				F2(
+					function (x, y) {
+						return A4(_olligobber$proofcheck$Proof$addAll, symbols, x, y, _olligobber$proofcheck$Proof$empty);
+					}),
+				A2(
+					_elm_lang$core$Json_Decode$field,
+					'sequents',
+					_elm_lang$core$Json_Decode$list(
+						_olligobber$proofcheck$SequentJson$fromjson(maps))),
+				A2(
+					_elm_lang$core$Json_Decode$field,
+					'lines',
+					_elm_lang$core$Json_Decode$list(
+						_olligobber$proofcheck$ProofJson$deductionfromjson(maps)))));
+	},
+	A2(_elm_lang$core$Json_Decode$field, 'symbols', _olligobber$proofcheck$SymbolJson$allfromjson));
+
+var _olligobber$proofcheck$Main$imexText = function (model) {
+	var _p0 = {
+		ctor: '_Tuple2',
+		_0: _olligobber$proofcheck$ProofJson$tojson(model.proof),
+		_1: model.importText
+	};
+	if (_p0._1.ctor === 'Just') {
+		return _p0._1._0;
+	} else {
+		if (_p0._0.ctor === 'Err') {
+			return A2(_elm_lang$core$Basics_ops['++'], 'Error exporting proof: ', _p0._0._0);
+		} else {
+			return A2(_elm_lang$core$Json_Encode$encode, 0, _p0._0._0);
+		}
+	}
+};
+var _olligobber$proofcheck$Main$Model = F9(
+	function (a, b, c, d, e, f, g, h, i) {
+		return {proof: a, history: b, future: c, latestError: d, newLine: e, newSeq: f, newSym: g, activeWindow: h, importText: i};
+	});
+var _olligobber$proofcheck$Main$Import = {ctor: 'Import'};
+var _olligobber$proofcheck$Main$NewImport = function (a) {
+	return {ctor: 'NewImport', _0: a};
+};
 var _olligobber$proofcheck$Main$Open = function (a) {
 	return {ctor: 'Open', _0: a};
 };
@@ -13157,6 +13728,7 @@ var _olligobber$proofcheck$Main$proofBox = function (model) {
 			}
 		});
 };
+var _olligobber$proofcheck$Main$ImExWindow = {ctor: 'ImExWindow'};
 var _olligobber$proofcheck$Main$SymbolWindow = {ctor: 'SymbolWindow'};
 var _olligobber$proofcheck$Main$SequentWindow = {ctor: 'SequentWindow'};
 var _olligobber$proofcheck$Main$menu = function (model) {
@@ -13322,7 +13894,31 @@ var _olligobber$proofcheck$Main$menu = function (model) {
 									_0: _elm_lang$html$Html$text('Sequents'),
 									_1: {ctor: '[]'}
 								}),
-							_1: {ctor: '[]'}
+							_1: {
+								ctor: '::',
+								_0: A2(
+									_elm_lang$html$Html$div,
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$class('menu-button'),
+										_1: {
+											ctor: '::',
+											_0: _elm_lang$html$Html_Attributes$id('import-export-window-button'),
+											_1: {
+												ctor: '::',
+												_0: _elm_lang$html$Html_Events$onClick(
+													_olligobber$proofcheck$Main$Open(_olligobber$proofcheck$Main$ImExWindow)),
+												_1: {ctor: '[]'}
+											}
+										}
+									},
+									{
+										ctor: '::',
+										_0: _elm_lang$html$Html$text('Import/Export'),
+										_1: {ctor: '[]'}
+									}),
+								_1: {ctor: '[]'}
+							}
 						}
 					}
 				}
@@ -13338,45 +13934,21 @@ var _olligobber$proofcheck$Main$start = {
 	newLine: _olligobber$proofcheck$ProofUI$blank,
 	newSeq: _olligobber$proofcheck$SequentUI$blank,
 	newSym: _olligobber$proofcheck$SymbolUI$blank,
-	activeWindow: _olligobber$proofcheck$Main$NoWindow
+	activeWindow: _olligobber$proofcheck$Main$NoWindow,
+	importText: _elm_lang$core$Maybe$Nothing
 };
 var _olligobber$proofcheck$Main$update = F2(
 	function (msg, model) {
-		var _p0 = msg;
-		switch (_p0.ctor) {
+		var _p1 = msg;
+		switch (_p1.ctor) {
 			case 'Lines':
 				return _elm_lang$core$Native_Utils.update(
 					model,
 					{
-						newLine: A2(_olligobber$proofcheck$ProofUI$updateNewLine, _p0._0, model.newLine)
+						newLine: A2(_olligobber$proofcheck$ProofUI$updateNewLine, _p1._0, model.newLine)
 					});
 			case 'SubmitLine':
-				var _p1 = A2(_olligobber$proofcheck$ProofUI$submitLine, model.proof, model.newLine);
-				if (_p1.ctor === 'Err') {
-					return _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							latestError: _elm_lang$core$Maybe$Just(_p1._0)
-						});
-				} else {
-					return _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							history: {ctor: '::', _0: model.proof, _1: model.history},
-							future: {ctor: '[]'},
-							proof: _p1._0,
-							latestError: _elm_lang$core$Maybe$Nothing,
-							newLine: _olligobber$proofcheck$ProofUI$blank
-						});
-				}
-			case 'NewSeq':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						newSeq: A2(_olligobber$proofcheck$SequentUI$updateSeq, model.newSeq, _p0._0)
-					});
-			case 'AddSequent':
-				var _p2 = A2(_olligobber$proofcheck$SequentUI$submitSeq, model.proof, model.newSeq);
+				var _p2 = A2(_olligobber$proofcheck$ProofUI$submitLine, model.proof, model.newLine);
 				if (_p2.ctor === 'Err') {
 					return _elm_lang$core$Native_Utils.update(
 						model,
@@ -13389,19 +13961,20 @@ var _olligobber$proofcheck$Main$update = F2(
 						{
 							history: {ctor: '::', _0: model.proof, _1: model.history},
 							future: {ctor: '[]'},
-							proof: A2(_olligobber$proofcheck$Proof$addSequent, _p2._0, model.proof),
+							proof: _p2._0,
 							latestError: _elm_lang$core$Maybe$Nothing,
-							newSeq: _olligobber$proofcheck$SequentUI$blank
+							newLine: _olligobber$proofcheck$ProofUI$blank,
+							importText: _elm_lang$core$Maybe$Nothing
 						});
 				}
-			case 'NewSym':
+			case 'NewSeq':
 				return _elm_lang$core$Native_Utils.update(
 					model,
 					{
-						newSym: A2(_olligobber$proofcheck$SymbolUI$updateSym, model.newSym, _p0._0)
+						newSeq: A2(_olligobber$proofcheck$SequentUI$updateSeq, model.newSeq, _p1._0)
 					});
-			case 'AddSymbol':
-				var _p3 = A2(_olligobber$proofcheck$SymbolUI$submitSym, model.proof, model.newSym);
+			case 'AddSequent':
+				var _p3 = A2(_olligobber$proofcheck$SequentUI$submitSeq, model.proof, model.newSeq);
 				if (_p3.ctor === 'Err') {
 					return _elm_lang$core$Native_Utils.update(
 						model,
@@ -13414,9 +13987,36 @@ var _olligobber$proofcheck$Main$update = F2(
 						{
 							history: {ctor: '::', _0: model.proof, _1: model.history},
 							future: {ctor: '[]'},
-							proof: A2(_olligobber$proofcheck$Proof$addSymbol, _p3._0, model.proof),
+							proof: A2(_olligobber$proofcheck$Proof$addSequent, _p3._0, model.proof),
 							latestError: _elm_lang$core$Maybe$Nothing,
-							newSym: _olligobber$proofcheck$SymbolUI$blank
+							newSeq: _olligobber$proofcheck$SequentUI$blank,
+							importText: _elm_lang$core$Maybe$Nothing
+						});
+				}
+			case 'NewSym':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						newSym: A2(_olligobber$proofcheck$SymbolUI$updateSym, model.newSym, _p1._0)
+					});
+			case 'AddSymbol':
+				var _p4 = A2(_olligobber$proofcheck$SymbolUI$submitSym, model.proof, model.newSym);
+				if (_p4.ctor === 'Err') {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							latestError: _elm_lang$core$Maybe$Just(_p4._0)
+						});
+				} else {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							history: {ctor: '::', _0: model.proof, _1: model.history},
+							future: {ctor: '[]'},
+							proof: A2(_olligobber$proofcheck$Proof$addSymbol, _p4._0, model.proof),
+							latestError: _elm_lang$core$Maybe$Nothing,
+							newSym: _olligobber$proofcheck$SymbolUI$blank,
+							importText: _elm_lang$core$Maybe$Nothing
 						});
 				}
 			case 'New':
@@ -13426,35 +14026,65 @@ var _olligobber$proofcheck$Main$update = F2(
 						history: {ctor: '::', _0: model.proof, _1: model.history}
 					});
 			case 'Undo':
-				var _p4 = model.history;
-				if (_p4.ctor === '[]') {
-					return model;
-				} else {
-					return _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							history: _p4._1,
-							future: {ctor: '::', _0: model.proof, _1: model.future},
-							proof: _p4._0
-						});
-				}
-			case 'Redo':
-				var _p5 = model.future;
+				var _p5 = model.history;
 				if (_p5.ctor === '[]') {
 					return model;
 				} else {
 					return _elm_lang$core$Native_Utils.update(
 						model,
 						{
-							history: {ctor: '::', _0: model.proof, _1: model.history},
-							future: _p5._1,
-							proof: _p5._0
+							history: _p5._1,
+							future: {ctor: '::', _0: model.proof, _1: model.future},
+							proof: _p5._0,
+							importText: _elm_lang$core$Maybe$Nothing
 						});
 				}
-			default:
+			case 'Redo':
+				var _p6 = model.future;
+				if (_p6.ctor === '[]') {
+					return model;
+				} else {
+					return _elm_lang$core$Native_Utils.update(
+						model,
+						{
+							history: {ctor: '::', _0: model.proof, _1: model.history},
+							future: _p6._1,
+							proof: _p6._0,
+							importText: _elm_lang$core$Maybe$Nothing
+						});
+				}
+			case 'Open':
 				return _elm_lang$core$Native_Utils.update(
 					model,
-					{activeWindow: _p0._0});
+					{activeWindow: _p1._0});
+			case 'NewImport':
+				return _elm_lang$core$Native_Utils.update(
+					model,
+					{
+						importText: _elm_lang$core$Maybe$Just(_p1._0)
+					});
+			default:
+				var _p7 = model.importText;
+				if (_p7.ctor === 'Nothing') {
+					return model;
+				} else {
+					var _p8 = A2(_elm_lang$core$Json_Decode$decodeString, _olligobber$proofcheck$ProofJson$fromjson, _p7._0);
+					if (_p8.ctor === 'Err') {
+						return _elm_lang$core$Native_Utils.update(
+							model,
+							{
+								latestError: _elm_lang$core$Maybe$Just(
+									A2(_elm_lang$core$Basics_ops['++'], 'Error importing proof: ', _p8._0))
+							});
+					} else {
+						return _elm_lang$core$Native_Utils.update(
+							_olligobber$proofcheck$Main$start,
+							{
+								history: {ctor: '::', _0: model.proof, _1: model.history},
+								proof: _p8._0
+							});
+					}
+				}
 		}
 	});
 var _olligobber$proofcheck$Main$closeButton = A2(
@@ -13562,15 +14192,83 @@ var _olligobber$proofcheck$Main$symbolBox = function (model) {
 			}
 		});
 };
+var _olligobber$proofcheck$Main$imexBox = function (model) {
+	return A2(
+		_elm_lang$html$Html$div,
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html_Attributes$class('floating'),
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$id('import-export-box'),
+				_1: {ctor: '[]'}
+			}
+		},
+		{
+			ctor: '::',
+			_0: _elm_lang$html$Html$text('Copy this to save proof, or paste here to import proof'),
+			_1: {
+				ctor: '::',
+				_0: A2(
+					_elm_lang$html$Html$textarea,
+					{
+						ctor: '::',
+						_0: _elm_lang$html$Html_Events$onInput(_olligobber$proofcheck$Main$NewImport),
+						_1: {
+							ctor: '::',
+							_0: _elm_lang$html$Html_Attributes$id('json-input'),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$value(
+									_olligobber$proofcheck$Main$imexText(model)),
+								_1: {ctor: '[]'}
+							}
+						}
+					},
+					{ctor: '[]'}),
+				_1: {
+					ctor: '::',
+					_0: A2(
+						_elm_lang$html$Html$button,
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html_Events$onClick(_olligobber$proofcheck$Main$Import),
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$id('import-button'),
+								_1: {
+									ctor: '::',
+									_0: _elm_lang$html$Html_Attributes$disabled(
+										_elm_lang$core$Native_Utils.eq(model.importText, _elm_lang$core$Maybe$Nothing)),
+									_1: {ctor: '[]'}
+								}
+							}
+						},
+						{
+							ctor: '::',
+							_0: _elm_lang$html$Html$text('Import'),
+							_1: {ctor: '[]'}
+						}),
+					_1: {
+						ctor: '::',
+						_0: _olligobber$proofcheck$Main$closeButton,
+						_1: {ctor: '[]'}
+					}
+				}
+			}
+		});
+};
 var _olligobber$proofcheck$Main$activeBox = function (model) {
-	var _p6 = model.activeWindow;
-	switch (_p6.ctor) {
+	var _p9 = model.activeWindow;
+	switch (_p9.ctor) {
 		case 'NoWindow':
 			return _elm_lang$html$Html$text('');
 		case 'SequentWindow':
 			return _olligobber$proofcheck$Main$sequentBox(model);
-		default:
+		case 'SymbolWindow':
 			return _olligobber$proofcheck$Main$symbolBox(model);
+		default:
+			return _olligobber$proofcheck$Main$imexBox(model);
 	}
 };
 var _olligobber$proofcheck$Main$view = function (model) {
@@ -13593,8 +14291,8 @@ var _olligobber$proofcheck$Main$view = function (model) {
 					_1: {
 						ctor: '::',
 						_0: function () {
-							var _p7 = model.latestError;
-							if (_p7.ctor === 'Nothing') {
+							var _p10 = model.latestError;
+							if (_p10.ctor === 'Nothing') {
 								return _elm_lang$html$Html$text('');
 							} else {
 								return A2(
@@ -13606,7 +14304,7 @@ var _olligobber$proofcheck$Main$view = function (model) {
 									},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(_p7._0),
+										_0: _elm_lang$html$Html$text(_p10._0),
 										_1: {ctor: '[]'}
 									});
 							}
