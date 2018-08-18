@@ -13650,19 +13650,40 @@ var _olligobber$proofcheck$ProofJson$fromjson = A2(
 	},
 	A2(_elm_lang$core$Json_Decode$field, 'symbols', _olligobber$proofcheck$SymbolJson$allfromjson));
 
+var _olligobber$proofcheck$Ports$storeProof = _elm_lang$core$Native_Platform.outgoingPort(
+	'storeProof',
+	function (v) {
+		return v;
+	});
+
+var _olligobber$proofcheck$Main$noMsg = function (model) {
+	return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+};
+var _olligobber$proofcheck$Main$store = function (model) {
+	var _p0 = _olligobber$proofcheck$ProofJson$tojson(model.proof);
+	if (_p0.ctor === 'Err') {
+		return {ctor: '_Tuple2', _0: model, _1: _elm_lang$core$Platform_Cmd$none};
+	} else {
+		return {
+			ctor: '_Tuple2',
+			_0: model,
+			_1: _olligobber$proofcheck$Ports$storeProof(_p0._0)
+		};
+	}
+};
 var _olligobber$proofcheck$Main$imexText = function (model) {
-	var _p0 = {
+	var _p1 = {
 		ctor: '_Tuple2',
 		_0: _olligobber$proofcheck$ProofJson$tojson(model.proof),
 		_1: model.importText
 	};
-	if (_p0._1.ctor === 'Just') {
-		return _p0._1._0;
+	if (_p1._1.ctor === 'Just') {
+		return _p1._1._0;
 	} else {
-		if (_p0._0.ctor === 'Err') {
-			return A2(_elm_lang$core$Basics_ops['++'], 'Error exporting proof: ', _p0._0._0);
+		if (_p1._0.ctor === 'Err') {
+			return A2(_elm_lang$core$Basics_ops['++'], 'Error exporting proof: ', _p1._0._0);
 		} else {
-			return A2(_elm_lang$core$Json_Encode$encode, 0, _p0._0._0);
+			return A2(_elm_lang$core$Json_Encode$encode, 0, _p1._0._0);
 		}
 	}
 };
@@ -13926,7 +13947,7 @@ var _olligobber$proofcheck$Main$menu = function (model) {
 		});
 };
 var _olligobber$proofcheck$Main$NoWindow = {ctor: 'NoWindow'};
-var _olligobber$proofcheck$Main$start = {
+var _olligobber$proofcheck$Main$emptyModel = {
 	proof: _olligobber$proofcheck$Proof$empty,
 	history: {ctor: '[]'},
 	future: {ctor: '[]'},
@@ -13937,152 +13958,190 @@ var _olligobber$proofcheck$Main$start = {
 	activeWindow: _olligobber$proofcheck$Main$NoWindow,
 	importText: _elm_lang$core$Maybe$Nothing
 };
+var _olligobber$proofcheck$Main$start = function (flag) {
+	var _p2 = flag;
+	if (_p2.ctor === 'Nothing') {
+		return _olligobber$proofcheck$Main$noMsg(_olligobber$proofcheck$Main$emptyModel);
+	} else {
+		var _p3 = A2(_elm_lang$core$Json_Decode$decodeValue, _olligobber$proofcheck$ProofJson$fromjson, _p2._0);
+		if (_p3.ctor === 'Err') {
+			return _olligobber$proofcheck$Main$noMsg(
+				_elm_lang$core$Native_Utils.update(
+					_olligobber$proofcheck$Main$emptyModel,
+					{
+						latestError: _elm_lang$core$Maybe$Just(
+							A2(_elm_lang$core$Basics_ops['++'], 'Error loading previous proof: ', _p3._0))
+					}));
+		} else {
+			return _olligobber$proofcheck$Main$noMsg(
+				_elm_lang$core$Native_Utils.update(
+					_olligobber$proofcheck$Main$emptyModel,
+					{proof: _p3._0}));
+		}
+	}
+};
 var _olligobber$proofcheck$Main$update = F2(
 	function (msg, model) {
-		var _p1 = msg;
-		switch (_p1.ctor) {
+		var _p4 = msg;
+		switch (_p4.ctor) {
 			case 'Lines':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						newLine: A2(_olligobber$proofcheck$ProofUI$updateNewLine, _p1._0, model.newLine)
-					});
+				return _olligobber$proofcheck$Main$noMsg(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							newLine: A2(_olligobber$proofcheck$ProofUI$updateNewLine, _p4._0, model.newLine)
+						}));
 			case 'SubmitLine':
-				var _p2 = A2(_olligobber$proofcheck$ProofUI$submitLine, model.proof, model.newLine);
-				if (_p2.ctor === 'Err') {
-					return _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							latestError: _elm_lang$core$Maybe$Just(_p2._0)
-						});
-				} else {
-					return _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							history: {ctor: '::', _0: model.proof, _1: model.history},
-							future: {ctor: '[]'},
-							proof: _p2._0,
-							latestError: _elm_lang$core$Maybe$Nothing,
-							newLine: _olligobber$proofcheck$ProofUI$blank,
-							importText: _elm_lang$core$Maybe$Nothing
-						});
-				}
-			case 'NewSeq':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						newSeq: A2(_olligobber$proofcheck$SequentUI$updateSeq, model.newSeq, _p1._0)
-					});
-			case 'AddSequent':
-				var _p3 = A2(_olligobber$proofcheck$SequentUI$submitSeq, model.proof, model.newSeq);
-				if (_p3.ctor === 'Err') {
-					return _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							latestError: _elm_lang$core$Maybe$Just(_p3._0)
-						});
-				} else {
-					return _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							history: {ctor: '::', _0: model.proof, _1: model.history},
-							future: {ctor: '[]'},
-							proof: A2(_olligobber$proofcheck$Proof$addSequent, _p3._0, model.proof),
-							latestError: _elm_lang$core$Maybe$Nothing,
-							newSeq: _olligobber$proofcheck$SequentUI$blank,
-							importText: _elm_lang$core$Maybe$Nothing
-						});
-				}
-			case 'NewSym':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						newSym: A2(_olligobber$proofcheck$SymbolUI$updateSym, model.newSym, _p1._0)
-					});
-			case 'AddSymbol':
-				var _p4 = A2(_olligobber$proofcheck$SymbolUI$submitSym, model.proof, model.newSym);
-				if (_p4.ctor === 'Err') {
-					return _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							latestError: _elm_lang$core$Maybe$Just(_p4._0)
-						});
-				} else {
-					return _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							history: {ctor: '::', _0: model.proof, _1: model.history},
-							future: {ctor: '[]'},
-							proof: A2(_olligobber$proofcheck$Proof$addSymbol, _p4._0, model.proof),
-							latestError: _elm_lang$core$Maybe$Nothing,
-							newSym: _olligobber$proofcheck$SymbolUI$blank,
-							importText: _elm_lang$core$Maybe$Nothing
-						});
-				}
-			case 'New':
-				return _elm_lang$core$Native_Utils.eq(model.proof, _olligobber$proofcheck$Proof$empty) ? model : _elm_lang$core$Native_Utils.update(
-					_olligobber$proofcheck$Main$start,
-					{
-						history: {ctor: '::', _0: model.proof, _1: model.history}
-					});
-			case 'Undo':
-				var _p5 = model.history;
-				if (_p5.ctor === '[]') {
-					return model;
-				} else {
-					return _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							history: _p5._1,
-							future: {ctor: '::', _0: model.proof, _1: model.future},
-							proof: _p5._0,
-							importText: _elm_lang$core$Maybe$Nothing
-						});
-				}
-			case 'Redo':
-				var _p6 = model.future;
-				if (_p6.ctor === '[]') {
-					return model;
-				} else {
-					return _elm_lang$core$Native_Utils.update(
-						model,
-						{
-							history: {ctor: '::', _0: model.proof, _1: model.history},
-							future: _p6._1,
-							proof: _p6._0,
-							importText: _elm_lang$core$Maybe$Nothing
-						});
-				}
-			case 'Open':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{activeWindow: _p1._0});
-			case 'NewImport':
-				return _elm_lang$core$Native_Utils.update(
-					model,
-					{
-						importText: _elm_lang$core$Maybe$Just(_p1._0)
-					});
-			default:
-				var _p7 = model.importText;
-				if (_p7.ctor === 'Nothing') {
-					return model;
-				} else {
-					var _p8 = A2(_elm_lang$core$Json_Decode$decodeString, _olligobber$proofcheck$ProofJson$fromjson, _p7._0);
-					if (_p8.ctor === 'Err') {
-						return _elm_lang$core$Native_Utils.update(
+				var _p5 = A2(_olligobber$proofcheck$ProofUI$submitLine, model.proof, model.newLine);
+				if (_p5.ctor === 'Err') {
+					return _olligobber$proofcheck$Main$noMsg(
+						_elm_lang$core$Native_Utils.update(
 							model,
 							{
-								latestError: _elm_lang$core$Maybe$Just(
-									A2(_elm_lang$core$Basics_ops['++'], 'Error importing proof: ', _p8._0))
-							});
-					} else {
-						return _elm_lang$core$Native_Utils.update(
-							_olligobber$proofcheck$Main$start,
+								latestError: _elm_lang$core$Maybe$Just(_p5._0)
+							}));
+				} else {
+					return _olligobber$proofcheck$Main$store(
+						_elm_lang$core$Native_Utils.update(
+							model,
 							{
 								history: {ctor: '::', _0: model.proof, _1: model.history},
-								proof: _p8._0
-							});
+								future: {ctor: '[]'},
+								proof: _p5._0,
+								latestError: _elm_lang$core$Maybe$Nothing,
+								newLine: _olligobber$proofcheck$ProofUI$blank,
+								importText: _elm_lang$core$Maybe$Nothing
+							}));
+				}
+			case 'NewSeq':
+				return _olligobber$proofcheck$Main$noMsg(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							newSeq: A2(_olligobber$proofcheck$SequentUI$updateSeq, model.newSeq, _p4._0)
+						}));
+			case 'AddSequent':
+				var _p6 = A2(_olligobber$proofcheck$SequentUI$submitSeq, model.proof, model.newSeq);
+				if (_p6.ctor === 'Err') {
+					return _olligobber$proofcheck$Main$noMsg(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								latestError: _elm_lang$core$Maybe$Just(_p6._0)
+							}));
+				} else {
+					return _olligobber$proofcheck$Main$store(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								history: {ctor: '::', _0: model.proof, _1: model.history},
+								future: {ctor: '[]'},
+								proof: A2(_olligobber$proofcheck$Proof$addSequent, _p6._0, model.proof),
+								latestError: _elm_lang$core$Maybe$Nothing,
+								newSeq: _olligobber$proofcheck$SequentUI$blank,
+								importText: _elm_lang$core$Maybe$Nothing
+							}));
+				}
+			case 'NewSym':
+				return _olligobber$proofcheck$Main$noMsg(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							newSym: A2(_olligobber$proofcheck$SymbolUI$updateSym, model.newSym, _p4._0)
+						}));
+			case 'AddSymbol':
+				var _p7 = A2(_olligobber$proofcheck$SymbolUI$submitSym, model.proof, model.newSym);
+				if (_p7.ctor === 'Err') {
+					return _olligobber$proofcheck$Main$noMsg(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								latestError: _elm_lang$core$Maybe$Just(_p7._0)
+							}));
+				} else {
+					return _olligobber$proofcheck$Main$store(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								history: {ctor: '::', _0: model.proof, _1: model.history},
+								future: {ctor: '[]'},
+								proof: A2(_olligobber$proofcheck$Proof$addSymbol, _p7._0, model.proof),
+								latestError: _elm_lang$core$Maybe$Nothing,
+								newSym: _olligobber$proofcheck$SymbolUI$blank,
+								importText: _elm_lang$core$Maybe$Nothing
+							}));
+				}
+			case 'New':
+				return _elm_lang$core$Native_Utils.eq(model.proof, _olligobber$proofcheck$Proof$empty) ? _olligobber$proofcheck$Main$noMsg(model) : _olligobber$proofcheck$Main$noMsg(
+					_elm_lang$core$Native_Utils.update(
+						_olligobber$proofcheck$Main$emptyModel,
+						{
+							history: {ctor: '::', _0: model.proof, _1: model.history}
+						}));
+			case 'Undo':
+				var _p8 = model.history;
+				if (_p8.ctor === '[]') {
+					return _olligobber$proofcheck$Main$noMsg(model);
+				} else {
+					return _olligobber$proofcheck$Main$store(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								history: _p8._1,
+								future: {ctor: '::', _0: model.proof, _1: model.future},
+								proof: _p8._0,
+								importText: _elm_lang$core$Maybe$Nothing
+							}));
+				}
+			case 'Redo':
+				var _p9 = model.future;
+				if (_p9.ctor === '[]') {
+					return _olligobber$proofcheck$Main$noMsg(model);
+				} else {
+					return _olligobber$proofcheck$Main$store(
+						_elm_lang$core$Native_Utils.update(
+							model,
+							{
+								history: {ctor: '::', _0: model.proof, _1: model.history},
+								future: _p9._1,
+								proof: _p9._0,
+								importText: _elm_lang$core$Maybe$Nothing
+							}));
+				}
+			case 'Open':
+				return _olligobber$proofcheck$Main$noMsg(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{activeWindow: _p4._0}));
+			case 'NewImport':
+				return _olligobber$proofcheck$Main$noMsg(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{
+							importText: _elm_lang$core$Maybe$Just(_p4._0)
+						}));
+			default:
+				var _p10 = model.importText;
+				if (_p10.ctor === 'Nothing') {
+					return _olligobber$proofcheck$Main$noMsg(model);
+				} else {
+					var _p11 = A2(_elm_lang$core$Json_Decode$decodeString, _olligobber$proofcheck$ProofJson$fromjson, _p10._0);
+					if (_p11.ctor === 'Err') {
+						return _olligobber$proofcheck$Main$noMsg(
+							_elm_lang$core$Native_Utils.update(
+								model,
+								{
+									latestError: _elm_lang$core$Maybe$Just(
+										A2(_elm_lang$core$Basics_ops['++'], 'Error importing proof: ', _p11._0))
+								}));
+					} else {
+						return _olligobber$proofcheck$Main$store(
+							_elm_lang$core$Native_Utils.update(
+								_olligobber$proofcheck$Main$emptyModel,
+								{
+									history: {ctor: '::', _0: model.proof, _1: model.history},
+									proof: _p11._0
+								}));
 					}
 				}
 		}
@@ -14259,8 +14318,8 @@ var _olligobber$proofcheck$Main$imexBox = function (model) {
 		});
 };
 var _olligobber$proofcheck$Main$activeBox = function (model) {
-	var _p9 = model.activeWindow;
-	switch (_p9.ctor) {
+	var _p12 = model.activeWindow;
+	switch (_p12.ctor) {
 		case 'NoWindow':
 			return _elm_lang$html$Html$text('');
 		case 'SequentWindow':
@@ -14291,8 +14350,8 @@ var _olligobber$proofcheck$Main$view = function (model) {
 					_1: {
 						ctor: '::',
 						_0: function () {
-							var _p10 = model.latestError;
-							if (_p10.ctor === 'Nothing') {
+							var _p13 = model.latestError;
+							if (_p13.ctor === 'Nothing') {
 								return _elm_lang$html$Html$text('');
 							} else {
 								return A2(
@@ -14304,7 +14363,7 @@ var _olligobber$proofcheck$Main$view = function (model) {
 									},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(_p10._0),
+										_0: _elm_lang$html$Html$text(_p13._0),
 										_1: {ctor: '[]'}
 									});
 							}
@@ -14315,8 +14374,23 @@ var _olligobber$proofcheck$Main$view = function (model) {
 			}
 		});
 };
-var _olligobber$proofcheck$Main$main = _elm_lang$html$Html$beginnerProgram(
-	{model: _olligobber$proofcheck$Main$start, view: _olligobber$proofcheck$Main$view, update: _olligobber$proofcheck$Main$update})();
+var _olligobber$proofcheck$Main$main = _elm_lang$html$Html$programWithFlags(
+	{
+		init: _olligobber$proofcheck$Main$start,
+		view: _olligobber$proofcheck$Main$view,
+		update: _olligobber$proofcheck$Main$update,
+		subscriptions: _elm_lang$core$Basics$always(_elm_lang$core$Platform_Sub$none)
+	})(
+	_elm_lang$core$Json_Decode$oneOf(
+		{
+			ctor: '::',
+			_0: _elm_lang$core$Json_Decode$null(_elm_lang$core$Maybe$Nothing),
+			_1: {
+				ctor: '::',
+				_0: A2(_elm_lang$core$Json_Decode$map, _elm_lang$core$Maybe$Just, _elm_lang$core$Json_Decode$value),
+				_1: {ctor: '[]'}
+			}
+		}));
 
 var Elm = {};
 Elm['Main'] = Elm['Main'] || {};

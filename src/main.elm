@@ -2,8 +2,8 @@ import Html exposing (Html, div, text, button, span, textarea)
 import Html.Attributes exposing (id, class, disabled, classList, value)
 import Html.Events exposing (onClick, onInput)
 
-import Json.Encode exposing (encode)
-import Json.Decode exposing (decodeString)
+import Json.Encode exposing (encode, Value)
+import Json.Decode exposing (decodeString, decodeValue)
 
 import Proof exposing (Proof, DeductionRule(..), empty, addSequent, addSymbol)
 import ProofUI exposing
@@ -13,12 +13,14 @@ import SequentUI exposing
 import SymbolUI exposing
     (NewSymbol, SymbolMsg, blank, updateSym, renderSymbols, submitSym)
 import ProofJson exposing (..)
+import Ports exposing (..)
 
-main : Program Never Model Msg
-main = Html.beginnerProgram
-    { model = start
+main : Program (Maybe Value) Model Msg
+main = Html.programWithFlags
+    { init = start
     , view = view
     , update = update
+    , subscriptions = always Sub.none
     }
 
 type alias Model =
@@ -33,8 +35,8 @@ type alias Model =
     , importText : Maybe String
     }
 
-start : Model
-start =
+emptyModel : Model
+emptyModel =
     { proof = empty
     , history = []
     , future = []
@@ -45,6 +47,19 @@ start =
     , activeWindow = NoWindow
     , importText = Nothing
     }
+
+start : Maybe Value -> (Model, Cmd Msg)
+start flag = case flag of
+    Nothing -> noMsg emptyModel
+    Just val -> case decodeValue fromjson val of
+        Err e -> noMsg
+            { emptyModel
+            | latestError = Just <| "Error loading previous proof: " ++ e
+            }
+        Ok proof -> noMsg
+            { emptyModel
+            | proof = proof
+            }
 
 type Msg
     = Lines LineMsg
@@ -66,12 +81,13 @@ type Window
     | SymbolWindow
     | ImExWindow
 
-update : Msg -> Model -> Model
+update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model = case msg of
-    Lines linemsg -> { model | newLine = updateNewLine linemsg model.newLine }
+    Lines linemsg -> noMsg
+        { model | newLine = updateNewLine linemsg model.newLine }
     SubmitLine -> case submitLine model.proof model.newLine of
-        Err s -> { model | latestError = Just s }
-        Ok p ->
+        Err s -> noMsg { model | latestError = Just s }
+        Ok p -> store
             { model
             | history = model.proof :: model.history
             , future = []
@@ -80,10 +96,10 @@ update msg model = case msg of
             , newLine = ProofUI.blank
             , importText = Nothing
             }
-    NewSeq seqmsg -> { model | newSeq = updateSeq model.newSeq seqmsg }
+    NewSeq seqmsg -> noMsg { model | newSeq = updateSeq model.newSeq seqmsg }
     AddSequent -> case submitSeq model.proof model.newSeq of
-        Err s -> { model | latestError = Just s }
-        Ok n ->
+        Err s -> noMsg { model | latestError = Just s }
+        Ok n -> store
             { model
             | history = model.proof :: model.history
             , future = []
@@ -92,10 +108,10 @@ update msg model = case msg of
             , newSeq = SequentUI.blank
             , importText = Nothing
             }
-    NewSym symmsg -> { model | newSym = updateSym model.newSym symmsg }
+    NewSym symmsg -> noMsg { model | newSym = updateSym model.newSym symmsg }
     AddSymbol -> case submitSym model.proof model.newSym of
-        Err s -> { model | latestError = Just s }
-        Ok n ->
+        Err s -> noMsg { model | latestError = Just s }
+        Ok n -> store
             { model
             | history = model.proof :: model.history
             , future = []
@@ -106,12 +122,12 @@ update msg model = case msg of
             }
     New ->
         if model.proof == Proof.empty then
-            model
+            noMsg model
         else
-            { start | history = model.proof :: model.history }
+            noMsg { emptyModel | history = model.proof :: model.history }
     Undo -> case model.history of
-        [] -> model
-        (x::xs) ->
+        [] -> noMsg model
+        (x::xs) -> store
             { model
             | history = xs
             , future = model.proof::model.future
@@ -119,29 +135,28 @@ update msg model = case msg of
             , importText = Nothing
             }
     Redo -> case model.future of
-        [] -> model
-        (x::xs) ->
+        [] -> noMsg model
+        (x::xs) -> store
             { model
             | history = model.proof::model.history
             , future = xs
             , proof = x
             , importText = Nothing
             }
-    Open x -> { model | activeWindow = x }
-    NewImport s -> { model | importText = Just s }
+    Open x -> noMsg { model | activeWindow = x }
+    NewImport s -> noMsg { model | importText = Just s }
     Import -> case model.importText of
-        Nothing -> model
+        Nothing -> noMsg model
         Just s -> case decodeString fromjson s of
-            Err e ->
+            Err e -> noMsg
                 { model
                 | latestError = Just <| "Error importing proof: " ++ e
                 }
-            Ok proof ->
-                { start
+            Ok proof -> store
+                { emptyModel
                 | history = model.proof :: model.history
                 , proof = proof
                 }
-
 
 closeButton : Html Msg
 closeButton = div
@@ -250,3 +265,11 @@ view model = div [ id "main" ]
         Nothing -> text ""
         Just e -> div [ id "error" ] [ text e ]
     ]
+
+store : Model -> (Model, Cmd.Cmd Msg)
+store model = case tojson model.proof of
+    Err e -> (model, Cmd.none) -- Display an error?
+    Ok val -> (model, storeProof val)
+
+noMsg : Model -> (Model, Cmd.Cmd msg)
+noMsg model = (model, Cmd.none)
