@@ -104,7 +104,7 @@ fromjson = D.field "symbols" SymbolJson.allfromjson
     |> D.andThen (\symbols ->
         let maps = makeMap symbols in
         D.map2
-            (\x -> \y -> addAll symbols x y empty)
+            (\x y -> addAll symbols x y empty)
             (D.field "sequents" <| D.list (SequentJson.fromjson maps))
             (D.field "lines" <| D.list (deductionfromjson maps))
         |> D.andThen fromResult

@@ -45,7 +45,7 @@ makeBinary propa propb symbol def =
             { name = symbol
             , wff = Binary
                 { fn = fromBin
-                    (\a -> \b -> eval
+                    (\a b -> eval
                         (\c -> case c == propa of
                             True -> a
                             False -> b)
@@ -88,7 +88,7 @@ augmentMap symbol (unaries, binaries) = case symbol.wff of
         ( unaries
         , \s ->
             if s == v.symbol then
-                Just (\x -> \y -> Binary {v | first = x, second = y})
+                Just (\x y -> Binary {v | first = x, second = y})
             else
                 binaries s
         )

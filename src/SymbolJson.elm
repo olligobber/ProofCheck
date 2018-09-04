@@ -55,13 +55,13 @@ type SymbolDecoded
 toDecoded : Decoder SymbolDecoded
 toDecoded = D.oneOf
     [ D.map3
-        (\x -> \y -> \z ->
+        (\x y z ->
             UnaryDecoded { symbol = x, prop = y, wff = z} )
         (D.field "symbol" D.string)
         (D.field "prop" D.string)
         (D.field "definition" D.string)
     , D.map4
-        (\w -> \x -> \y -> \z ->
+        (\w x y z ->
             BinaryDecoded { symbol = w, propa = x, propb = y, wff = z} )
         (D.field "symbol" D.string)
         (D.field "propa" D.string)
@@ -81,7 +81,7 @@ fromjson maps = D.map (fromDecoded maps) toDecoded |> D.andThen fromResult
 
 allfromDecoded : List SymbolDecoded -> Result String (List Symbol)
 allfromDecoded list = List.foldl
-    ( \decoded -> \x -> case x of
+    ( \decoded x -> case x of
         Err e -> Err e
         Ok (list, maps) -> case fromDecoded maps decoded of
             Err e -> Err e

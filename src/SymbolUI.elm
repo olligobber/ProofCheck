@@ -94,6 +94,6 @@ selectSym proof = case proof.symbols of
     [] -> select [ id "symbol-dropdown" ]
         [ option [ disabled True, selected True ] [ text "No Symbols" ] ]
     syms -> List.map .name syms
-        |> indexedMap (\i -> \s -> option [value (toString i)] [text s])
+        |> indexedMap (\i s -> option [value (toString i)] [text s])
         |> (::) (option [disabled True, selected True] [text "Choose One"])
         |> select [ onInput identity, id "symbol-dropdown" ]

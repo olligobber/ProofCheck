@@ -52,7 +52,7 @@ satisfies wff assign = eval (\s -> withDefault False (get s assign)) wff
 -- Gets all variables from a sequent
 seqVars : Sequent -> Set String
 seqVars seq = union
-    (List.foldl (\w -> \v -> union (variables w) v) Set.empty seq.ante)
+    (List.foldl (\w v -> union (variables w) v) Set.empty seq.ante)
     (variables seq.conse)
 
 -- Filters assignments that a wff doesn't satisfy
@@ -62,7 +62,7 @@ filterWFF wff list = filter (satisfies wff) list
 -- Gets every truth value assignment
 assignments : Set comparable -> List (Dict comparable Bool)
 assignments = Set.foldl
-    (\k -> \list -> concatMap
+    (\k list -> concatMap
         (\assign -> [insert k True assign, insert k False assign])
         list)
     [Dict.empty]

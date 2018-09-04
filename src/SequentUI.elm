@@ -104,6 +104,6 @@ selectSeq proof = case proof.sequents of
     [] -> select [ id "sequent-dropdown" ]
         [ option [ disabled True, selected True ] [ text "No Sequents" ] ]
     seqs -> List.map Sequent.show seqs
-        |> indexedMap (\i -> \s -> option [value (toString i)] [text s])
+        |> indexedMap (\i s -> option [value (toString i)] [text s])
         |> (::) (option [disabled True, selected True] [text "Choose One"])
         |> select [ onInput identity, id "sequent-dropdown" ]

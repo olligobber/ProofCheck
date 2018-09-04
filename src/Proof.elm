@@ -101,7 +101,7 @@ addSymbol symbol proof =
 -- Turns a list of maybes into maybe a list, only if all were Just
 getAll : List (Maybe a) -> Maybe (List a)
 getAll = foldl
-    (\mb -> \mlist -> case (mb, mlist) of
+    (\mb mlist -> case (mb, mlist) of
         (Just val, Just list) -> Just <| list ++ [val]
         _ -> Nothing)
     (Just [])
@@ -255,7 +255,7 @@ addAll : List Symbol -> List Sequent -> List Deduction -> Proof ->
 addAll symbols sequents lines proof = foldl addSymbol proof symbols
     |> (\proof -> foldl addSequent proof sequents)
     |> (\proof -> foldl
-        ( \newline -> \result -> case result of
+        ( \newline result -> case result of
             Err e -> Err e
             Ok proof -> addDeduction proof newline )
         (Ok proof)
