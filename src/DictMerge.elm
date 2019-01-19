@@ -8,11 +8,11 @@ type alias MD comparable a = Maybe (Dict comparable a)
 -- Merges two dictionaries, returning Nothing on any clash
 mergeErr : Dict comparable a -> Dict comparable a -> MD comparable a
 mergeErr a b = merge
-    (\k -> \v -> \d -> map (insert k v) d)
-    (\k -> \v1 -> \v2 -> \d -> case v1 == v2 of
+    (\k v d -> map (insert k v) d)
+    (\k v1 v2 d -> case v1 == v2 of
         True -> map (insert k v1) d
         False -> Nothing)
-    (\k -> \v -> \d -> map (insert k v) d)
+    (\k v d -> map (insert k v) d)
     a
     b
     (Just empty)

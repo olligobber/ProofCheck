@@ -12,10 +12,14 @@
         <div id="elm-app"></div>
         <script src="build/main.js"></script>
         <script>
-            const elmDiv = document.querySelector('#elm-app');
-            if (elmDiv) {
-              var myApp = Elm.Main.embed(elmDiv);
-            }
+            var storedState = localStorage.getItem('proof');
+            var startingState = storedState ? JSON.parse(storedState) : null;
+            var elmDiv = document.getElementById('elm-app');
+            var myApp = Elm.Main.embed(elmDiv, startingState);
+            myApp.ports.storeProof.subscribe(function(proof) {
+                var proofJson = JSON.stringify(proof)
+                localStorage.setItem('proof', proofJson);
+            });
         </script>
     </body>
 </html>
