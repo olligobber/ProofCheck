@@ -1,1 +1,5 @@
 elm-stuff
+
+# Sass
+*.map
+.sass-cache
