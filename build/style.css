@@ -151,7 +151,7 @@ td {
       line-height: 3em;
       height: 3em;
       font-size: 1em; }
-  .floating #add-symbol {
+  .floating .button {
     width: 100%;
     background-color: #465a60;
     color: #fff;
@@ -160,9 +160,11 @@ td {
     height: 3em;
     line-height: 3em;
     font-size: 1em;
-    text-align: center; }
-    .floating #add-symbol:hover {
-      background-color: light-blue(); }
+    text-align: center;
+    transition: background-color .5s; }
+    .floating .button:hover {
+      background-color: #42c5f4;
+      cursor: pointer; }
 
 #symbol-box {
   left: 20%; }

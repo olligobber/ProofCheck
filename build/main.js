@@ -14109,10 +14109,14 @@ var _olligobber$proofcheck$Main$update = F2(
 							}));
 				}
 			case 'Open':
-				return _olligobber$proofcheck$Main$noMsg(
+				var _p10 = _p4._0;
+				return _elm_lang$core$Native_Utils.eq(model.activeWindow, _p10) ? _olligobber$proofcheck$Main$noMsg(
 					_elm_lang$core$Native_Utils.update(
 						model,
-						{activeWindow: _p4._0}));
+						{activeWindow: _olligobber$proofcheck$Main$NoWindow})) : _olligobber$proofcheck$Main$noMsg(
+					_elm_lang$core$Native_Utils.update(
+						model,
+						{activeWindow: _p10}));
 			case 'NewImport':
 				return _olligobber$proofcheck$Main$noMsg(
 					_elm_lang$core$Native_Utils.update(
@@ -14121,18 +14125,18 @@ var _olligobber$proofcheck$Main$update = F2(
 							importText: _elm_lang$core$Maybe$Just(_p4._0)
 						}));
 			default:
-				var _p10 = model.importText;
-				if (_p10.ctor === 'Nothing') {
+				var _p11 = model.importText;
+				if (_p11.ctor === 'Nothing') {
 					return _olligobber$proofcheck$Main$noMsg(model);
 				} else {
-					var _p11 = A2(_elm_lang$core$Json_Decode$decodeString, _olligobber$proofcheck$ProofJson$fromjson, _p10._0);
-					if (_p11.ctor === 'Err') {
+					var _p12 = A2(_elm_lang$core$Json_Decode$decodeString, _olligobber$proofcheck$ProofJson$fromjson, _p11._0);
+					if (_p12.ctor === 'Err') {
 						return _olligobber$proofcheck$Main$noMsg(
 							_elm_lang$core$Native_Utils.update(
 								model,
 								{
 									latestError: _elm_lang$core$Maybe$Just(
-										A2(_elm_lang$core$Basics_ops['++'], 'Error importing proof: ', _p11._0))
+										A2(_elm_lang$core$Basics_ops['++'], 'Error importing proof: ', _p12._0))
 								}));
 					} else {
 						return _olligobber$proofcheck$Main$store(
@@ -14140,7 +14144,7 @@ var _olligobber$proofcheck$Main$update = F2(
 								_olligobber$proofcheck$Main$emptyModel,
 								{
 									history: {ctor: '::', _0: model.proof, _1: model.history},
-									proof: _p11._0
+									proof: _p12._0
 								}));
 					}
 				}
@@ -14155,7 +14159,11 @@ var _olligobber$proofcheck$Main$closeButton = A2(
 		_1: {
 			ctor: '::',
 			_0: _elm_lang$html$Html_Attributes$id('close-button'),
-			_1: {ctor: '[]'}
+			_1: {
+				ctor: '::',
+				_0: _elm_lang$html$Html_Attributes$class('button'),
+				_1: {ctor: '[]'}
+			}
 		}
 	},
 	{
@@ -14191,7 +14199,11 @@ var _olligobber$proofcheck$Main$sequentBox = function (model) {
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$id('add-sequent'),
-							_1: {ctor: '[]'}
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('button'),
+								_1: {ctor: '[]'}
+							}
 						}
 					},
 					{
@@ -14235,7 +14247,11 @@ var _olligobber$proofcheck$Main$symbolBox = function (model) {
 						_1: {
 							ctor: '::',
 							_0: _elm_lang$html$Html_Attributes$id('add-symbol'),
-							_1: {ctor: '[]'}
+							_1: {
+								ctor: '::',
+								_0: _elm_lang$html$Html_Attributes$class('button'),
+								_1: {ctor: '[]'}
+							}
 						}
 					},
 					{
@@ -14297,9 +14313,26 @@ var _olligobber$proofcheck$Main$imexBox = function (model) {
 								_0: _elm_lang$html$Html_Attributes$id('import-button'),
 								_1: {
 									ctor: '::',
-									_0: _elm_lang$html$Html_Attributes$disabled(
-										_elm_lang$core$Native_Utils.eq(model.importText, _elm_lang$core$Maybe$Nothing)),
-									_1: {ctor: '[]'}
+									_0: _elm_lang$html$Html_Attributes$classList(
+										{
+											ctor: '::',
+											_0: {ctor: '_Tuple2', _0: 'button', _1: true},
+											_1: {
+												ctor: '::',
+												_0: {
+													ctor: '_Tuple2',
+													_0: 'disabled',
+													_1: _elm_lang$core$Native_Utils.eq(model.importText, _elm_lang$core$Maybe$Nothing)
+												},
+												_1: {ctor: '[]'}
+											}
+										}),
+									_1: {
+										ctor: '::',
+										_0: _elm_lang$html$Html_Attributes$disabled(
+											_elm_lang$core$Native_Utils.eq(model.importText, _elm_lang$core$Maybe$Nothing)),
+										_1: {ctor: '[]'}
+									}
 								}
 							}
 						},
@@ -14318,8 +14351,8 @@ var _olligobber$proofcheck$Main$imexBox = function (model) {
 		});
 };
 var _olligobber$proofcheck$Main$activeBox = function (model) {
-	var _p12 = model.activeWindow;
-	switch (_p12.ctor) {
+	var _p13 = model.activeWindow;
+	switch (_p13.ctor) {
 		case 'NoWindow':
 			return _elm_lang$html$Html$text('');
 		case 'SequentWindow':
@@ -14350,8 +14383,8 @@ var _olligobber$proofcheck$Main$view = function (model) {
 					_1: {
 						ctor: '::',
 						_0: function () {
-							var _p13 = model.latestError;
-							if (_p13.ctor === 'Nothing') {
+							var _p14 = model.latestError;
+							if (_p14.ctor === 'Nothing') {
 								return _elm_lang$html$Html$text('');
 							} else {
 								return A2(
@@ -14363,7 +14396,7 @@ var _olligobber$proofcheck$Main$view = function (model) {
 									},
 									{
 										ctor: '::',
-										_0: _elm_lang$html$Html$text(_p13._0),
+										_0: _elm_lang$html$Html$text(_p14._0),
 										_1: {ctor: '[]'}
 									});
 							}

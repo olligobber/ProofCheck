@@ -218,7 +218,7 @@ td {
     }
   }
 
-  #add-symbol {
+  .button {
     width: 100%;
     background-color: dark-grey();
     color: $white;
@@ -228,9 +228,11 @@ td {
     line-height: 3em;
     font-size: 1em;
     text-align: center;
+    transition: background-color .5s;
 
     &:hover {
-      background-color: light-blue();
+      background-color: medium-blue();
+      cursor: pointer;
     }
   }
 }

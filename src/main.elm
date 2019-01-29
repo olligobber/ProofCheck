@@ -143,7 +143,11 @@ update msg model = case msg of
             , proof = x
             , importText = Nothing
             }
-    Open x -> noMsg { model | activeWindow = x }
+    Open x ->
+        if model.activeWindow == x then
+            noMsg { model | activeWindow = NoWindow }
+        else
+            noMsg { model | activeWindow = x }
     NewImport s -> noMsg { model | importText = Just s }
     Import -> case model.importText of
         Nothing -> noMsg model
@@ -162,19 +166,20 @@ closeButton : Html Msg
 closeButton = div
     [ onClick <| Open NoWindow
     , id "close-button"
+    , class "button"
     ] [ text "Close" ]
 
 sequentBox : Model -> Html Msg
 sequentBox model = div [ class "floating", id "sequent-box" ]
     [ Html.map NewSeq <| renderSequents model.proof model.newSeq
-    , div [ onClick AddSequent, id "add-sequent" ] [ text "Add Sequent" ]
+    , div [ onClick AddSequent, id "add-sequent", class "button" ] [ text "Add Sequent" ]
     , closeButton
     ]
 
 symbolBox : Model -> Html Msg
 symbolBox model = div [ class "floating", id "symbol-box" ]
     [ Html.map NewSym <| renderSymbols model.proof model.newSym
-    , div [ onClick AddSymbol, id "add-symbol" ] [ text "Add Symbol" ]
+    , div [ onClick AddSymbol, id "add-symbol", class "button" ] [ text "Add Symbol" ]
     , closeButton
     ]
 
@@ -195,6 +200,10 @@ imexBox model = div [ class "floating", id "import-export-box" ]
     , button
         [ onClick Import
         , id "import-button"
+        , classList
+            [ ("button", True)
+            , ("disabled", model.importText == Nothing)
+            ]
         , disabled <| model.importText == Nothing
         ] [ text "Import" ]
     , closeButton
