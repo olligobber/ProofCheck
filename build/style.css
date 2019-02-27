@@ -50,12 +50,9 @@ tr {
   line-height: 2em;
   height: 2em; }
 
-td {
-  white-space: nowrap;
-  font-family: 'Anonymous Pro', monospace; }
-
 #proof-box {
   margin: 5em 5%;
+  margin-bottom: 0;
   width: 90%;
   z-index: 1; }
   #proof-box tr {
@@ -63,28 +60,22 @@ td {
   #proof-box #proof-lines, #proof-box #new-line {
     width: 100%;
     font-size: 1.2em; }
-  #proof-box .assumptions {
-    white-space: nowrap;
-    font-family: inherit;
-    display: inline-block;
-    width: 10%; }
-  #proof-box .line-number {
-    font-family: inherit;
-    display: inline-block;
-    width: 10%; }
+    #proof-box #proof-lines td, #proof-box #new-line td {
+      font-family: 'Anonymous Pro', monospace; }
+  #proof-box .assumptions, #proof-box .line-number {
+    width: 10%;
+    display: inline-block; }
   #proof-box .formula {
-    font-family: inherit;
-    display: inline-block;
-    width: 40%; }
+    width: 40%;
+    display: inline-block; }
     #proof-box .formula input {
       font-family: inherit;
       font-size: inherit;
       color: inherit;
       width: 80%; }
   #proof-box .reason {
-    font-family: inherit;
-    display: inline-block;
-    width: 40%; }
+    width: 40%;
+    display: inline-block; }
     #proof-box .reason input {
       font-family: inherit;
       font-size: inherit;
@@ -119,7 +110,9 @@ td {
   padding: 1em;
   margin-top: 1em;
   font-size: .8em;
-  transition: background-color 1s; }
+  transition: background-color 1s;
+  float: right;
+  font-size: 1em; }
   #add-line:hover {
     cursor: pointer;
     background-color: #42c5f4; }
