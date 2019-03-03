@@ -36,19 +36,35 @@ body {
     width: 100%;
     background-color: dark-grey();
     color: $white;
-    text-align: center;
+    text-align: left;
+    white-space: nowrap;
+
+    /* prevent text selection */
+    -webkit-touch-callout: none; /* iOS Safari */
+      -webkit-user-select: none; /* Safari */
+       -khtml-user-select: none; /* Konqueror HTML */
+         -moz-user-select: none; /* Firefox */
+          -ms-user-select: none; /* Internet Explorer/Edge */
+              user-select: none; /* Non-prefixed version, currently
+                                    supported by Chrome and Opera */
 
     .menu-button {
         height: inherit;
         line-height: inherit;
-        width: 10%;
-        float: left;
+        width: 15%;
+        min-width: 5em;
         transition: background-color .5s;
+        display: inline-block;
+        text-align: center;
 
         &:hover {
             background-color: medium-blue();
             cursor: pointer;
         }
+    }
+
+    #import-export-window-button {
+        min-width: 7em;
     }
 
     .disabled {
@@ -80,6 +96,12 @@ tr {
     height: 2em;
 }
 
+input {
+    font-family: inherit;
+    font-size: inherit;
+    text-align: inherit;
+}
+
 #proof-box {
     margin: 5em 5%;
     margin-bottom: 0;
@@ -88,9 +110,6 @@ tr {
 
     tr {
         border-bottom: 1px solid dark-grey(.5);
-    }
-
-    #proof-lines, #new-line {
         width: 100%;
         font-size: 1.2em;
         td {
@@ -104,24 +123,20 @@ tr {
     }
 
     .formula {
-        width: 40%;
+        width: 50%;
         display: inline-block;
 
         input {
-            font-family: inherit;
-            font-size: inherit;
             color: inherit;
             width: 80%;
         }
     }
 
     .reason {
-        width: 40%;
+        width: 30%;
         display: inline-block;
 
         input {
-            font-family: inherit;
-            font-size: inherit;
             color: inherit;
             width: 20%;
         }
@@ -149,6 +164,10 @@ tr {
             color: inherit;
             width: 100%;
         }
+    }
+
+    #reference-input {
+        text-align: left;
     }
 
     .short {
@@ -192,22 +211,11 @@ tr {
     top: 4em;
     display: block;
     position: fixed;
-    width: 25%;
+    width: 70%;
+    max-width: 40em;
     background-color: dark-grey();
     border-top: .2em solid light-grey();
     color: $white;
-
-    #symbol-list {
-        width: 100%;
-
-        #new-symbol {
-            display: inline-block;
-            border-bottom: .2em solid light-grey();
-            line-height: 3em;
-            height: 3em;
-            font-size: 1em
-        }
-    }
 
     .button {
         width: 100%;
@@ -226,12 +234,81 @@ tr {
             cursor: pointer;
         }
     }
+
+    input {
+        color: dark-grey();
+    }
+
+    select {
+        font-size: inherit;
+        color: dark-grey();
+    }
+
+    tr, td {
+        font-size: inherit;
+        font-family: inherit;
+    }
 }
 
 #symbol-box {
-    left: 20%;
+    left: 15%;
+
+    #symbol-list {
+        width: 100%;
+        font-family: 'Anonymous Pro', monospace;
+        font-size: 1.2em;
+    }
+
+    #new-symbol {
+        border-bottom: .2em solid light-grey();
+        line-height: 3em;
+        height: 3em;
+    }
+
+    #choose-name {
+        margin: .5em;
+        width: 2em;
+    }
+
+    #set-def {
+        width: 80%;
+    }
 }
 
 #sequent-box {
-    left: 30%;
+    left: 20%;
+
+    #sequent-list {
+        width: 100%;
+        font-family: 'Anonymous Pro', monospace;
+        font-size: 1.2em;
+    }
+
+    #new-sequent {
+        border-bottom: .2em solid light-grey();
+        line-height: 3em;
+        height: 3em;
+    }
+}
+
+#import-export-box {
+    left: 25%;
+
+    #i-e-description {
+        margin: 2%;
+        text-align: center;
+    }
+
+    #json-input {
+        width: 100%;
+        font-family: 'Anonymous Pro', monospace;
+        font-size: 1em;
+        border-bottom: .2em solid light-grey();
+
+        textarea {
+            width: 95%;
+            margin: 2%;
+            white-space: nowrap;
+        }
+    }
 }

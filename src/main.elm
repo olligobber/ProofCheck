@@ -191,12 +191,16 @@ imexText model = case (tojson model.proof, model.importText) of
 
 imexBox : Model -> Html Msg
 imexBox model = div [ class "floating", id "import-export-box" ]
-    [ text "Copy this to save proof, or paste here to import proof"
-    , textarea
-        [ onInput NewImport
-        , id "json-input"
-        , value <| imexText model
-        ] []
+    [ div [ id "i-e-description" ]
+        [ text
+            "Copy box contents to save proof, or paste inside the box to import proof"
+        ]
+    , div [ id "json-input" ]
+        [ textarea
+            [ onInput NewImport
+            , value <| imexText model
+            ] []
+        ]
     , button
         [ onClick Import
         , id "import-button"

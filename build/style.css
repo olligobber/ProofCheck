@@ -18,16 +18,35 @@ body {
   width: 100%;
   background-color: #465a60;
   color: #fff;
-  text-align: center; }
+  text-align: left;
+  white-space: nowrap;
+  /* prevent text selection */
+  -webkit-touch-callout: none;
+  /* iOS Safari */
+  -webkit-user-select: none;
+  /* Safari */
+  -khtml-user-select: none;
+  /* Konqueror HTML */
+  -moz-user-select: none;
+  /* Firefox */
+  -ms-user-select: none;
+  /* Internet Explorer/Edge */
+  user-select: none;
+  /* Non-prefixed version, currently
+     supported by Chrome and Opera */ }
   #menu .menu-button {
     height: inherit;
     line-height: inherit;
-    width: 10%;
-    float: left;
-    transition: background-color .5s; }
+    width: 15%;
+    min-width: 5em;
+    transition: background-color .5s;
+    display: inline-block;
+    text-align: center; }
     #menu .menu-button:hover {
       background-color: #42c5f4;
       cursor: pointer; }
+  #menu #import-export-window-button {
+    min-width: 7em; }
   #menu .disabled {
     opacity: .5; }
     #menu .disabled:hover {
@@ -50,35 +69,35 @@ tr {
   line-height: 2em;
   height: 2em; }
 
+input {
+  font-family: inherit;
+  font-size: inherit;
+  text-align: inherit; }
+
 #proof-box {
   margin: 5em 5%;
   margin-bottom: 0;
   width: 90%;
   z-index: 1; }
   #proof-box tr {
-    border-bottom: 1px solid rgba(70, 90, 96, 0.5); }
-  #proof-box #proof-lines, #proof-box #new-line {
+    border-bottom: 1px solid rgba(70, 90, 96, 0.5);
     width: 100%;
     font-size: 1.2em; }
-    #proof-box #proof-lines td, #proof-box #new-line td {
+    #proof-box tr td {
       font-family: 'Anonymous Pro', monospace; }
   #proof-box .assumptions, #proof-box .line-number {
     width: 10%;
     display: inline-block; }
   #proof-box .formula {
-    width: 40%;
+    width: 50%;
     display: inline-block; }
     #proof-box .formula input {
-      font-family: inherit;
-      font-size: inherit;
       color: inherit;
       width: 80%; }
   #proof-box .reason {
-    width: 40%;
+    width: 30%;
     display: inline-block; }
     #proof-box .reason input {
-      font-family: inherit;
-      font-size: inherit;
       color: inherit;
       width: 20%; }
   #proof-box #reason-dropdown {
@@ -99,6 +118,8 @@ tr {
       font-size: inherit;
       color: inherit;
       width: 100%; }
+  #proof-box #reference-input {
+    text-align: left; }
   #proof-box .short {
     display: none !important; }
   #proof-box .long {
@@ -132,18 +153,11 @@ tr {
   top: 4em;
   display: block;
   position: fixed;
-  width: 25%;
+  width: 70%;
+  max-width: 40em;
   background-color: #465a60;
   border-top: 0.2em solid #f9f6e3;
   color: #fff; }
-  .floating #symbol-list {
-    width: 100%; }
-    .floating #symbol-list #new-symbol {
-      display: inline-block;
-      border-bottom: 0.2em solid #f9f6e3;
-      line-height: 3em;
-      height: 3em;
-      font-size: 1em; }
   .floating .button {
     width: 100%;
     background-color: #465a60;
@@ -158,11 +172,55 @@ tr {
     .floating .button:hover {
       background-color: #42c5f4;
       cursor: pointer; }
+  .floating input {
+    color: #465a60; }
+  .floating select {
+    font-size: inherit;
+    color: #465a60; }
+  .floating tr, .floating td {
+    font-size: inherit;
+    font-family: inherit; }
 
 #symbol-box {
-  left: 20%; }
+  left: 15%; }
+  #symbol-box #symbol-list {
+    width: 100%;
+    font-family: 'Anonymous Pro', monospace;
+    font-size: 1.2em; }
+  #symbol-box #new-symbol {
+    border-bottom: 0.2em solid #f9f6e3;
+    line-height: 3em;
+    height: 3em; }
+  #symbol-box #choose-name {
+    margin: .5em;
+    width: 2em; }
+  #symbol-box #set-def {
+    width: 80%; }
 
 #sequent-box {
-  left: 30%; }
+  left: 20%; }
+  #sequent-box #sequent-list {
+    width: 100%;
+    font-family: 'Anonymous Pro', monospace;
+    font-size: 1.2em; }
+  #sequent-box #new-sequent {
+    border-bottom: 0.2em solid #f9f6e3;
+    line-height: 3em;
+    height: 3em; }
+
+#import-export-box {
+  left: 25%; }
+  #import-export-box #i-e-description {
+    margin: 2%;
+    text-align: center; }
+  #import-export-box #json-input {
+    width: 100%;
+    font-family: 'Anonymous Pro', monospace;
+    font-size: 1em;
+    border-bottom: 0.2em solid #f9f6e3; }
+    #import-export-box #json-input textarea {
+      width: 95%;
+      margin: 2%;
+      white-space: nowrap; }
 
 /*# sourceMappingURL=style.css.map */
