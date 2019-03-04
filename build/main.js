@@ -14085,12 +14085,12 @@ var _olligobber$proofcheck$Main$update = F2(
 				} else {
 					return _olligobber$proofcheck$Main$store(
 						_elm_lang$core$Native_Utils.update(
-							model,
+							_olligobber$proofcheck$Main$emptyModel,
 							{
 								history: _p8._1,
 								future: {ctor: '::', _0: model.proof, _1: model.future},
 								proof: _p8._0,
-								importText: _elm_lang$core$Maybe$Nothing
+								activeWindow: model.activeWindow
 							}));
 				}
 			case 'Redo':
@@ -14100,12 +14100,12 @@ var _olligobber$proofcheck$Main$update = F2(
 				} else {
 					return _olligobber$proofcheck$Main$store(
 						_elm_lang$core$Native_Utils.update(
-							model,
+							_olligobber$proofcheck$Main$emptyModel,
 							{
 								history: {ctor: '::', _0: model.proof, _1: model.history},
 								future: _p9._1,
 								proof: _p9._0,
-								importText: _elm_lang$core$Maybe$Nothing
+								activeWindow: model.activeWindow
 							}));
 				}
 			case 'Open':

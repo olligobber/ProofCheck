@@ -128,20 +128,20 @@ update msg model = case msg of
     Undo -> case model.history of
         [] -> noMsg model
         (x::xs) -> store
-            { model
+            { emptyModel
             | history = xs
             , future = model.proof::model.future
             , proof = x
-            , importText = Nothing
+            , activeWindow = model.activeWindow
             }
     Redo -> case model.future of
         [] -> noMsg model
         (x::xs) -> store
-            { model
+            { emptyModel
             | history = model.proof::model.history
             , future = xs
             , proof = x
-            , importText = Nothing
+            , activeWindow = model.activeWindow
             }
     Open x ->
         if model.activeWindow == x then
