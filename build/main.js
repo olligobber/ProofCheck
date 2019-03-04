@@ -10984,64 +10984,84 @@ var _olligobber$proofcheck$Parser$parse = F2(
 			_olligobber$proofcheck$Parser$parseTree(string));
 	});
 
+var _olligobber$proofcheck$CustomSymbol$contains = F2(
+	function (list, name) {
+		contains:
+		while (true) {
+			var _p0 = list;
+			if (_p0.ctor === '[]') {
+				return _elm_lang$core$Native_Utils.eq(name, '~') || (_elm_lang$core$Native_Utils.eq(name, '|') || (_elm_lang$core$Native_Utils.eq(name, '&') || _elm_lang$core$Native_Utils.eq(name, '->')));
+			} else {
+				if (_elm_lang$core$Native_Utils.eq(_p0._0.name, name)) {
+					return true;
+				} else {
+					var _v1 = _p0._1,
+						_v2 = name;
+					list = _v1;
+					name = _v2;
+					continue contains;
+				}
+			}
+		}
+	});
 var _olligobber$proofcheck$CustomSymbol$augmentMap = F2(
-	function (symbol, _p0) {
-		var _p1 = _p0;
-		var _p6 = _p1._0;
-		var _p5 = _p1._1;
-		var _p2 = symbol.wff;
-		switch (_p2.ctor) {
+	function (symbol, _p1) {
+		var _p2 = _p1;
+		var _p7 = _p2._0;
+		var _p6 = _p2._1;
+		var _p3 = symbol.wff;
+		switch (_p3.ctor) {
 			case 'Prop':
-				return {ctor: '_Tuple2', _0: _p6, _1: _p5};
+				return {ctor: '_Tuple2', _0: _p7, _1: _p6};
 			case 'Unary':
-				var _p3 = _p2._0;
+				var _p4 = _p3._0;
 				return {
 					ctor: '_Tuple2',
 					_0: function (s) {
-						return _elm_lang$core$Native_Utils.eq(s, _p3.symbol) ? _elm_lang$core$Maybe$Just(
+						return _elm_lang$core$Native_Utils.eq(s, _p4.symbol) ? _elm_lang$core$Maybe$Just(
 							function (x) {
 								return _olligobber$proofcheck$WFF$Unary(
 									_elm_lang$core$Native_Utils.update(
-										_p3,
+										_p4,
 										{contents: x}));
-							}) : _p6(s);
+							}) : _p7(s);
 					},
-					_1: _p5
+					_1: _p6
 				};
 			default:
-				var _p4 = _p2._0;
+				var _p5 = _p3._0;
 				return {
 					ctor: '_Tuple2',
-					_0: _p6,
+					_0: _p7,
 					_1: function (s) {
-						return _elm_lang$core$Native_Utils.eq(s, _p4.symbol) ? _elm_lang$core$Maybe$Just(
+						return _elm_lang$core$Native_Utils.eq(s, _p5.symbol) ? _elm_lang$core$Maybe$Just(
 							F2(
 								function (x, y) {
 									return _olligobber$proofcheck$WFF$Binary(
 										_elm_lang$core$Native_Utils.update(
-											_p4,
+											_p5,
 											{first: x, second: y}));
-								})) : _p5(s);
+								})) : _p6(s);
 					}
 				};
 		}
 	});
 var _olligobber$proofcheck$CustomSymbol$makeMap = function (list) {
-	var _p7 = list;
-	if (_p7.ctor === '[]') {
+	var _p8 = list;
+	if (_p8.ctor === '[]') {
 		return {
 			ctor: '_Tuple2',
 			_0: function (s) {
-				var _p8 = s;
-				if (_p8 === '~') {
+				var _p9 = s;
+				if (_p9 === '~') {
 					return _elm_lang$core$Maybe$Just(_olligobber$proofcheck$WFF$neg);
 				} else {
 					return _elm_lang$core$Maybe$Nothing;
 				}
 			},
 			_1: function (s) {
-				var _p9 = s;
-				switch (_p9) {
+				var _p10 = s;
+				switch (_p10) {
 					case '|':
 						return _elm_lang$core$Maybe$Just(_olligobber$proofcheck$WFF$or);
 					case '&':
@@ -11056,8 +11076,8 @@ var _olligobber$proofcheck$CustomSymbol$makeMap = function (list) {
 	} else {
 		return A2(
 			_olligobber$proofcheck$CustomSymbol$augmentMap,
-			_p7._0,
-			_olligobber$proofcheck$CustomSymbol$makeMap(_p7._1));
+			_p8._0,
+			_olligobber$proofcheck$CustomSymbol$makeMap(_p8._1));
 	}
 };
 var _olligobber$proofcheck$CustomSymbol$toSequent2 = function (symbol) {
@@ -11106,8 +11126,8 @@ var _olligobber$proofcheck$CustomSymbol$makeBinary = F4(
 									return A2(
 										_olligobber$proofcheck$WFF$eval,
 										function (c) {
-											var _p10 = _elm_lang$core$Native_Utils.eq(c, propa);
-											if (_p10 === true) {
+											var _p11 = _elm_lang$core$Native_Utils.eq(c, propa);
+											if (_p11 === true) {
 												return a;
 											} else {
 												return b;
@@ -11338,18 +11358,23 @@ var _olligobber$proofcheck$Proof$matchDeduction = F2(
 	});
 var _olligobber$proofcheck$Proof$addSymbol = F2(
 	function (symbol, proof) {
-		return _elm_lang$core$Native_Utils.update(
-			proof,
-			{
-				symbols: A2(
-					_elm_lang$core$Basics_ops['++'],
-					proof.symbols,
-					{
-						ctor: '::',
-						_0: symbol,
-						_1: {ctor: '[]'}
-					})
-			});
+		return A2(_olligobber$proofcheck$CustomSymbol$contains, proof.symbols, symbol.name) ? _elm_lang$core$Result$Err(
+			A2(
+				_elm_lang$core$Basics_ops['++'],
+				'Symbol name ',
+				A2(_elm_lang$core$Basics_ops['++'], symbol.name, ' is already taken'))) : _elm_lang$core$Result$Ok(
+			_elm_lang$core$Native_Utils.update(
+				proof,
+				{
+					symbols: A2(
+						_elm_lang$core$Basics_ops['++'],
+						proof.symbols,
+						{
+							ctor: '::',
+							_0: symbol,
+							_1: {ctor: '[]'}
+						})
+				}));
 	});
 var _olligobber$proofcheck$Proof$addSequent = F2(
 	function (sequent, proof) {
@@ -11742,22 +11767,34 @@ var _olligobber$proofcheck$Proof$addAll = F4(
 		return function (proof) {
 			return A3(
 				_elm_lang$core$List$foldl,
-				F2(
-					function (newline, result) {
-						var _p23 = result;
-						if (_p23.ctor === 'Err') {
-							return _elm_lang$core$Result$Err(_p23._0);
-						} else {
-							return A2(_olligobber$proofcheck$Proof$addDeduction, _p23._0, newline);
-						}
-					}),
-				_elm_lang$core$Result$Ok(proof),
+				function (x) {
+					return _elm_lang$core$Result$andThen(
+						A2(_elm_lang$core$Basics$flip, _olligobber$proofcheck$Proof$addDeduction, x));
+				},
+				proof,
 				lines);
 		}(
 			function (proof) {
-				return A3(_elm_lang$core$List$foldl, _olligobber$proofcheck$Proof$addSequent, proof, sequents);
+				return A3(
+					_elm_lang$core$List$foldl,
+					function (x) {
+						return _elm_lang$core$Result$map(
+							_olligobber$proofcheck$Proof$addSequent(x));
+					},
+					proof,
+					sequents);
 			}(
-				A3(_elm_lang$core$List$foldl, _olligobber$proofcheck$Proof$addSymbol, proof, symbols)));
+				function (proof) {
+					return A3(
+						_elm_lang$core$List$foldl,
+						function (x) {
+							return _elm_lang$core$Result$andThen(
+								_olligobber$proofcheck$Proof$addSymbol(x));
+						},
+						proof,
+						symbols);
+				}(
+					_elm_lang$core$Result$Ok(proof))));
 	});
 
 var _olligobber$proofcheck$SequentUI$selectSeq = function (proof) {
@@ -14050,7 +14087,10 @@ var _olligobber$proofcheck$Main$update = F2(
 							newSym: A2(_olligobber$proofcheck$SymbolUI$updateSym, model.newSym, _p4._0)
 						}));
 			case 'AddSymbol':
-				var _p7 = A2(_olligobber$proofcheck$SymbolUI$submitSym, model.proof, model.newSym);
+				var _p7 = A2(
+					_elm_lang$core$Result$andThen,
+					A2(_elm_lang$core$Basics$flip, _olligobber$proofcheck$Proof$addSymbol, model.proof),
+					A2(_olligobber$proofcheck$SymbolUI$submitSym, model.proof, model.newSym));
 				if (_p7.ctor === 'Err') {
 					return _olligobber$proofcheck$Main$noMsg(
 						_elm_lang$core$Native_Utils.update(
@@ -14065,7 +14105,7 @@ var _olligobber$proofcheck$Main$update = F2(
 							{
 								history: {ctor: '::', _0: model.proof, _1: model.history},
 								future: {ctor: '[]'},
-								proof: A2(_olligobber$proofcheck$Proof$addSymbol, _p7._0, model.proof),
+								proof: _p7._0,
 								latestError: _elm_lang$core$Maybe$Nothing,
 								newSym: _olligobber$proofcheck$SymbolUI$blank,
 								importText: _elm_lang$core$Maybe$Nothing

@@ -109,17 +109,20 @@ update msg model = case msg of
             , importText = Nothing
             }
     NewSym symmsg -> noMsg { model | newSym = updateSym model.newSym symmsg }
-    AddSymbol -> case submitSym model.proof model.newSym of
-        Err s -> noMsg { model | latestError = Just s }
-        Ok n -> store
-            { model
-            | history = model.proof :: model.history
-            , future = []
-            , proof = addSymbol n model.proof
-            , latestError = Nothing
-            , newSym = SymbolUI.blank
-            , importText = Nothing
-            }
+    AddSymbol -> case
+            submitSym model.proof model.newSym
+            |> Result.andThen (flip addSymbol model.proof)
+        of
+            Err s -> noMsg { model | latestError = Just s }
+            Ok p -> store
+                { model
+                | history = model.proof :: model.history
+                , future = []
+                , proof = p
+                , latestError = Nothing
+                , newSym = SymbolUI.blank
+                , importText = Nothing
+                }
     New ->
         if model.proof == Proof.empty then
             noMsg model

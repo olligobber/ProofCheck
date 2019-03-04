@@ -6,6 +6,7 @@ module CustomSymbol exposing
     , toSequent2
     , augmentMap
     , makeMap
+    , contains
     )
 
 import WFF exposing
@@ -107,3 +108,13 @@ makeMap list = case list of
             _ -> Nothing
         )
     symbol::rest -> augmentMap symbol <| makeMap rest
+
+-- Checks if a symbol name is explicitly or implicitly taken
+contains : List Symbol -> String -> Bool
+contains list name = case list of
+    [] -> (name == "~" || name == "|" || name == "&" || name == "->")
+    symbol::rest ->
+        if symbol.name == name then
+            True
+        else
+            contains rest name

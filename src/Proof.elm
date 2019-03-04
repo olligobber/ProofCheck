@@ -12,7 +12,7 @@ module Proof exposing
 
 import WFF exposing (WFF)
 import Sequent exposing (..)
-import CustomSymbol exposing (Symbol, toSequent1, toSequent2)
+import CustomSymbol exposing (Symbol, toSequent1, toSequent2, contains)
 import List exposing (map, foldl, filterMap, concatMap, all, filter, sort)
 import List.Extra exposing ((!!), unique, isSubsequenceOf, notMember)
 import Result exposing (map)
@@ -92,11 +92,15 @@ addSequent sequent proof =
     }
 
 -- Add a symbol to a proof
-addSymbol : Symbol -> Proof -> Proof
+addSymbol : Symbol -> Proof -> Result String Proof
 addSymbol symbol proof =
-    { proof
-    | symbols = proof.symbols ++ [symbol]
-    }
+    if (contains proof.symbols symbol.name) then
+        Err <| "Symbol name " ++ symbol.name ++ " is already taken"
+    else
+        Ok
+            { proof
+            | symbols = proof.symbols ++ [symbol]
+            }
 
 -- Turns a list of maybes into maybe a list, only if all were Just
 getAll : List (Maybe a) -> Maybe (List a)
@@ -252,12 +256,7 @@ addDeduction proof new = case (new.rule, matchDeduction proof new) of
 
 addAll : List Symbol -> List Sequent -> List Deduction -> Proof ->
     Result String Proof
-addAll symbols sequents lines proof = foldl addSymbol proof symbols
-    |> (\proof -> foldl addSequent proof sequents)
-    |> (\proof -> foldl
-        ( \newline result -> case result of
-            Err e -> Err e
-            Ok proof -> addDeduction proof newline )
-        (Ok proof)
-        lines
-    )
+addAll symbols sequents lines proof = Ok proof
+    |> (\proof -> foldl (\x -> Result.andThen (addSymbol x)) proof symbols)
+    |> (\proof -> foldl (\x -> Result.map (addSequent x)) proof sequents)
+    |> (\proof -> foldl (\x -> Result.andThen (flip addDeduction x)) proof lines)
