@@ -1,3 +1,4 @@
 build:
-	elm-make src/main.elm --output=build/main.js
-	sass src/style.scss build/style.css
+	spago bundle-app
+	spago test
+	sass src/style.scss index.css
