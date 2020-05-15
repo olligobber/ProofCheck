@@ -1,19 +1,40 @@
 module WFF (
     UnaryOp,
+    makeUnary,
     BinaryOp,
-    WFF(..)
+    makeBinary,
+    WFF(..),
+    render,
+    eval,
+    negOp,
+    andOp,
+    orOp,
+    impliesOp,
+    match
 ) where
 
 import Prelude
-    ( class Functor, class Apply, class Applicative, class Bind, class Monad
-    , (<>), ($), (<$>), (<*>), (>>=), (<<<))
+    ( class Eq, class Ord, class Functor, class Apply, class Applicative
+    , class Bind, class Monad
+    , not
+    , (<>), ($), (<$>), (<*>), (>>=), (<<<), (==), (&&), (||), (<=))
 import Data.Foldable (class Foldable, foldMap, foldlDefault, foldrDefault)
 import Data.Traversable (class Traversable, sequence, traverseDefault)
+import Data.Map as M
+
+import Mapping (Mapping(..))
 
 type UnaryOp =
     { onT :: Boolean
     , onF :: Boolean
     , symbol :: String
+    }
+
+makeUnary :: (Boolean -> Boolean) -> String -> UnaryOp
+makeUnary f symbol =
+    { onT : f true
+    , onF : f false
+    , symbol
     }
 
 type BinaryOp =
@@ -24,10 +45,21 @@ type BinaryOp =
     , symbol :: String
     }
 
+makeBinary :: (Boolean -> Boolean -> Boolean) -> String -> BinaryOp
+makeBinary f symbol =
+    { onTT : f true true
+    , onTF : f true false
+    , onFT : f false true
+    , onFF : f false false
+    , symbol
+    }
+
 data WFF a
     = Prop a
     | Unary { operator :: UnaryOp, contents :: WFF a }
     | Binary { operator :: BinaryOp, left :: WFF a, right :: WFF a }
+
+derive instance eqWFF :: Eq a => Eq (WFF a)
 
 instance functorWFF :: Functor WFF where
     map f (Prop p) = Prop $ f p
@@ -56,8 +88,8 @@ instance foldableWFF :: Foldable WFF where
     foldMap f (Prop p) = f p
     foldMap f (Unary u) = foldMap f u.contents
     foldMap f (Binary b) = foldMap f b.left <> foldMap f b.right
-    foldl = foldlDefault
-    foldr = foldrDefault
+    foldl f x y = foldlDefault f x y
+    foldr f x y = foldrDefault f x y
 
 instance traversableWFF :: Traversable WFF where
     sequence (Prop p) = Prop <$> p
@@ -99,35 +131,23 @@ eval (Binary b) =
             b.operator.onFF
 
 negOp :: UnaryOp
-negOp =
-    { symbol : "~"
-    , onT : false
-    , onF : true
-    }
+negOp = makeUnary not "~"
 
 andOp :: BinaryOp
-andOp =
-    { symbol : "&"
-    , onTT : true
-    , onTF : false
-    , onFT : false
-    , onFF : false
-    }
+andOp = makeBinary (&&) "&"
 
 orOp :: BinaryOp
-orOp =
-    { symbol : "|"
-    , onTT : true
-    , onTF : true
-    , onFT : true
-    , onFF : false
-    }
+orOp = makeBinary (||) "|"
 
 impliesOp :: BinaryOp
-impliesOp =
-    { symbol : "->"
-    , onTT : true
-    , onTF : false
-    , onFT : true
-    , onFF : true
-    }
+impliesOp = makeBinary (<=) "->"
+
+-- Match a WFF to one after substitutions were applied, returning the relevant
+-- substitutions
+match :: forall x y. Ord x => Eq y => WFF x -> WFF y -> Mapping x (WFF y)
+match (Prop p) w = Mapping $ M.singleton p w
+match (Unary u) (Unary v)
+    | u.operator == v.operator = match u.contents v.contents
+match (Binary b) (Binary c)
+    | b.operator == c.operator = match b.left c.left <> match b.right c.right
+match _ _ = None
