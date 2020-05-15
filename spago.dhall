@@ -9,6 +9,7 @@ You can edit this file as you like.
   , "foldable-traversable"
   , "functors"
   , "ordered-collections"
+  , "parsing"
   , "profunctor-lenses"
   , "psci-support"
   , "strings"

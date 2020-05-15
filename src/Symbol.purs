@@ -31,7 +31,7 @@ makeUnary p s w = case renamed of
 makeBinary :: forall a. Eq a =>
     a -> a -> String -> WFF a -> Either String Symbol
 makeBinary p q s w = case renamed of
-    Just definition -> Right$ BinarySymbol
+    Just definition -> Right $ BinarySymbol
         { operator : WFF.makeBinary
             (\a b -> WFF.eval $ (if _ then a else b) <$> definition)
             s

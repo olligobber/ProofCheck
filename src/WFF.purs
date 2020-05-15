@@ -1,4 +1,5 @@
 module WFF (
+    BMap(..),
     UnaryOp,
     makeUnary,
     BinaryOp,
@@ -24,33 +25,33 @@ import Data.Map as M
 
 import Mapping (Mapping(..))
 
+data BMap a = BMap (Boolean -> a)
+
+applyBMap :: forall a. BMap a -> Boolean -> a
+applyBMap (BMap f) = f
+
+instance eqBoolFunction :: Eq a => Eq (BMap a) where
+    eq (BMap f) (BMap g) = f true == g true && f false == g false
+
 type UnaryOp =
-    { onT :: Boolean
-    , onF :: Boolean
+    { function :: BMap Boolean
     , symbol :: String
     }
 
 makeUnary :: (Boolean -> Boolean) -> String -> UnaryOp
 makeUnary f symbol =
-    { onT : f true
-    , onF : f false
+    { function : BMap f
     , symbol
     }
 
 type BinaryOp =
-    { onTT :: Boolean
-    , onTF :: Boolean
-    , onFT :: Boolean
-    , onFF :: Boolean
+    { function :: BMap (BMap Boolean)
     , symbol :: String
     }
 
 makeBinary :: (Boolean -> Boolean -> Boolean) -> String -> BinaryOp
 makeBinary f symbol =
-    { onTT : f true true
-    , onTF : f true false
-    , onFT : f false true
-    , onFF : f false false
+    { function : BMap (\x -> BMap (f x))
     , symbol
     }
 
@@ -113,22 +114,9 @@ safeRender w = "(" <> render w <> ")"
 -- Evaluate a WFF
 eval :: WFF Boolean -> Boolean
 eval (Prop p) = p
-eval (Unary u) =
-    if eval u.contents then
-        u.operator.onT
-    else
-        u.operator.onF
+eval (Unary u) = applyBMap u.operator.function $ eval u.contents
 eval (Binary b) =
-    if eval b.left then
-        if eval b.right then
-            b.operator.onTT
-        else
-            b.operator.onTF
-    else
-        if eval b.right then
-            b.operator.onFT
-        else
-            b.operator.onFF
+    applyBMap (applyBMap b.operator.function $ eval b.left) $ eval b.right
 
 negOp :: UnaryOp
 negOp = makeUnary not "~"
