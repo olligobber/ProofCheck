@@ -1,22 +1,27 @@
 module Sequent
-    ( Sequent
+    ( Sequent(..)
     , render
     , verify
+    , match
     ) where
 
 import Prelude
-    ( class Ord, class Functor
-    , (<>), (<$>), (<*>), ($), (>>=)
-    , map, flip)
-import Data.Foldable
-    (class Foldable, foldMap, foldlDefault, foldrDefault, foldl, all)
-import Data.Traversable (class Traversable, sequence, traverseDefault)
-import Data.String.Common (joinWith)
-import Data.Set as S
+    ( class Eq, class Ord, class Functor
+    , (<>), (<$>), (<*>), ($), (>>=), (==)
+    , map, flip, bind, pure, otherwise)
 import Data.Array as A
+import Data.Foldable
+    ( class Foldable
+    , foldMap, foldlDefault, foldrDefault, foldl, all, fold)
+import Data.Set as S
+import Data.String.Common (joinWith)
+import Data.Traversable (class Traversable, sequence, traverseDefault)
+import Data.Tuple (Tuple(..))
+import Data.Map (Map)
 
 import WFF (WFF)
 import WFF as WFF
+import Mapping (Mapping(..))
 
 data Sequent a = Sequent
     { ante :: Array (WFF a)
@@ -53,3 +58,30 @@ verify (Sequent s) = all (flip sat s.conse) satAnte where
         variables
     sat a w = WFF.eval $ flip S.member a <$> w
     satAnte = A.filter (\a -> all (sat a) s.ante) assignments
+
+-- Match a sequent to one after substitutions were applied
+match1 :: forall a b. Ord a => Eq b =>
+    Sequent a -> Sequent b -> Mapping a (WFF b)
+match1 (Sequent small) (Sequent big) =
+    fold (A.zipWith WFF.match small.ante big.ante)
+    <> WFF.match small.conse big.conse
+
+permute :: forall a. Eq a => Array a -> Array (Array a)
+permute [] = [[]]
+permute l = do
+    h <- l
+    t <- permute $ A.delete h l
+    pure $ A.cons h t
+
+-- Match a sequent to one after substitutions were applied and the antecedents
+-- permuted, returning all possible substitutions and permutations
+match :: forall a b. Ord a => Eq b => Sequent a -> Sequent b ->
+    Array {permutation :: Array Int, substitution :: Map a (WFF b)}
+match (Sequent small) (Sequent big)
+    | A.length small.ante == A.length big.ante = do
+        let indexedAnte = A.mapWithIndex Tuple small.ante
+        Tuple permutation smallantes <- A.unzip <$> permute indexedAnte
+        case match1 (Sequent $ small { ante = smallantes}) $ Sequent big of
+            Mapping substitution -> [{permutation, substitution}]
+            None -> []
+    | otherwise = []
