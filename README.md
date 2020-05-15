@@ -1,6 +1,6 @@
 # ProofCheck
 
-Proof Checker for a system of Propositional Logic, written in Elm.
+Proof Checker for a system of Propositional Logic.
 
 ## Contributors
 
