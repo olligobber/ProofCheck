@@ -10,7 +10,6 @@ You can edit this file as you like.
   , "functors"
   , "ordered-collections"
   , "parsing"
-  , "profunctor-lenses"
   , "psci-support"
   , "strings"
   ]

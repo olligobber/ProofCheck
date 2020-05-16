@@ -16,8 +16,8 @@ module WFF (
 
 import Prelude
     ( class Eq, class Ord, class Functor, class Apply, class Applicative
-    , class Bind, class Monad
-    , not
+    , class Bind, class Monad, class Show
+    , not, show
     , (<>), ($), (<$>), (<*>), (>>=), (<<<), (==), (&&), (||), (<=))
 import Data.Foldable (class Foldable, foldMap, foldlDefault, foldrDefault)
 import Data.Traversable (class Traversable, sequence, traverseDefault)
@@ -30,8 +30,22 @@ data BMap a = BMap (Boolean -> a)
 applyBMap :: forall a. BMap a -> Boolean -> a
 applyBMap (BMap f) = f
 
+bMapMap :: forall a. (Boolean -> Boolean -> a) -> BMap (BMap a)
+bMapMap f = BMap (\b -> BMap $ f b)
+
+applyBMapMap :: forall a. BMap (BMap a) -> Boolean -> Boolean -> a
+applyBMapMap f a b = applyBMap (applyBMap f a) b
+
 instance eqBoolFunction :: Eq a => Eq (BMap a) where
     eq (BMap f) (BMap g) = f true == g true && f false == g false
+
+instance showBoolFunction :: Show a => Show (BMap a) where
+    show (BMap f) =
+        "BMap (if _ then "
+        <> show (f true)
+        <> " else "
+        <> show (f false)
+        <> ")"
 
 type UnaryOp =
     { function :: BMap Boolean
@@ -39,10 +53,7 @@ type UnaryOp =
     }
 
 makeUnary :: (Boolean -> Boolean) -> String -> UnaryOp
-makeUnary f symbol =
-    { function : BMap f
-    , symbol
-    }
+makeUnary f symbol = { function : BMap f, symbol }
 
 type BinaryOp =
     { function :: BMap (BMap Boolean)
@@ -50,10 +61,7 @@ type BinaryOp =
     }
 
 makeBinary :: (Boolean -> Boolean -> Boolean) -> String -> BinaryOp
-makeBinary f symbol =
-    { function : BMap (\x -> BMap (f x))
-    , symbol
-    }
+makeBinary f symbol = { function : bMapMap f, symbol }
 
 data WFF a
     = Prop a
@@ -61,6 +69,11 @@ data WFF a
     | Binary { operator :: BinaryOp, left :: WFF a, right :: WFF a }
 
 derive instance eqWFF :: Eq a => Eq (WFF a)
+
+instance showWFF :: Show a => Show (WFF a) where
+    show (Prop p) = "Prop (" <> show p <> ")"
+    show (Unary u) = "Unary " <> show u
+    show (Binary b) = "Binary " <> show b
 
 instance functorWFF :: Functor WFF where
     map f (Prop p) = Prop $ f p
@@ -115,8 +128,7 @@ safeRender w = "(" <> render w <> ")"
 eval :: WFF Boolean -> Boolean
 eval (Prop p) = p
 eval (Unary u) = applyBMap u.operator.function $ eval u.contents
-eval (Binary b) =
-    applyBMap (applyBMap b.operator.function $ eval b.left) $ eval b.right
+eval (Binary b) = applyBMapMap b.operator.function (eval b.left) (eval b.right)
 
 negOp :: UnaryOp
 negOp = makeUnary not "~"
