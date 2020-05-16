@@ -17,24 +17,27 @@ module WFF (
 import Prelude
     ( class Eq, class Ord, class Functor, class Apply, class Applicative
     , class Bind, class Monad, class Show
-    , not, show
+    , not, show, map
     , (<>), ($), (<$>), (<*>), (>>=), (<<<), (==), (&&), (||), (<=))
 import Data.Foldable (class Foldable, foldMap, foldlDefault, foldrDefault)
 import Data.Traversable (class Traversable, sequence, traverseDefault)
 import Data.Map as M
+import Data.Lens as L
 
 import Mapping (Mapping(..))
 
 data BMap a = BMap (Boolean -> a)
 
-applyBMap :: forall a. BMap a -> Boolean -> a
-applyBMap (BMap f) = f
+bmap :: forall a b. L.Iso (BMap a) (BMap b) (Boolean -> a) (Boolean -> b)
+bmap = L.iso (\(BMap f) -> f) BMap
 
-bMapMap :: forall a. (Boolean -> Boolean -> a) -> BMap (BMap a)
-bMapMap f = BMap (\b -> BMap $ f b)
+liftIso :: forall a b c d f. Functor f =>
+    L.Iso a b c d -> L.Iso (f a) (f b) (f c) (f d)
+liftIso i = L.iso (map $ L.view i) (map $ L.review i)
 
-applyBMapMap :: forall a. BMap (BMap a) -> Boolean -> Boolean -> a
-applyBMapMap f a b = applyBMap (applyBMap f a) b
+bmapmap :: forall a b. L.Iso (BMap (BMap a)) (BMap (BMap b))
+    (Boolean -> Boolean -> a) (Boolean -> Boolean -> b)
+bmapmap = bmap <<< liftIso bmap
 
 instance eqBoolFunction :: Eq a => Eq (BMap a) where
     eq (BMap f) (BMap g) = f true == g true && f false == g false
@@ -61,7 +64,7 @@ type BinaryOp =
     }
 
 makeBinary :: (Boolean -> Boolean -> Boolean) -> String -> BinaryOp
-makeBinary f symbol = { function : bMapMap f, symbol }
+makeBinary f symbol = { function : L.review bmapmap f, symbol }
 
 data WFF a
     = Prop a
@@ -127,8 +130,8 @@ safeRender w = "(" <> render w <> ")"
 -- Evaluate a WFF
 eval :: WFF Boolean -> Boolean
 eval (Prop p) = p
-eval (Unary u) = applyBMap u.operator.function $ eval u.contents
-eval (Binary b) = applyBMapMap b.operator.function (eval b.left) (eval b.right)
+eval (Unary u) = L.view bmap u.operator.function $ eval u.contents
+eval (Binary b) = L.view bmapmap b.operator.function (eval b.left) (eval b.right)
 
 negOp :: UnaryOp
 negOp = makeUnary not "~"
