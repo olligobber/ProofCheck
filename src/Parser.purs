@@ -3,6 +3,7 @@ module Parser where
 
 import Prelude (($), (||), (&&), (/=), (<$>), (<>), (<<<), bind, pure)
 import Control.Alt ((<|>))
+import Control.Lazy (class Lazy, defer)
 import Data.Array as A
 import Data.Char.Unicode as U
 import Data.Either (Either(..))
@@ -49,11 +50,13 @@ definedSymbol m = do
 proposition :: Parser String (WFF String)
 proposition = WFF.Prop <<< fromCharArray <$> A.some PT.letter
 
-safeExpression :: SymbolMap -> Parser String (WFF String)
+safeExpression :: Lazy (Parser String (WFF String)) =>
+    SymbolMap -> Parser String (WFF String)
 safeExpression m = proposition
-    <|> PC.between (PS.char '(') (PS.char ')') (expression m)
+    <|> PC.between (PS.char '(') (PS.char ')') (defer \_ -> expression m)
 
-unaryExpression :: SymbolMap -> Parser String (WFF String)
+unaryExpression :: Lazy (Parser String (WFF String)) =>
+    SymbolMap -> Parser String (WFF String)
 unaryExpression m = do
     p <- P.position
     o <- definedSymbol m
@@ -63,7 +66,7 @@ unaryExpression m = do
         Right _ -> P.failWithPosition "Expected Unary Symbol" p
 
 
-tailBinaryExpression :: SymbolMap ->
+tailBinaryExpression :: Lazy (Parser String (WFF String)) => SymbolMap ->
     Parser String { operator :: BinaryOp, right :: WFF String }
 tailBinaryExpression m = do
     p <- P.position
@@ -73,7 +76,8 @@ tailBinaryExpression m = do
         Right operator -> pure { operator, right }
         Left _ -> P.failWithPosition "Expected Binary Symbol" p
 
-maybeBinaryExpression :: SymbolMap -> Parser String (WFF String)
+maybeBinaryExpression :: Lazy (Parser String (WFF String)) =>
+    SymbolMap -> Parser String (WFF String)
 maybeBinaryExpression m = do
     left <- safeExpression m
     rest <- PC.option Nothing $ Just <$> tailBinaryExpression m
@@ -81,5 +85,6 @@ maybeBinaryExpression m = do
         Nothing -> pure left
         Just {right, operator} -> pure $ WFF.Binary $ {left, operator, right}
 
-expression :: SymbolMap -> Parser String (WFF String)
+expression :: Lazy (Parser String (WFF String)) =>
+    SymbolMap -> Parser String (WFF String)
 expression m = maybeBinaryExpression m <|> unaryExpression m
