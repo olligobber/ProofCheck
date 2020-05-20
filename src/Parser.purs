@@ -1,7 +1,7 @@
 -- module Parser (defaultMap, symbol, expression) where
 module Parser where
 
-import Prelude (($), (||), (&&), (/=), (<$>), (<>), (<<<), bind, pure)
+import Prelude (($), (||), (&&), (<$>), (<>), (<<<), bind, pure)
 import Control.Alt ((<|>))
 import Control.Lazy (class Lazy, defer)
 import Data.Array as A
@@ -21,21 +21,12 @@ import Text.Parsing.Parser.Token as PT
 
 import WFF (UnaryOp, BinaryOp, WFF)
 import WFF as WFF
-
-type SymbolMap = Map String (Either UnaryOp BinaryOp)
-
-defaultMap :: SymbolMap
-defaultMap = M.fromFoldable
-    [ Tuple "&" $ Right WFF.andOp
-    , Tuple "|" $ Right WFF.orOp
-    , Tuple "->" $ Right WFF.impliesOp
-    , Tuple "~" $ Left WFF.negOp
-    ]
+import Symbol (SymbolMap)
 
 symbol :: Parser String String
 symbol = fromCharArray <$> A.some
     ( PS.satisfy
-        ((U.isPunctuation || U.isSymbol) && (_ /= '(') && (_ /= ')'))
+        ((U.isPunctuation || U.isSymbol) && (_ `A.notElem` ['(',')','∃','∀']))
         <?> "Symbol or Punctuation"
     )
 
@@ -64,7 +55,6 @@ unaryExpression m = do
     case o of
         Left operator -> pure $ WFF.Unary { operator, contents }
         Right _ -> P.failWithPosition "Expected Unary Symbol" p
-
 
 tailBinaryExpression :: Lazy (Parser String (WFF String)) => SymbolMap ->
     Parser String { operator :: BinaryOp, right :: WFF String }

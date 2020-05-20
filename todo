@@ -1,0 +1,9 @@
+rewrite
+	proof
+	json (proof, sequent, wff, symbol)
+	ui (main, proof, sequent, symbol)
+
+add
+	symbol replacement
+	si(s) vs si
+	first order logic

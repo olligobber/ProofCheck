@@ -2,13 +2,17 @@ module Symbol
     ( Symbol(..)
     , makeUnary
     , makeBinary
-    )
-where
+    , SymbolMap
+    , defaultMap
+    ) where
 
 import Prelude (class Eq, Unit, (==), ($), (<$), (<$>), unit)
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
 import Data.Traversable (traverse)
+import Data.Map (Map)
+import Data.Map as M
+import Data.Tuple (Tuple(..))
 
 import WFF (UnaryOp, BinaryOp, WFF)
 import WFF as WFF
@@ -45,3 +49,13 @@ makeBinary p q s w = case renamed of
                 else if q == r then Just false
                 else Nothing)
             w
+
+type SymbolMap = Map String (Either UnaryOp BinaryOp)
+
+defaultMap :: SymbolMap
+defaultMap = M.fromFoldable
+    [ Tuple "&" $ Right WFF.andOp
+    , Tuple "|" $ Right WFF.orOp
+    , Tuple "->" $ Right WFF.impliesOp
+    , Tuple "~" $ Left WFF.negOp
+    ]

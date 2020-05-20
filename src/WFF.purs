@@ -1,18 +1,22 @@
-module WFF (
-    BMap(..),
-    UnaryOp,
-    makeUnary,
-    BinaryOp,
-    makeBinary,
-    WFF(..),
-    render,
-    eval,
-    negOp,
-    andOp,
-    orOp,
-    impliesOp,
-    match
-) where
+module WFF
+    ( BMap(..)
+    , UnaryOp
+    , makeUnary
+    , BinaryOp
+    , makeBinary
+    , WFF(..)
+    , render
+    , eval
+    , negOp
+    , andOp
+    , orOp
+    , impliesOp
+    , neg
+    , and
+    , or
+    , implies
+    , match
+    ) where
 
 import Prelude
     ( class Eq, class Ord, class Functor, class Apply, class Applicative
@@ -144,6 +148,23 @@ orOp = makeBinary (||) "|"
 
 impliesOp :: BinaryOp
 impliesOp = makeBinary (<=) "->"
+
+neg :: forall x. WFF x -> WFF x
+neg contents = Unary { operator : negOp, contents }
+
+and :: forall x. WFF x -> WFF x -> WFF x
+and left right = Binary { operator : andOp, left, right }
+
+or :: forall x. WFF x -> WFF x -> WFF x
+or left right = Binary { operator : orOp, left, right }
+
+implies :: forall x. WFF x -> WFF x -> WFF x
+implies left right = Binary { operator : impliesOp, left, right }
+
+infix 5 and as /\
+infix 5 or as \/
+infix 5 implies as ==>
+
 
 -- Match a WFF to one after substitutions were applied, returning the relevant
 -- substitutions
