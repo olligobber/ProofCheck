@@ -14,6 +14,9 @@ module WFF
     , neg
     , and
     , or
+    , (/\)
+    , (\/)
+    , (==>)
     , implies
     , match
     ) where

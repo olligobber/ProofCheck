@@ -2,6 +2,7 @@ module Symbol
     ( Symbol(..)
     , makeUnary
     , makeBinary
+    , toSequents
     , SymbolMap
     , defaultMap
     ) where
@@ -14,8 +15,9 @@ import Data.Map (Map)
 import Data.Map as M
 import Data.Tuple (Tuple(..))
 
-import WFF (UnaryOp, BinaryOp, WFF)
+import WFF (UnaryOp, BinaryOp, WFF(..))
 import WFF as WFF
+import Sequent (Sequent(..))
 
 data Symbol
     = UnarySymbol { operator :: UnaryOp, definition :: WFF Unit }
@@ -49,6 +51,22 @@ makeBinary p q s w = case renamed of
                 else if q == r then Just false
                 else Nothing)
             w
+
+toSequents :: Symbol -> Array (Sequent Int)
+toSequents (UnarySymbol s) =
+    [ Sequent { ante : [ withOp ], conse : noOp }
+    , Sequent { ante : [ noOp ], conse : withOp }
+    ]
+    where
+        withOp = Unary {operator : s.operator, contents: Prop 1}
+        noOp = 1 <$ s.definition
+toSequents (BinarySymbol s) =
+    [ Sequent { ante : [ withOp ], conse : noOp }
+    , Sequent { ante : [ noOp ], conse : withOp }
+    ]
+    where
+        withOp = Binary {operator : s.operator, left : Prop 1, right : Prop 0}
+        noOp = (if _ then 1 else 0) <$> s.definition
 
 type SymbolMap = Map String (Either UnaryOp BinaryOp)
 

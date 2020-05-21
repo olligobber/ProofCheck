@@ -7,11 +7,9 @@ import Control.Lazy (class Lazy, defer)
 import Data.Array as A
 import Data.Char.Unicode as U
 import Data.Either (Either(..))
-import Data.Map (Map)
 import Data.Map as M
 import Data.Maybe (Maybe(..))
 import Data.String.CodeUnits (fromCharArray)
-import Data.Tuple (Tuple(..))
 import Text.Parsing.Parser (Parser)
 import Text.Parsing.Parser as P
 import Text.Parsing.Parser.Combinators ((<?>))
