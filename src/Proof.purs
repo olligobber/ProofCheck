@@ -10,8 +10,7 @@ module Proof
     ) where
 
 import Prelude
-    ( class Ord
-    , (<>), (<$>), ($), (>>>), (==), (/=)
+    ( (<>), (<$>), ($), (>>>), (==), (/=)
     , show, otherwise, bind, map, flip
     )
 import Data.String.Common (joinWith)
@@ -31,28 +30,28 @@ import Symbol (Symbol(..), SymbolMap)
 import Symbol as Sym
 import Deduction
 
-data Deduction x = Deduction
+data Deduction = Deduction
     { assumptions :: Set Int
-    , deduction :: WFF x
-    , rule :: DeductionRule x
+    , deduction :: WFF String
+    , rule :: DeductionRule
     , reasons :: Set Int
     }
 
-data Proof x = Proof
-    { sequents :: Array (Sequent x)
+data Proof = Proof
+    { sequents :: Array (Sequent String)
     , symbols :: Array Symbol
     , symbolMap :: SymbolMap
-    , lines :: Array (Deduction x)
+    , lines :: Array Deduction
     , assumptions :: Set Int
     }
 
-renderReason :: Deduction String -> String
+renderReason :: Deduction -> String
 renderReason (Deduction d) =
     renderRule d.rule
     <> " "
     <> joinWith "," (show <$> Set.toUnfoldable d.reasons)
 
-empty :: forall x. Proof x
+empty :: Proof
 empty = Proof
     { sequents : []
     , symbols : []
@@ -61,10 +60,10 @@ empty = Proof
     , assumptions : Set.empty
     }
 
-addSequent :: forall x. Sequent x -> Proof x -> Proof x
+addSequent :: Sequent String -> Proof -> Proof
 addSequent s (Proof p) = Proof $ p { sequents = p.sequents <> [s] }
 
-addSymbol :: forall x. Symbol -> Proof x -> Either String (Proof x)
+addSymbol :: Symbol -> Proof -> Either String Proof
 addSymbol (UnarySymbol s) (Proof p)
     | M.member s.operator.symbol p.symbolMap =
         Left $ "Symbol " <> s.operator.symbol <> " is already defined"
@@ -80,16 +79,15 @@ addSymbol (BinarySymbol s) (Proof p)
         , symbolMap = M.insert s.operator.symbol (Right s.operator) p.symbolMap
         }
 
-pack :: forall x. Deduction x ->
-    {formula :: WFF x, isAssumption :: Boolean, assumptions :: Set Int}
+pack :: Deduction ->
+    {formula :: WFF String, isAssumption :: Boolean, assumptions :: Set Int}
 pack (Deduction d) =
     { formula : d.deduction
     , isAssumption : isAssumption d.rule
     , assumptions : d.assumptions
     }
 
-addDeduction :: forall x. Ord x =>
-    Deduction x -> Proof x -> Either String (Proof x)
+addDeduction :: Deduction -> Proof -> Either String Proof
 addDeduction (Deduction d) (Proof p) = do
     antes <- E.note "Invalid line number"
         $ traverse (A.index p.lines >>> map pack)
@@ -107,8 +105,8 @@ addDeduction (Deduction d) (Proof p) = do
             , assumptions = p.assumptions `Set.union` d.assumptions
             }
 
-addAll :: forall x. Ord x => Array Symbol -> Array (Sequent x) ->
-    Array (Deduction x) -> Either String (Proof x)
+addAll :: Array Symbol -> Array (Sequent String) -> Array Deduction ->
+    Either String Proof
 addAll symbols sequents deductions = do
     addedSymbols <- foldM (flip addSymbol) empty symbols
     let addedSequents = foldl (flip addSequent) addedSymbols sequents

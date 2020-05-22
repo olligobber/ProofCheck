@@ -6,8 +6,7 @@ module Deduction
     ) where
 
 import Prelude
-    ( class Eq, class Ord
-    , (<>), (<$>), ($)
+    ( (<>), (<$>), ($)
     , map, bind, pure, discard, not
     )
 import Data.Either (Either(..))
@@ -23,7 +22,7 @@ import Sequent as Seq
 import Symbol (Symbol(..))
 import Symbol as Sym
 
-data DeductionRule x
+data DeductionRule
     = Assumption
     | ModusPonens
     | ModusTollens
@@ -35,13 +34,13 @@ data DeductionRule x
     | OrElimination
     | RAA
     | Definition Symbol
-    | Introduction (Sequent x)
+    | Introduction (Sequent String)
 
-isAssumption :: forall x. DeductionRule x -> Boolean
+isAssumption :: DeductionRule -> Boolean
 isAssumption Assumption = true
 isAssumption _ = false
 
-renderRule :: DeductionRule String -> String
+renderRule :: DeductionRule -> String
 renderRule Assumption = "A"
 renderRule ModusPonens = "MP"
 renderRule ModusTollens = "MT"
@@ -56,7 +55,7 @@ renderRule (Definition (UnarySymbol s)) = "Def (" <> s.operator.symbol <> ")"
 renderRule (Definition (BinarySymbol s)) = "Def (" <> s.operator.symbol <> ")"
 renderRule (Introduction s) = "SI (" <> Seq.render s <> ")"
 
-toSequents :: forall x. DeductionRule x -> Array (Sequent (Either Int x))
+toSequents :: DeductionRule -> Array (Sequent (Either Int String))
 toSequents Assumption = [ Left <$> Sequent {ante : [], conse : Prop 1} ]
 toSequents ModusPonens =
     [ Left <$> Sequent {ante : [Prop 1, Prop 1 ==> Prop 2], conse : Prop 2} ]
@@ -98,9 +97,9 @@ toSequents (Introduction s) = [ Right <$> s ]
     returns either an error or the assumptions the conclusion relies on,
     using Nothing as a flag that this is a new assumption
 -}
-matchDeduction :: forall x y. Eq x => Ord y =>
-    Array {formula :: WFF x, isAssumption :: Boolean, assumptions :: Set Int} ->
-    WFF x -> DeductionRule y -> Either String (Maybe (Set Int))
+matchDeduction :: Array
+    {formula :: WFF String, isAssumption :: Boolean, assumptions :: Set Int} ->
+    WFF String -> DeductionRule -> Either String (Maybe (Set Int))
 matchDeduction a conse d@Assumption =
     case A.head $ do
         s <- toSequents d
