@@ -5,9 +5,10 @@ module Symbol
     , toSequents
     , SymbolMap
     , defaultMap
+    , updateMap
     ) where
 
-import Prelude (class Eq, Unit, (==), ($), (<$), (<$>), unit)
+import Prelude (class Eq, Unit, (==), ($), (<$), (<$>), (<>), unit, otherwise)
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
 import Data.Traversable (traverse)
@@ -77,3 +78,13 @@ defaultMap = M.fromFoldable
     , Tuple "->" $ Right WFF.impliesOp
     , Tuple "~" $ Left WFF.negOp
     ]
+
+updateMap :: SymbolMap -> Symbol -> Either String SymbolMap
+updateMap m (UnarySymbol u)
+    | M.member u.operator.symbol m =
+        Left $ "Symbol " <> u.operator.symbol <> " is already defined"
+    | otherwise = Right $ M.insert u.operator.symbol (Left u.operator) m
+updateMap m (BinarySymbol b)
+    | M.member b.operator.symbol m =
+        Left $ "Symbol " <> b.operator.symbol <> " is already defined"
+    | otherwise = Right $ M.insert b.operator.symbol (Right b.operator) m

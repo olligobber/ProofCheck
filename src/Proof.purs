@@ -11,10 +11,9 @@ module Proof
 
 import Prelude
     ( (<>), (<$>), ($), (>>>), (==), (/=)
-    , show, otherwise, bind, map, flip
+    , show, bind, map, flip, pure
     )
 import Data.String.Common (joinWith)
-import Data.Map as M
 import Data.Set (Set)
 import Data.Set as Set
 import Data.Either (Either(..))
@@ -26,7 +25,7 @@ import Data.Foldable (foldM, foldl)
 
 import WFF (WFF)
 import Sequent (Sequent)
-import Symbol (Symbol(..), SymbolMap)
+import Symbol (Symbol, SymbolMap)
 import Symbol as Sym
 import Deduction
 
@@ -64,19 +63,11 @@ addSequent :: Sequent String -> Proof -> Proof
 addSequent s (Proof p) = Proof $ p { sequents = p.sequents <> [s] }
 
 addSymbol :: Symbol -> Proof -> Either String Proof
-addSymbol (UnarySymbol s) (Proof p)
-    | M.member s.operator.symbol p.symbolMap =
-        Left $ "Symbol " <> s.operator.symbol <> " is already defined"
-    | otherwise = Right $ Proof $ p
-        { symbols = p.symbols <> [UnarySymbol s]
-        , symbolMap = M.insert s.operator.symbol (Left s.operator) p.symbolMap
-        }
-addSymbol (BinarySymbol s) (Proof p)
-    | M.member s.operator.symbol p.symbolMap =
-        Left $ "Symbol " <> s.operator.symbol <> " is already defined"
-    | otherwise = Right $ Proof $ p
-        { symbols = p.symbols <> [BinarySymbol s]
-        , symbolMap = M.insert s.operator.symbol (Right s.operator) p.symbolMap
+addSymbol s (Proof p) = do
+    newMap <- Sym.updateMap p.symbolMap s
+    pure $ Proof $ p
+        { symbols = p.symbols <> [s]
+        , symbolMap = newMap
         }
 
 pack :: Deduction ->

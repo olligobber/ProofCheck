@@ -4,10 +4,12 @@ You can edit this file as you like.
 -}
 { name = "my-project"
 , dependencies =
-  [ "console"
+  [ "argonaut-core"
+  , "console"
   , "control"
   , "effect"
   , "foldable-traversable"
+  , "foreign-object"
   , "functors"
   , "ordered-collections"
   , "parsing"

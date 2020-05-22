@@ -1,12 +1,12 @@
--- module Parser (defaultMap, symbol, expression) where
-module Parser where
+module Parser (parseSymbol, parse) where
 
-import Prelude (($), (||), (&&), (<$>), (<>), (<<<), bind, pure)
+import Prelude (($), (||), (&&), (<$>), (<>), (<<<), (>>>), bind, pure, show)
 import Control.Alt ((<|>))
 import Control.Lazy (class Lazy, defer)
 import Data.Array as A
 import Data.Char.Unicode as U
 import Data.Either (Either(..))
+import Data.Either as E
 import Data.Map as M
 import Data.Maybe (Maybe(..))
 import Data.String.CodeUnits (fromCharArray)
@@ -16,6 +16,7 @@ import Text.Parsing.Parser.Combinators ((<?>))
 import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 import Text.Parsing.Parser.Token as PT
+import Text.Parsing.Parser.Pos as PP
 
 import WFF (UnaryOp, BinaryOp, WFF)
 import WFF as WFF
@@ -76,3 +77,13 @@ maybeBinaryExpression m = do
 expression :: Lazy (Parser String (WFF String)) =>
     SymbolMap -> Parser String (WFF String)
 expression m = maybeBinaryExpression m <|> unaryExpression m
+
+showError :: P.ParseError -> String
+showError (P.ParseError e (PP.Position p)) =
+    "Parsing Error: " <> e <> " at position " <> show p.column
+
+parseSymbol :: String -> Either String String
+parseSymbol s = E.either (showError >>> Left) Right $ P.runParser s symbol
+
+parse :: SymbolMap -> String -> Either String (WFF String)
+parse m s = E.either (showError >>> Left) Right $ P.runParser s $ expression m
