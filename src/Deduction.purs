@@ -33,8 +33,8 @@ data DeductionRule
     | OrIntroduction
     | OrElimination
     | RAA
-    | Definition Symbol
-    | Introduction (Sequent String)
+    | Definition Symbol Int
+    | Introduction (Sequent String) Int
 
 isAssumption :: DeductionRule -> Boolean
 isAssumption Assumption = true
@@ -51,9 +51,11 @@ renderRule AndElimination = "&E"
 renderRule OrIntroduction = "|I"
 renderRule OrElimination = "|E"
 renderRule RAA = "RAA"
-renderRule (Definition (UnarySymbol s)) = "Def (" <> s.operator.symbol <> ")"
-renderRule (Definition (BinarySymbol s)) = "Def (" <> s.operator.symbol <> ")"
-renderRule (Introduction s) = "SI (" <> Seq.render s <> ")"
+renderRule (Definition (UnarySymbol s) _) =
+    "Def (" <> s.operator.symbol <> ")"
+renderRule (Definition (BinarySymbol s) _) =
+    "Def (" <> s.operator.symbol <> ")"
+renderRule (Introduction s _) = "SI (" <> Seq.render s <> ")"
 
 toSequents :: DeductionRule -> Array (Sequent (Either Int String))
 toSequents Assumption = [ Left <$> Sequent {ante : [], conse : Prop 1} ]
@@ -85,8 +87,8 @@ toSequents OrElimination =
     ]
 toSequents RAA = map Left <$>
     [ Sequent {ante : [Prop 1, Prop 2 /\ neg (Prop 2)], conse : neg $ Prop 1} ]
-toSequents (Definition s) = map Left <$> Sym.toSequents s
-toSequents (Introduction s) = [ Right <$> s ]
+toSequents (Definition s _) = map Left <$> Sym.toSequents s
+toSequents (Introduction s _) = [ Right <$> s ]
 
 {-
     Check a deduction was correctly applied, given

@@ -1,17 +1,17 @@
 module Proof
-    ( Deduction
-    , Proof
+    ( Deduction(..)
+    , Proof(..)
     , empty
     , addSequent
     , addSymbol
     , addDeduction
     , renderReason
-    , addAll
+    , getAssumptions
     ) where
 
 import Prelude
-    ( (<>), (<$>), ($), (>>>), (==), (/=)
-    , show, bind, map, flip, pure
+    ( (<>), (<$>), ($), (>>>), (==), (/=), (+)
+    , show, bind, map, pure
     )
 import Data.String.Common (joinWith)
 import Data.Set (Set)
@@ -21,7 +21,6 @@ import Data.Either as E
 import Data.Maybe (Maybe(..))
 import Data.Array as A
 import Data.Traversable (traverse)
-import Data.Foldable (foldM, foldl)
 
 import WFF (WFF)
 import Sequent (Sequent)
@@ -96,9 +95,19 @@ addDeduction (Deduction d) (Proof p) = do
             , assumptions = p.assumptions `Set.union` d.assumptions
             }
 
-addAll :: Array Symbol -> Array (Sequent String) -> Array Deduction ->
-    Either String Proof
-addAll symbols sequents deductions = do
-    addedSymbols <- foldM (flip addSymbol) empty symbols
-    let addedSequents = foldl (flip addSequent) addedSymbols sequents
-    foldM (flip addDeduction) addedSequents deductions
+getNextUnused :: Set Int -> Int
+getNextUnused s = case Set.findMin $ plus `Set.difference` s of
+    Nothing -> 1
+    Just m -> m
+    where
+        plus = Set.insert 1 $ Set.map (_ + 1) s
+
+getAssumptions :: Deduction -> Proof -> Either String (Set Int)
+getAssumptions (Deduction d) (Proof p) = do
+    antes <- E.note "Invalid line number"
+        $ traverse (A.index p.lines >>> map pack)
+        $ Set.toUnfoldable d.reasons
+    assumptions <- matchDeduction antes d.deduction d.rule
+    case assumptions of
+        Just s -> pure s
+        Nothing -> pure $ Set.singleton $ getNextUnused p.assumptions
