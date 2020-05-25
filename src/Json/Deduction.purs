@@ -1,4 +1,4 @@
-module DeductionJson
+module Json.Deduction
     ( toJson
     , fromJson
     ) where

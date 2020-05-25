@@ -1,4 +1,4 @@
-module ProofJson
+module Json.Proof
     ( toJson
     , fromJson
     ) where
@@ -16,10 +16,10 @@ import Data.Set as S
 import Data.Traversable (traverse)
 import Data.Foldable (foldM)
 
-import WFFJson as WJ
-import DeductionJson as DJ
-import SymbolJson as SymJ
-import SequentJson as SeqJ
+import Json.WFF as JW
+import Json.Deduction as JD
+import Json.Symbol as JSym
+import Json.Sequent as JSeq
 import Proof as P
 import Proof (Deduction(..), Proof(..))
 
@@ -27,8 +27,8 @@ fromDeduction :: Deduction -> Json
 fromDeduction (Deduction d) = AC.fromObject $ O.fromFoldable
     [ Tuple "assumptions" $ AC.fromArray $
         AC.fromNumber <<< toNumber <$> S.toUnfoldable d.assumptions
-    , Tuple "formula" $ WJ.toJson d.deduction
-    , Tuple "rule" $ DJ.toJson d.rule
+    , Tuple "formula" $ JW.toJson d.deduction
+    , Tuple "rule" $ JD.toJson d.rule
     , Tuple "references" $ AC.fromArray $
         AC.fromNumber <<< toNumber <$> S.toUnfoldable d.reasons
     ]
@@ -37,9 +37,9 @@ toDeduction :: Proof -> Json -> Either String Deduction
 toDeduction (Proof p) j = do
     o <- E.note "Deduction is not an object" $ AC.toObject j
     formJson <- E.note "Deduction is missing formula" $ O.lookup "formula" o
-    deduction <- WJ.fromJson p.symbolMap formJson
+    deduction <- JW.fromJson p.symbolMap formJson
     ruleJson <- E.note "Deduction is missing rule" $ O.lookup "rule" o
-    rule <- DJ.fromJson p.symbols p.sequents ruleJson
+    rule <- JD.fromJson p.symbols p.sequents ruleJson
     refJson <- E.note "Deduction is missing references" $
         O.lookup "references" o
     refArr <- E.note "Deduction references are not a list" $
@@ -63,8 +63,8 @@ toDeduction (Proof p) j = do
 
 toJson :: Proof -> Json
 toJson (Proof p) = AC.fromObject $ O.fromFoldable
-    [ Tuple "symbols" $ AC.fromArray $ SymJ.toJson <$> p.symbols
-    , Tuple "sequents" $ AC.fromArray $ SeqJ.toJson <$> p.sequents
+    [ Tuple "symbols" $ AC.fromArray $ JSym.toJson <$> p.symbols
+    , Tuple "sequents" $ AC.fromArray $ JSeq.toJson <$> p.sequents
     , Tuple "lines" $ AC.fromArray $ fromDeduction <$> p.lines
     ]
 
@@ -72,10 +72,10 @@ fromJson :: Json -> Either String Proof
 fromJson j = do
     o <- E.note "Proof is not an object" $ AC.toObject j
     symJson <- E.note "Proof is missing symbols" $ O.lookup "symbols" o
-    {symbols, symbolMap} <- SymJ.allFromJson symJson
+    {symbols, symbolMap} <- JSym.allFromJson symJson
     seqJson <- E.note "Proof is missing sequents" $ O.lookup "sequents" o
     seqArr <- E.note "Sequents are not in a list" $ AC.toArray seqJson
-    sequents <- traverse (SeqJ.fromJson symbolMap) seqArr
+    sequents <- traverse (JSeq.fromJson symbolMap) seqArr
     linesJson <- E.note "Proof is missing lines" $ O.lookup "lines" o
     linesArr <- E.note "Lines are not in a list" $ AC.toArray linesJson
     let startP = Proof

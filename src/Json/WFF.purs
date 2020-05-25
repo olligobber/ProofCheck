@@ -1,4 +1,4 @@
-module WFFJson
+module Json.WFF
     ( toJson
     , fromJson
     ) where
