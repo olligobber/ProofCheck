@@ -2,8 +2,6 @@ module Proof
     ( Deduction(..)
     , Proof(..)
     , empty
-    , addSequent
-    , addSymbol
     , addDeduction
     , renderReason
     , getAssumptions
@@ -23,9 +21,6 @@ import Data.Array as A
 import Data.Traversable (traverse)
 
 import WFF (WFF)
-import Sequent (Sequent)
-import Symbol (Symbol, SymbolMap)
-import Symbol as Sym
 import Deduction
 
 data Deduction = Deduction
@@ -36,10 +31,7 @@ data Deduction = Deduction
     }
 
 data Proof = Proof
-    { sequents :: Array (Sequent String)
-    , symbols :: Array Symbol
-    , symbolMap :: SymbolMap
-    , lines :: Array Deduction
+    { lines :: Array Deduction
     , assumptions :: Set Int
     }
 
@@ -51,23 +43,9 @@ renderReason (Deduction d) =
 
 empty :: Proof
 empty = Proof
-    { sequents : []
-    , symbols : []
-    , symbolMap : Sym.defaultMap
-    , lines : []
+    { lines : []
     , assumptions : Set.empty
     }
-
-addSequent :: Sequent String -> Proof -> Proof
-addSequent s (Proof p) = Proof $ p { sequents = p.sequents <> [s] }
-
-addSymbol :: Symbol -> Proof -> Either String Proof
-addSymbol s (Proof p) = do
-    newMap <- Sym.updateMap p.symbolMap s
-    pure $ Proof $ p
-        { symbols = p.symbols <> [s]
-        , symbolMap = newMap
-        }
 
 pack :: Deduction ->
     {formula :: WFF String, isAssumption :: Boolean, assumptions :: Set Int}
@@ -90,9 +68,9 @@ addDeduction (Deduction d) (Proof p) = do
         _ | Set.size d.assumptions /= 1 -> Left "Incorrect assumptions"
         _ | d.assumptions `Set.subset` p.assumptions ->
             Left "Assumption number already in use"
-        _ -> Right $ Proof $ p
-            { lines = p.lines <> [Deduction d]
-            , assumptions = p.assumptions `Set.union` d.assumptions
+        _ -> Right $ Proof $
+            { lines : p.lines <> [Deduction d]
+            , assumptions : p.assumptions `Set.union` d.assumptions
             }
 
 getNextUnused :: Set Int -> Int

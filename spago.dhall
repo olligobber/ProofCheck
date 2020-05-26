@@ -11,6 +11,7 @@ You can edit this file as you like.
   , "foldable-traversable"
   , "foreign-object"
   , "functors"
+  , "halogen"
   , "ordered-collections"
   , "parsing"
   , "profunctor-lenses"

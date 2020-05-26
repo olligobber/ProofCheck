@@ -18,10 +18,10 @@ import Data.Foldable (foldM)
 
 import Json.WFF as JW
 import Json.Deduction as JD
-import Json.Symbol as JSym
-import Json.Sequent as JSeq
 import Proof as P
 import Proof (Deduction(..), Proof(..))
+import Symbol (Symbol, SymbolMap)
+import Sequent (Sequent)
 
 fromDeduction :: Deduction -> Json
 fromDeduction (Deduction d) = AC.fromObject $ O.fromFoldable
@@ -33,13 +33,14 @@ fromDeduction (Deduction d) = AC.fromObject $ O.fromFoldable
         AC.fromNumber <<< toNumber <$> S.toUnfoldable d.reasons
     ]
 
-toDeduction :: Proof -> Json -> Either String Deduction
-toDeduction (Proof p) j = do
+toDeduction :: SymbolMap -> Array Symbol -> Array (Sequent String) -> Proof ->
+    Json -> Either String Deduction
+toDeduction symbolMap syms seqs (Proof p) j = do
     o <- E.note "Deduction is not an object" $ AC.toObject j
     formJson <- E.note "Deduction is missing formula" $ O.lookup "formula" o
-    deduction <- JW.fromJson p.symbolMap formJson
+    deduction <- JW.fromJson symbolMap formJson
     ruleJson <- E.note "Deduction is missing rule" $ O.lookup "rule" o
-    rule <- JD.fromJson p.symbols p.sequents ruleJson
+    rule <- JD.fromJson syms seqs ruleJson
     refJson <- E.note "Deduction is missing references" $
         O.lookup "references" o
     refArr <- E.note "Deduction references are not a list" $
@@ -62,30 +63,17 @@ toDeduction (Proof p) j = do
             pure $ Deduction { assumptions, deduction, rule, reasons }
 
 toJson :: Proof -> Json
-toJson (Proof p) = AC.fromObject $ O.fromFoldable
-    [ Tuple "symbols" $ AC.fromArray $ JSym.toJson <$> p.symbols
-    , Tuple "sequents" $ AC.fromArray $ JSeq.toJson <$> p.sequents
-    , Tuple "lines" $ AC.fromArray $ fromDeduction <$> p.lines
-    ]
+toJson (Proof p) = AC.fromArray $ fromDeduction <$> p.lines
 
-fromJson :: Json -> Either String Proof
-fromJson j = do
-    o <- E.note "Proof is not an object" $ AC.toObject j
-    symJson <- E.note "Proof is missing symbols" $ O.lookup "symbols" o
-    {symbols, symbolMap} <- JSym.allFromJson symJson
-    seqJson <- E.note "Proof is missing sequents" $ O.lookup "sequents" o
-    seqArr <- E.note "Sequents are not in a list" $ AC.toArray seqJson
-    sequents <- traverse (JSeq.fromJson symbolMap) seqArr
-    linesJson <- E.note "Proof is missing lines" $ O.lookup "lines" o
-    linesArr <- E.note "Lines are not in a list" $ AC.toArray linesJson
+fromJson :: SymbolMap -> Array Symbol -> Array (Sequent String) -> Json ->
+    Either String Proof
+fromJson symbolMap syms seqs j = do
+    linesArr <- E.note "Proof is not a list" $ AC.toArray j
     let startP = Proof
-            { symbols
-            , symbolMap
-            , sequents
-            , assumptions : S.empty
+            { assumptions : S.empty
             , lines : []
             }
     foldM
-        (\p -> toDeduction p >=> flip P.addDeduction p)
+        (\p -> toDeduction symbolMap syms seqs p >=> flip P.addDeduction p)
         startP
         linesArr
