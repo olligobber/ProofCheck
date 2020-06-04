@@ -8,8 +8,8 @@ module UI.AppState
 
 import Prelude
     ( class Functor, class Apply, class Applicative, class Bind, class Monad
-    , ($), (>>=), (<$>), (<>)
-    , bind, const, pure, unit
+    , ($), (>>=), (<$>), (<>), (/=), (||)
+    , bind, const, pure, unit, not
     , Unit
     )
 import Data.Maybe (Maybe(..))
@@ -18,6 +18,8 @@ import Effect (Effect)
 import Effect.Ref (Ref, read, modify_)
 import Data.Either (Either(..))
 import Data.Array as A
+import Data.Foldable (length)
+import Control.Applicative (when)
 
 import Sequent (Sequent)
 import Symbol (Symbol, SymbolMap, defaultMap, updateMap)
@@ -28,7 +30,7 @@ import UI.Capabilities
     , class ReadSymbols, class WriteSymbols, class ReadSequents
     , class WriteSequents, class ReadProof, class WriteProof, class Error
     , class ReadError, class ReadNav, class Nav, class History
-    , error
+    , error, canNew
     )
 
 type ProofState =
@@ -163,14 +165,28 @@ instance historyAppStateM :: History AppStateM where
             }
     new = do
         state <- get
-        modify $ _
-            { history = state.history <> [state.present]
-            , future = []
-            , present =
-                { sequents : []
-                , symbols : []
-                , symbolMap : defaultMap
-                , proof : P.empty
+        ableNew <- canNew
+        when ableNew $
+            modify $ _
+                { history = state.history <> [state.present]
+                , future = []
+                , present =
+                    { sequents : []
+                    , symbols : []
+                    , symbolMap : defaultMap
+                    , proof : P.empty
+                    }
+                , error = Nothing
                 }
-            , error = Nothing
-            }
+    canUndo = do
+        state <- get
+        pure $ length state.history /= 0
+    canRedo = do
+        state <- get
+        pure $ length state.future /= 0
+    canNew = do
+        state <- get
+        pure $
+            length state.present.sequents /= 0 ||
+            length state.present.symbols /= 0 ||
+            not (P.isEmpty state.present.proof)

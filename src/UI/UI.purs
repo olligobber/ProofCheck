@@ -3,7 +3,7 @@ module UI
     ) where
 
 import Prelude
-    (Unit, ($), (<>), (>>=), (<<<), (*>), (<$>), bind, const, unit, pure)
+    (Unit, ($), (<>), (<<<), (*>), (<$>), bind, const, unit, pure)
 import Effect (Effect)
 import Data.Symbol (SProxy(..))
 import Halogen as H
@@ -25,7 +25,7 @@ import UI.Capabilities
     , class WriteSequents, class Nav, class Error, class ReadError
     , class WriteProof, class History, class ReadProof
     , Window(..)
-    , getErrors, setWindow, undo, redo, new, clear
+    , getErrors, setWindow, undo, redo, new, clear, canNew, canUndo, canRedo
     )
 
 data Action
@@ -37,7 +37,12 @@ data Action
     | ClearError
     | NoAction
 
-type State = Maybe (Array String)
+type State =
+    { errors :: Maybe (Array String)
+    , ableNew :: Boolean
+    , ableUndo :: Boolean
+    , ableRedo :: Boolean
+    }
 
 type Slots =
     ( sequents :: UISeq.Slot Unit
@@ -62,28 +67,45 @@ component = H.mkComponent
     }
 
 initialState :: State
-initialState = Nothing
+initialState =
+    { errors : Nothing
+    , ableNew : false
+    , ableUndo : false
+    , ableRedo : false
+    }
 
-menu :: forall m. H.ComponentHTML Action Slots m
-menu = HH.div
+menu :: forall m. State -> H.ComponentHTML Action Slots m
+menu state = HH.div
     [ HP.id_ "menu" ]
     [ HH.div
-        [ HP.class_ $ HH.ClassName "menu-buton"
+        [ HP.class_ $ HH.ClassName $
+            if state.ableNew then
+                "menu-button"
+            else
+                "menu-button disabled"
         , HP.id_ "new-button"
         , HE.onClick $ const $ Just New
-        ] -- todo disable if proof blank
+        ]
         [ HH.text "New" ]
     , HH.div
-        [ HP.class_ $ HH.ClassName "menu-button"
+        [ HP.class_ $ HH.ClassName $
+            if state.ableUndo then
+                "menu-button"
+            else
+                "menu-button disabled"
         , HP.id_ "undo-button"
         , HE.onClick $ const $ Just Undo
-        ] -- todo disable if no history
+        ]
         [ HH.text "Undo" ]
     , HH.div
-        [ HP.class_ $ HH.ClassName "menu-button"
+        [ HP.class_ $ HH.ClassName $
+            if state.ableRedo then 
+                "menu-button"
+            else
+                "menu-button disabled"
         , HP.id_ "redo-button"
         , HE.onClick $ const $ Just Redo
-        ] -- todo disable if no future
+        ]
         [ HH.text "Redo" ]
     , HH.div
         [ HP.class_ $ HH.ClassName "menu-button"
@@ -118,14 +140,14 @@ render :: forall m.
     State -> H.ComponentHTML Action Slots m
 render state = HH.div
     [ HP.id_ "main" ] $
-    [ menu
+    [ menu state
     , HH.slot _sequents unit UISeq.component UISeq.NoAction
         (const $ Just Update)
     , HH.slot _symbols unit UISym.component UISym.NoAction
         (const $ Just Update)
     , HH.slot _proof unit UIP.component UIP.NoAction
         (const $ Just Update)
-    ] <> case state of
+    ] <> case state.errors of
         Nothing -> []
         Just errs ->
             [ HH.div
@@ -145,7 +167,11 @@ handleAction Update = do
     _ <- H.query _sequents unit $ UISeq.Update unit
     _ <- H.query _symbols unit $ UISym.Update unit
     _ <- H.query _proof unit $ UIP.Update unit
-    getErrors >>= H.put
+    errors <- getErrors
+    ableNew <- canNew
+    ableUndo <- canUndo
+    ableRedo <- canRedo
+    H.put {errors, ableNew, ableUndo, ableRedo}
 handleAction (Open w) = setWindow w *> handleAction Update
 handleAction Undo = undo *> handleAction Update
 handleAction Redo = redo *> handleAction Update

@@ -1,7 +1,10 @@
-rewrite
-	proof
-	json (proof, sequent, wff, symbol)
-	ui (main, proof, sequent, symbol)
+fix
+	stop fields clearing on error
+	invalid line number error?
+	make parser error if it didn't consume all input
+	filter spaces before parsing
+	import/export window
+	save/load from storage
 
 add
 	symbol replacement

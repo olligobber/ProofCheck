@@ -120,6 +120,11 @@ input {
     .assumptions, .line-number {
         width: 10%;
         display: inline-block;
+
+        input {
+            color: inherit;
+            width: 80%;
+        }
     }
 
     .formula {

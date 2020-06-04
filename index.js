@@ -5594,6 +5594,12 @@ var PS = {};
     };
   };
 
+  exports.filter = function (f) {
+    return function (xs) {
+      return xs.filter(f);
+    };
+  };
+
   //------------------------------------------------------------------------------
   // Sorting ---------------------------------------------------------------------
   //------------------------------------------------------------------------------
@@ -5904,6 +5910,7 @@ var PS = {};
   exports["unzip"] = unzip;
   exports["length"] = $foreign.length;
   exports["cons"] = $foreign.cons;
+  exports["filter"] = $foreign.filter;
   exports["zipWith"] = $foreign.zipWith;
 })(PS);
 (function(exports) {
@@ -26059,6 +26066,7 @@ var PS = {};
   exports["prop"] = prop;
   exports["attr"] = attr;
   exports["handler"] = handler;
+  exports["ClassName"] = ClassName;
   exports["newtypeHTML"] = newtypeHTML;
   exports["bifunctorHTML"] = bifunctorHTML;
   exports["isPropString"] = isPropString;
@@ -26472,10 +26480,12 @@ var PS = {};
   var Data_Array = $PS["Data.Array"];
   var Data_Either = $PS["Data.Either"];
   var Data_Eq = $PS["Data.Eq"];
+  var Data_Foldable = $PS["Data.Foldable"];
   var Data_Functor = $PS["Data.Functor"];
   var Data_Maybe = $PS["Data.Maybe"];
   var Data_Ord = $PS["Data.Ord"];
   var Data_Semigroup = $PS["Data.Semigroup"];
+  var Data_Semiring = $PS["Data.Semiring"];
   var Data_Set = $PS["Data.Set"];
   var Data_Show = $PS["Data.Show"];
   var Data_String_Common = $PS["Data.String.Common"];
@@ -26509,6 +26519,9 @@ var PS = {};
           assumptions: v.value0.assumptions
       };
   };
+  var isEmpty = function (v) {
+      return Data_Foldable.length(Data_Foldable.foldableArray)(Data_Semiring.semiringInt)(v.value0.lines) === 0;
+  };
   var empty = new Proof({
       lines: [  ],
       assumptions: Data_Set.empty
@@ -26516,10 +26529,10 @@ var PS = {};
   var addDeduction = function (v) {
       return function (v1) {
           return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Invalid line number")(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)((function () {
-              var $31 = Data_Functor.map(Data_Maybe.functorMaybe)(pack);
-              var $32 = Data_Array.index(v1.value0.lines);
-              return function ($33) {
-                  return $31($32($33));
+              var $34 = Data_Functor.map(Data_Maybe.functorMaybe)(pack);
+              var $35 = Data_Array.index(v1.value0.lines);
+              return function ($36) {
+                  return $34($35($36));
               };
           })())(v.value0.reasons)))(function (antes) {
               return Control_Bind.bind(Data_Either.bindEither)(Deduction_1.matchDeduction(antes)(v.value0.deduction)(v.value0.rule))(function (assumptions) {
@@ -26548,6 +26561,7 @@ var PS = {};
   };
   exports["Deduction"] = Deduction;
   exports["empty"] = empty;
+  exports["isEmpty"] = isEmpty;
   exports["addDeduction"] = addDeduction;
   exports["renderReason"] = renderReason;
 })(PS);
@@ -27116,8 +27130,11 @@ var PS = {};
       this.Monad0 = Monad0;
       this.setWindow = setWindow;
   };
-  var History = function (Monad0, $$new, redo, undo) {
+  var History = function (Monad0, canNew, canRedo, canUndo, $$new, redo, undo) {
       this.Monad0 = Monad0;
+      this.canNew = canNew;
+      this.canRedo = canRedo;
+      this.canUndo = canUndo;
       this["new"] = $$new;
       this.redo = redo;
       this.undo = undo;
@@ -27145,11 +27162,6 @@ var PS = {};
       }, function (w) {
           return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictNav.Monad0())(setWindow(dictNav)(w)))(Halogen_Query_HalogenM.raise(Data_Unit.unit));
       });
-  };
-  var historyHalogenM = function (dictHistory) {
-      return new History(function () {
-          return Halogen_Query_HalogenM.monadHalogenM;
-      }, Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictHistory.Monad0())($$new(dictHistory)))(Halogen_Query_HalogenM.raise(Data_Unit.unit)), Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictHistory.Monad0())(redo(dictHistory)))(Halogen_Query_HalogenM.raise(Data_Unit.unit)), Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictHistory.Monad0())(undo(dictHistory)))(Halogen_Query_HalogenM.raise(Data_Unit.unit)));
   };
   var getWindow = function (dict) {
       return dict.getWindow;
@@ -27251,6 +27263,20 @@ var PS = {};
           return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictError.Monad0())(errors(dictError)(e)))(Halogen_Query_HalogenM.raise(Data_Unit.unit));
       });
   };
+  var canUndo = function (dict) {
+      return dict.canUndo;
+  };
+  var canRedo = function (dict) {
+      return dict.canRedo;
+  };
+  var canNew = function (dict) {
+      return dict.canNew;
+  };
+  var historyHalogenM = function (dictHistory) {
+      return new History(function () {
+          return Halogen_Query_HalogenM.monadHalogenM;
+      }, Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictHistory.Monad0())(canNew(dictHistory)), Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictHistory.Monad0())(canRedo(dictHistory)), Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictHistory.Monad0())(canUndo(dictHistory)), Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictHistory.Monad0())($$new(dictHistory)))(Halogen_Query_HalogenM.raise(Data_Unit.unit)), Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictHistory.Monad0())(redo(dictHistory)))(Halogen_Query_HalogenM.raise(Data_Unit.unit)), Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictHistory.Monad0())(undo(dictHistory)))(Halogen_Query_HalogenM.raise(Data_Unit.unit)));
+  };
   var addSymbol = function (dict) {
       return dict.addSymbol;
   };
@@ -27313,6 +27339,9 @@ var PS = {};
   exports["undo"] = undo;
   exports["redo"] = redo;
   exports["new"] = $$new;
+  exports["canUndo"] = canUndo;
+  exports["canRedo"] = canRedo;
+  exports["canNew"] = canNew;
   exports["readSymbolsHalogenM"] = readSymbolsHalogenM;
   exports["writeSymbolsHalogenM"] = writeSymbolsHalogenM;
   exports["readSequentsHalogenM"] = readSequentsHalogenM;
@@ -27337,9 +27366,11 @@ var PS = {};
   var Control_Monad_Trans_Class = $PS["Control.Monad.Trans.Class"];
   var Data_Array = $PS["Data.Array"];
   var Data_Either = $PS["Data.Either"];
+  var Data_Foldable = $PS["Data.Foldable"];
   var Data_Functor = $PS["Data.Functor"];
   var Data_Maybe = $PS["Data.Maybe"];
   var Data_Semigroup = $PS["Data.Semigroup"];
+  var Data_Semiring = $PS["Data.Semiring"];
   var Data_Unit = $PS["Data.Unit"];
   var Effect = $PS["Effect"];
   var Effect_Ref = $PS["Effect.Ref"];
@@ -27462,7 +27493,7 @@ var PS = {};
                   };
               });
           };
-          throw new Error("Failed pattern match at UI.AppState (line 124, column 9 - line 132, column 18): " + [ v.constructor.name ]);
+          throw new Error("Failed pattern match at UI.AppState (line 126, column 9 - line 134, column 18): " + [ v.constructor.name ]);
       });
   });
   var writeSequentsAppStateM = new UI_Capabilities.WriteSequents(function () {
@@ -27509,26 +27540,34 @@ var PS = {};
                   };
               });
           };
-          throw new Error("Failed pattern match at UI.AppState (line 93, column 9 - line 103, column 18): " + [ v.constructor.name ]);
+          throw new Error("Failed pattern match at UI.AppState (line 95, column 9 - line 105, column 18): " + [ v.constructor.name ]);
       });
   });                                                                              
   var applicativeAppStateM = Control_Monad_Reader_Trans.applicativeReaderT(Effect.applicativeEffect);
   var historyAppStateM = new UI_Capabilities.History(function () {
       return monadAppStateM;
   }, Control_Bind.bind(bindAppStateM)(get)(function (state) {
-      return modify(function (v) {
-          return {
-              history: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.history)([ state.present ]),
-              future: [  ],
-              present: {
-                  sequents: [  ],
-                  symbols: [  ],
-                  symbolMap: $$Symbol.defaultMap,
-                  proof: Proof.empty
-              },
-              error: Data_Maybe.Nothing.value,
-              window: v.window
-          };
+      return Control_Applicative.pure(applicativeAppStateM)(Data_Foldable.length(Data_Foldable.foldableArray)(Data_Semiring.semiringInt)(state.present.sequents) !== 0 || (Data_Foldable.length(Data_Foldable.foldableArray)(Data_Semiring.semiringInt)(state.present.symbols) !== 0 || !Proof.isEmpty(state.present.proof)));
+  }), Control_Bind.bind(bindAppStateM)(get)(function (state) {
+      return Control_Applicative.pure(applicativeAppStateM)(Data_Foldable.length(Data_Foldable.foldableArray)(Data_Semiring.semiringInt)(state.future) !== 0);
+  }), Control_Bind.bind(bindAppStateM)(get)(function (state) {
+      return Control_Applicative.pure(applicativeAppStateM)(Data_Foldable.length(Data_Foldable.foldableArray)(Data_Semiring.semiringInt)(state.history) !== 0);
+  }), Control_Bind.bind(bindAppStateM)(get)(function (state) {
+      return Control_Bind.bind(bindAppStateM)(UI_Capabilities.canNew(historyAppStateM))(function (ableNew) {
+          return Control_Applicative.when(applicativeAppStateM)(ableNew)(modify(function (v) {
+              return {
+                  history: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.history)([ state.present ]),
+                  future: [  ],
+                  present: {
+                      sequents: [  ],
+                      symbols: [  ],
+                      symbolMap: $$Symbol.defaultMap,
+                      proof: Proof.empty
+                  },
+                  error: Data_Maybe.Nothing.value,
+                  window: v.window
+              };
+          }));
       });
   }), Control_Bind.bind(bindAppStateM)(get)(function (state) {
       var v = Data_Array.uncons(state.future);
@@ -27546,7 +27585,7 @@ var PS = {};
               };
           });
       };
-      throw new Error("Failed pattern match at UI.AppState (line 156, column 30 - line 163, column 14): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at UI.AppState (line 158, column 30 - line 165, column 14): " + [ v.constructor.name ]);
   }), Control_Bind.bind(bindAppStateM)(get)(function (state) {
       var v = Data_Array.unsnoc(state.history);
       if (v instanceof Data_Maybe.Nothing) {
@@ -27563,7 +27602,7 @@ var PS = {};
               };
           });
       };
-      throw new Error("Failed pattern match at UI.AppState (line 148, column 30 - line 155, column 14): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at UI.AppState (line 150, column 30 - line 157, column 14): " + [ v.constructor.name ]);
   }));
   exports["run"] = run;
   exports["start"] = start;
@@ -27580,7 +27619,6 @@ var PS = {};
   exports["historyAppStateM"] = historyAppStateM;
 })(PS);
 (function($PS) {
-  // Generated by purs version 0.13.6
   "use strict";
   $PS["UI.HTMLHelp"] = $PS["UI.HTMLHelp"] || {};
   var exports = $PS["UI.HTMLHelp"];
@@ -27599,24 +27637,32 @@ var PS = {};
   var Halogen_HTML_Elements = $PS["Halogen.HTML.Elements"];
   var Halogen_HTML_Events = $PS["Halogen.HTML.Events"];
   var Halogen_HTML_Properties = $PS["Halogen.HTML.Properties"];                
+
+  /**
+ * 
+ *     Make a select dropdown given the action function, the hide function,
+ *     the default option, and a list of options
+ */  
   var select = function (dictOrd) {
-      return function (act) {
-          return function (hide) {
-              return function (sel) {
-                  return function (options) {
-                      var option = function (v) {
-                          if (hide(v.value1)) {
-                              return Halogen_HTML_Elements.option([ Halogen_HTML_Properties.value(v.value0), Halogen_HTML_Properties.disabled(true), Halogen_HTML_Properties.attr("hidden")("") ])([ Halogen_HTML_Core.text(v.value0) ]);
+      return function (id) {
+          return function (act) {
+              return function (hide) {
+                  return function (sel) {
+                      return function (options) {
+                          var option = function (v) {
+                              if (hide(v.value1)) {
+                                  return Halogen_HTML_Elements.option([ Halogen_HTML_Properties.value(v.value0), Halogen_HTML_Properties.disabled(true), Halogen_HTML_Properties.attr("hidden")("") ])([ Halogen_HTML_Core.text(v.value0) ]);
+                              };
+                              if (Data_Boolean.otherwise) {
+                                  return Halogen_HTML_Elements.option([ Halogen_HTML_Properties.value(v.value0) ])([ Halogen_HTML_Core.text(v.value0) ]);
+                              };
+                              throw new Error("Failed pattern match at UI.HTMLHelp (line 40, column 9 - line 49, column 33): " + [ v.constructor.name ]);
                           };
-                          if (Data_Boolean.otherwise) {
-                              return Halogen_HTML_Elements.option([ Halogen_HTML_Properties.value(v.value0) ])([ Halogen_HTML_Core.text(v.value0) ]);
-                          };
-                          throw new Error("Failed pattern match at UI.HTMLHelp (line 39, column 9 - line 48, column 33): " + [ v.constructor.name ]);
+                          var forwardMap = Data_Map_Internal.fromFoldable(Data_Ord.ordString)(Data_Foldable.foldableArray)(options);
+                          var $$default = [ Halogen_HTML_Elements.option([ Halogen_HTML_Properties.value("-- Choose one --"), Halogen_HTML_Properties.disabled(true), Halogen_HTML_Properties.attr("hidden")("") ])([ Halogen_HTML_Core.text("-- Choose one --") ]) ];
+                          var backwardMap = Data_Map_Internal.fromFoldable(dictOrd)(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(Data_Tuple.swap)(options));
+                          return Halogen_HTML_Elements.select([ Halogen_HTML_Events.onValueChange(Control_Bind.composeKleisli(Data_Maybe.bindMaybe)(Data_Function.flip(Data_Map_Internal.lookup(Data_Ord.ordString))(forwardMap))(act)), Halogen_HTML_Properties.value(Data_Maybe.maybe("-- Choose one --")(Control_Category.identity(Control_Category.categoryFn))(Data_Map_Internal.lookup(dictOrd)(sel)(backwardMap))), Halogen_HTML_Properties.id_(id) ])(Data_Semigroup.append(Data_Semigroup.semigroupArray)($$default)(Data_Functor.map(Data_Functor.functorArray)(option)(options)));
                       };
-                      var forwardMap = Data_Map_Internal.fromFoldable(Data_Ord.ordString)(Data_Foldable.foldableArray)(options);
-                      var $$default = [ Halogen_HTML_Elements.option([ Halogen_HTML_Properties.value("-- Choose one --"), Halogen_HTML_Properties.disabled(true), Halogen_HTML_Properties.attr("hidden")("") ])([ Halogen_HTML_Core.text("-- Choose one --") ]) ];
-                      var backwardMap = Data_Map_Internal.fromFoldable(dictOrd)(Data_Foldable.foldableArray)(Data_Functor.map(Data_Functor.functorArray)(Data_Tuple.swap)(options));
-                      return Halogen_HTML_Elements.select([ Halogen_HTML_Events.onValueChange(Control_Bind.composeKleisli(Data_Maybe.bindMaybe)(Data_Function.flip(Data_Map_Internal.lookup(Data_Ord.ordString))(forwardMap))(act)), Halogen_HTML_Properties.value(Data_Maybe.maybe("-- Choose one --")(Control_Category.identity(Control_Category.categoryFn))(Data_Map_Internal.lookup(dictOrd)(sel)(backwardMap))) ])(Data_Semigroup.append(Data_Semigroup.semigroupArray)($$default)(Data_Functor.map(Data_Functor.functorArray)(option)(options)));
                   };
               };
           };
@@ -27782,16 +27828,16 @@ var PS = {};
                       return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getSequents(UI_Capabilities.readSequentsHalogenM(dictReadSequents)))(function (sequents) {
                           return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getProof(UI_Capabilities.readProofHalogenM(dictReadProof)))(function (proof) {
                               return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                                  var $37 = {};
-                                  for (var $38 in v1) {
-                                      if ({}.hasOwnProperty.call(v1, $38)) {
-                                          $37[$38] = v1[$38];
+                                  var $39 = {};
+                                  for (var $40 in v1) {
+                                      if ({}.hasOwnProperty.call(v1, $40)) {
+                                          $39[$40] = v1[$40];
                                       };
                                   };
-                                  $37.symbols = symbols;
-                                  $37.sequents = sequents;
-                                  $37.proof = proof;
-                                  return $37;
+                                  $39.symbols = symbols;
+                                  $39.sequents = sequents;
+                                  $39.proof = proof;
+                                  return $39;
                               }))(function () {
                                   return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(new Data_Maybe.Just(v.value0));
                               });
@@ -27845,12 +27891,12 @@ var PS = {};
       };
   });
   var renderNewLine = function (state) {
-      return Halogen_HTML_Elements.tr([ Halogen_HTML_Properties.id_("new-line") ])([ Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("assumptions") ])([ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($100) {
-          return Data_Maybe.Just.create(Assumptions.create($100));
-      }), Halogen_HTML_Properties.value(state.assumptions), Halogen_HTML_Properties.id_("assumptions-input") ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("line-number") ])([ Halogen_HTML_Core.text("(" + (Data_Show.show(Data_Show.showInt)(Data_Foldable.length(Data_Foldable.foldableArray)(Data_Semiring.semiringInt)(state.proof.value0.lines) + 2 | 0) + ")")) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("formula") ])([ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($101) {
-          return Data_Maybe.Just.create(Formula.create($101));
-      }), Halogen_HTML_Properties.id_("formula-input"), Halogen_HTML_Properties.value(state.formula) ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("reason") ])([ UI_HTMLHelp.select(ordPartialDeduction)(function ($102) {
-          return Data_Maybe.Just.create(Reason.create($102));
+      return Halogen_HTML_Elements.tr([ Halogen_HTML_Properties.id_("new-line") ])([ Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("assumptions") ])([ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($102) {
+          return Data_Maybe.Just.create(Assumptions.create($102));
+      }), Halogen_HTML_Properties.value(state.assumptions), Halogen_HTML_Properties.id_("assumptions-input") ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("line-number") ])([ Halogen_HTML_Core.text("(" + (Data_Show.show(Data_Show.showInt)(Data_Foldable.length(Data_Foldable.foldableArray)(Data_Semiring.semiringInt)(state.proof.value0.lines) + 1 | 0) + ")")) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("formula") ])([ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($103) {
+          return Data_Maybe.Just.create(Formula.create($103));
+      }), Halogen_HTML_Properties.id_("formula-input"), Halogen_HTML_Properties.value(state.formula) ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("reason") ])([ UI_HTMLHelp.select(ordPartialDeduction)("reason-dropdown")(function ($104) {
+          return Data_Maybe.Just.create(Reason.create($104));
       })(Data_Function["const"](false))(state.reason)([ Data_Tuple.Tuple.create("A")(new Full(Deduction.Assumption.value)), Data_Tuple.Tuple.create("MP")(new Full(Deduction.ModusPonens.value)), Data_Tuple.Tuple.create("MT")(new Full(Deduction.ModusTollens.value)), Data_Tuple.Tuple.create("DN")(new Full(Deduction.DoubleNegation.value)), Data_Tuple.Tuple.create("CP")(new Full(Deduction.ConditionalProof.value)), Data_Tuple.Tuple.create("&I")(new Full(Deduction.AndIntroduction.value)), Data_Tuple.Tuple.create("&E")(new Full(Deduction.AndElimination.value)), Data_Tuple.Tuple.create("|I")(new Full(Deduction.OrIntroduction.value)), Data_Tuple.Tuple.create("|E")(new Full(Deduction.OrElimination.value)), Data_Tuple.Tuple.create("RAA")(new Full(Deduction.RAA.value)), new Data_Tuple.Tuple("SI", PartSequent.value), new Data_Tuple.Tuple("Def", PartSymbol.value) ]), Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Halogen_HTML_Properties.id_("input-dropdown") ])((function () {
           if (state.reason instanceof PartSymbol) {
               return [  ];
@@ -27867,8 +27913,8 @@ var PS = {};
           return [ Halogen_HTML_Properties.class_("short") ];
       })()))([ (function () {
           if (state.reason instanceof PartSymbol) {
-              return UI_HTMLHelp.select(ordPartialDeduction)(function ($103) {
-                  return Data_Maybe.Just.create(Reason.create($103));
+              return UI_HTMLHelp.select(ordPartialDeduction)("symbol-dropdown")(function ($105) {
+                  return Data_Maybe.Just.create(Reason.create($105));
               })(Data_Function["const"](false))(PartSymbol.value)(Data_Array.mapWithIndex(function (i) {
                   return function (sym) {
                       return Data_Tuple.Tuple.create($$Symbol.getName(sym))(Full.create(new Deduction.Definition(sym, i)));
@@ -27876,8 +27922,8 @@ var PS = {};
               })(state.symbols));
           };
           if (state.reason instanceof Full && state.reason.value0 instanceof Deduction.Definition) {
-              return UI_HTMLHelp.select(ordPartialDeduction)(function ($104) {
-                  return Data_Maybe.Just.create(Reason.create($104));
+              return UI_HTMLHelp.select(ordPartialDeduction)("symbol-dropdown")(function ($106) {
+                  return Data_Maybe.Just.create(Reason.create($106));
               })(Data_Function["const"](false))(new Full(state.reason.value0))(Data_Array.mapWithIndex(function (i) {
                   return function (sym) {
                       return Data_Tuple.Tuple.create($$Symbol.getName(sym))(Full.create(new Deduction.Definition(sym, i)));
@@ -27885,8 +27931,8 @@ var PS = {};
               })(state.symbols));
           };
           if (state.reason instanceof PartSequent) {
-              return UI_HTMLHelp.select(ordPartialDeduction)(function ($105) {
-                  return Data_Maybe.Just.create(Reason.create($105));
+              return UI_HTMLHelp.select(ordPartialDeduction)("sequent-dropdown")(function ($107) {
+                  return Data_Maybe.Just.create(Reason.create($107));
               })(Data_Function["const"](false))(PartSequent.value)(Data_Array.mapWithIndex(function (i) {
                   return function (seq) {
                       return Data_Tuple.Tuple.create(Sequent.render(seq))(Full.create(new Deduction.Introduction(seq, i)));
@@ -27894,8 +27940,8 @@ var PS = {};
               })(state.sequents));
           };
           if (state.reason instanceof Full && state.reason.value0 instanceof Deduction.Introduction) {
-              return UI_HTMLHelp.select(ordPartialDeduction)(function ($106) {
-                  return Data_Maybe.Just.create(Reason.create($106));
+              return UI_HTMLHelp.select(ordPartialDeduction)("sequent-dropdown")(function ($108) {
+                  return Data_Maybe.Just.create(Reason.create($108));
               })(Data_Function["const"](false))(new Full(state.reason.value0))(Data_Array.mapWithIndex(function (i) {
                   return function (seq) {
                       return Data_Tuple.Tuple.create(Sequent.render(seq))(Full.create(new Deduction.Introduction(seq, i)));
@@ -27903,30 +27949,30 @@ var PS = {};
               })(state.sequents));
           };
           return Halogen_HTML_Core.text("");
-      })() ]), Halogen_HTML_Elements.input(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Halogen_HTML_Events.onValueChange(function ($107) {
-          return Data_Maybe.Just.create(References.create($107));
+      })() ]), Halogen_HTML_Elements.input(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Halogen_HTML_Events.onValueChange(function ($109) {
+          return Data_Maybe.Just.create(References.create($109));
       }), Halogen_HTML_Properties.value(state.references), Halogen_HTML_Properties.id_("reference-input") ])((function () {
           if (state.reason instanceof PartSymbol) {
-              return [ Halogen_HTML_Properties.class_("long") ];
+              return [  ];
           };
           if (state.reason instanceof Full && state.reason.value0 instanceof Deduction.Definition) {
-              return [ Halogen_HTML_Properties.class_("long") ];
+              return [  ];
           };
           if (state.reason instanceof PartSequent) {
-              return [ Halogen_HTML_Properties.class_("long") ];
+              return [  ];
           };
           if (state.reason instanceof Full && state.reason.value0 instanceof Deduction.Introduction) {
-              return [ Halogen_HTML_Properties.class_("long") ];
+              return [  ];
           };
-          return [  ];
+          return [ Halogen_HTML_Properties.class_("long") ];
       })())) ]) ]);
   };
   var render = function (state) {
       return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.id_("proof-box") ])([ Halogen_HTML_Elements.table([ Halogen_HTML_Properties.id_("proof-lines") ])(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ lineHeading ])(Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.mapWithIndex(renderDeduction)(state.proof.value0.lines))([ renderNewLine(state) ]))), Halogen_HTML_Elements.button([ Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(AddLine.value))), Halogen_HTML_Properties.id_("add-line") ])([ Halogen_HTML_Core.text("Add Line") ]) ]);
   };
   var commastospaces = Data_String_Utils.mapChars(function (x) {
-      var $76 = x === ",";
-      if ($76) {
+      var $78 = x === ",";
+      if ($78) {
           return " ";
       };
       return x;
@@ -27937,59 +27983,63 @@ var PS = {};
               return function (v) {
                   if (v instanceof Assumptions) {
                       return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                          var $78 = {};
-                          for (var $79 in v1) {
-                              if ({}.hasOwnProperty.call(v1, $79)) {
-                                  $78[$79] = v1[$79];
+                          var $80 = {};
+                          for (var $81 in v1) {
+                              if ({}.hasOwnProperty.call(v1, $81)) {
+                                  $80[$81] = v1[$81];
                               };
                           };
-                          $78.assumptions = v.value0;
-                          return $78;
+                          $80.assumptions = v.value0;
+                          return $80;
                       });
                   };
                   if (v instanceof Formula) {
                       return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                          var $82 = {};
-                          for (var $83 in v1) {
-                              if ({}.hasOwnProperty.call(v1, $83)) {
-                                  $82[$83] = v1[$83];
+                          var $84 = {};
+                          for (var $85 in v1) {
+                              if ({}.hasOwnProperty.call(v1, $85)) {
+                                  $84[$85] = v1[$85];
                               };
                           };
-                          $82.formula = v.value0;
-                          return $82;
+                          $84.formula = v.value0;
+                          return $84;
                       });
                   };
                   if (v instanceof Reason) {
                       return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                          var $86 = {};
-                          for (var $87 in v1) {
-                              if ({}.hasOwnProperty.call(v1, $87)) {
-                                  $86[$87] = v1[$87];
+                          var $88 = {};
+                          for (var $89 in v1) {
+                              if ({}.hasOwnProperty.call(v1, $89)) {
+                                  $88[$89] = v1[$89];
                               };
                           };
-                          $86.reason = v.value0;
-                          return $86;
+                          $88.reason = v.value0;
+                          return $88;
                       });
                   };
                   if (v instanceof References) {
                       return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                          var $90 = {};
-                          for (var $91 in v1) {
-                              if ({}.hasOwnProperty.call(v1, $91)) {
-                                  $90[$91] = v1[$91];
+                          var $92 = {};
+                          for (var $93 in v1) {
+                              if ({}.hasOwnProperty.call(v1, $93)) {
+                                  $92[$93] = v1[$93];
                               };
                           };
-                          $90.references = v.value0;
-                          return $90;
+                          $92.references = v.value0;
+                          return $92;
                       });
                   };
                   if (v instanceof AddLine) {
                       return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.get(Halogen_Query_HalogenM.monadStateHalogenM))(function (state) {
                           return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.parse(UI_Capabilities.readSymbolsHalogenM(dictReadSymbols))(state.formula))(function (formp) {
-                              var v1 = Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Assumptions are not integers")(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Set.fromFoldable(Data_Foldable.foldableArray)(Data_Ord.ordInt))(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)(Data_Int.fromString)(Data_String_Utils.words(commastospaces(state.assumptions))))))(function (assumptions) {
+                              var v1 = Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Assumptions are not integers")(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Set.fromFoldable(Data_Foldable.foldableArray)(Data_Ord.ordInt))(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)(Data_Int.fromString)(Data_Array.filter(function (v2) {
+                                  return v2 !== "";
+                              })(Data_String_Utils.words(commastospaces(state.assumptions)))))))(function (assumptions) {
                                   return Control_Bind.bind(Data_Either.bindEither)(formp)(function (deduction) {
                                       return Control_Bind.bind(Data_Either.bindEither)(toDeduction(state.reason))(function (rule) {
-                                          return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("References are not integers")(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.sort(Data_Ord.ordInt))(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)(Data_Int.fromString)(Data_String_Utils.words(commastospaces(state.assumptions))))))(function (reasons) {
+                                          return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("References are not integers")(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.sort(Data_Ord.ordInt))(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)(Data_Int.fromString)(Data_Array.filter(function (v2) {
+                                              return v2 !== "";
+                                          })(Data_String_Utils.words(commastospaces(state.assumptions)))))))(function (reasons) {
                                               return Control_Applicative.pure(Data_Either.applicativeEither)(new Proof.Deduction({
                                                   assumptions: assumptions,
                                                   deduction: deduction,
@@ -28005,17 +28055,17 @@ var PS = {};
                               };
                               if (v1 instanceof Data_Either.Right) {
                                   return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v2) {
-                                      var $96 = {};
-                                      for (var $97 in v2) {
-                                          if ({}.hasOwnProperty.call(v2, $97)) {
-                                              $96[$97] = v2[$97];
+                                      var $98 = {};
+                                      for (var $99 in v2) {
+                                          if ({}.hasOwnProperty.call(v2, $99)) {
+                                              $98[$99] = v2[$99];
                                           };
                                       };
-                                      $96.assumptions = "";
-                                      $96.formula = "";
-                                      $96.reason = new Full(Deduction.Assumption.value);
-                                      $96.references = "";
-                                      return $96;
+                                      $98.assumptions = "";
+                                      $98.formula = "";
+                                      $98.reason = new Full(Deduction.Assumption.value);
+                                      $98.references = "";
+                                      return $98;
                                   }))(function () {
                                       return UI_Capabilities.addDeduction(UI_Capabilities.writeProofHalogenM(dictWriteProof))(v1.value0);
                                   });
@@ -28384,7 +28434,7 @@ var PS = {};
       throw new Error("Failed pattern match at UI.Symbol (line 81, column 1 - line 81, column 61): " + [ v.constructor.name ]);
   };
   var newSymbolRow = function (state) {
-      return Halogen_HTML_Elements.tr([ Halogen_HTML_Properties.id_("new-symbol") ])([ Halogen_HTML_Elements.td([  ])([ UI_HTMLHelp.select(Data_Ord.ordBoolean)(function ($54) {
+      return Halogen_HTML_Elements.tr([ Halogen_HTML_Properties.id_("new-symbol") ])([ Halogen_HTML_Elements.td([  ])([ UI_HTMLHelp.select(Data_Ord.ordBoolean)("operator-select")(function ($54) {
           return Data_Maybe.Just.create(Binary.create($54));
       })(Data_Function["const"](false))(state.binary)([ new Data_Tuple.Tuple("Binary", true), new Data_Tuple.Tuple("Unary", false) ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("symbol-name") ])([ Halogen_HTML_Core.text((function () {
           if (state.binary) {
@@ -28637,8 +28687,30 @@ var PS = {};
       NoAction.value = new NoAction();
       return NoAction;
   })();
-  var menu = Halogen_HTML_Elements.div([ Halogen_HTML_Properties.id_("menu") ])([ Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-buton"), Halogen_HTML_Properties.id_("new-button"), Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(New.value))) ])([ Halogen_HTML_Core.text("New") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("undo-button"), Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(Undo.value))) ])([ Halogen_HTML_Core.text("Undo") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("redo-button"), Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(Redo.value))) ])([ Halogen_HTML_Core.text("Redo") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("symbol-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(new Open(UI_Capabilities.SymbolWindow.value)))) ])([ Halogen_HTML_Core.text("Symbols") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("sequent-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(new Open(UI_Capabilities.SequentWindow.value)))) ])([ Halogen_HTML_Core.text("Sequents") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("import-export-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(new Open(UI_Capabilities.IEWindow.value)))) ])([ Halogen_HTML_Core.text("Import/Export") ]) ]);
-  var initialState = Data_Maybe.Nothing.value;
+  var menu = function (state) {
+      return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.id_("menu") ])([ Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_(Halogen_HTML_Core.ClassName((function () {
+          if (state.ableNew) {
+              return "menu-button";
+          };
+          return "menu-button disabled";
+      })())), Halogen_HTML_Properties.id_("new-button"), Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(New.value))) ])([ Halogen_HTML_Core.text("New") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_(Halogen_HTML_Core.ClassName((function () {
+          if (state.ableUndo) {
+              return "menu-button";
+          };
+          return "menu-button disabled";
+      })())), Halogen_HTML_Properties.id_("undo-button"), Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(Undo.value))) ])([ Halogen_HTML_Core.text("Undo") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_(Halogen_HTML_Core.ClassName((function () {
+          if (state.ableRedo) {
+              return "menu-button";
+          };
+          return "menu-button disabled";
+      })())), Halogen_HTML_Properties.id_("redo-button"), Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(Redo.value))) ])([ Halogen_HTML_Core.text("Redo") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("symbol-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(new Open(UI_Capabilities.SymbolWindow.value)))) ])([ Halogen_HTML_Core.text("Symbols") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("sequent-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(new Open(UI_Capabilities.SequentWindow.value)))) ])([ Halogen_HTML_Core.text("Sequents") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("import-export-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(new Open(UI_Capabilities.IEWindow.value)))) ])([ Halogen_HTML_Core.text("Import/Export") ]) ]);
+  };
+  var initialState = {
+      errors: Data_Maybe.Nothing.value,
+      ableNew: false,
+      ableUndo: false,
+      ableRedo: false
+  };
   var _symbols = Data_Symbol.SProxy.value;
   var _sequents = Data_Symbol.SProxy.value;
   var _proof = Data_Symbol.SProxy.value;
@@ -28657,7 +28729,20 @@ var PS = {};
                                   return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(Halogen_Query_HalogenM.query()(new Data_Symbol.IsSymbol(function () {
                                       return "proof";
                                   }))(Data_Ord.ordUnit)(_proof)(Data_Unit.unit)(new UI_Proof.Update(Data_Unit.unit)))(function () {
-                                      return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getErrors(UI_Capabilities.readErrorHalogenM(dictReadError)))(Control_Monad_State_Class.put(Halogen_Query_HalogenM.monadStateHalogenM));
+                                      return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getErrors(UI_Capabilities.readErrorHalogenM(dictReadError)))(function (errors) {
+                                          return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.canNew(UI_Capabilities.historyHalogenM(dictHistory)))(function (ableNew) {
+                                              return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.canUndo(UI_Capabilities.historyHalogenM(dictHistory)))(function (ableUndo) {
+                                                  return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.canRedo(UI_Capabilities.historyHalogenM(dictHistory)))(function (ableRedo) {
+                                                      return Control_Monad_State_Class.put(Halogen_Query_HalogenM.monadStateHalogenM)({
+                                                          errors: errors,
+                                                          ableNew: ableNew,
+                                                          ableUndo: ableUndo,
+                                                          ableRedo: ableRedo
+                                                      });
+                                                  });
+                                              });
+                                          });
+                                      });
                                   });
                               });
                           });
@@ -28680,7 +28765,7 @@ var PS = {};
                       if (v instanceof NoAction) {
                           return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(Data_Unit.unit);
                       };
-                      throw new Error("Failed pattern match at UI (line 138, column 1 - line 143, column 56): " + [ v.constructor.name ]);
+                      throw new Error("Failed pattern match at UI (line 160, column 1 - line 165, column 56): " + [ v.constructor.name ]);
                   };
               };
           };
@@ -28696,22 +28781,22 @@ var PS = {};
                               return function (dictReadNav) {
                                   return function (dictNav) {
                                       return function (state) {
-                                          return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.id_("main") ])(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ menu, Halogen_HTML.slot()(new Data_Symbol.IsSymbol(function () {
+                                          return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.id_("main") ])(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ menu(state), Halogen_HTML.slot()(new Data_Symbol.IsSymbol(function () {
                                               return "sequents";
                                           }))(Data_Ord.ordUnit)(_sequents)(Data_Unit.unit)(UI_Sequent.component(dictReadSymbols)(dictWriteSequents)(dictError)(dictNav)(dictReadSequents)(dictReadNav))(UI_Sequent.NoAction.value)(Data_Function["const"](new Data_Maybe.Just(Update.value))), Halogen_HTML.slot()(new Data_Symbol.IsSymbol(function () {
                                               return "symbols";
                                           }))(Data_Ord.ordUnit)(_symbols)(Data_Unit.unit)(UI_Symbol.component(dictReadSymbols)(dictWriteSymbols)(dictNav)(dictError)(dictReadNav))(UI_Symbol.NoAction.value)(Data_Function["const"](new Data_Maybe.Just(Update.value))), Halogen_HTML.slot()(new Data_Symbol.IsSymbol(function () {
                                               return "proof";
                                           }))(Data_Ord.ordUnit)(_proof)(Data_Unit.unit)(UI_Proof.component(dictReadSymbols)(dictReadSequents)(dictReadProof)(dictWriteProof)(dictError))(UI_Proof.NoAction.value)(Data_Function["const"](new Data_Maybe.Just(Update.value))) ])((function () {
-                                              if (state instanceof Data_Maybe.Nothing) {
+                                              if (state.errors instanceof Data_Maybe.Nothing) {
                                                   return [  ];
                                               };
-                                              if (state instanceof Data_Maybe.Just) {
+                                              if (state.errors instanceof Data_Maybe.Just) {
                                                   return [ Halogen_HTML_Elements.div([ Halogen_HTML_Properties.id_("error"), Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(ClearError.value))) ])(Data_Functor.map(Data_Functor.functorArray)(function (e) {
                                                       return Halogen_HTML_Elements.div([  ])([ Halogen_HTML_Core.text(e) ]);
-                                                  })(state.value0)) ];
+                                                  })(state.errors.value0)) ];
                                               };
-                                              throw new Error("Failed pattern match at UI (line 128, column 10 - line 136, column 14): " + [ state.constructor.name ]);
+                                              throw new Error("Failed pattern match at UI (line 150, column 10 - line 158, column 14): " + [ state.errors.constructor.name ]);
                                           })()));
                                       };
                                   };
@@ -28737,10 +28822,10 @@ var PS = {};
   var run = Halogen_Aff_Util.runHalogenAff(Control_Bind.bind(Effect_Aff.bindAff)(Halogen_Aff_Util.awaitBody)(function (body) {
       return Control_Bind.bind(Effect_Aff.bindAff)(Effect_Class.liftEffect(Effect_Aff.monadEffectAff)(Effect_Ref["new"](UI_AppState.start)))(function (ref) {
           return Halogen_VDom_Driver.runUI(Halogen_Component.hoist(Halogen_HTML_Core.bifunctorHTML)(Effect_Aff.functorAff)((function () {
-              var $19 = Effect_Class.liftEffect(Effect_Aff.monadEffectAff);
-              var $20 = UI_AppState.run(ref);
-              return function ($21) {
-                  return $19($20($21));
+              var $22 = Effect_Class.liftEffect(Effect_Aff.monadEffectAff);
+              var $23 = UI_AppState.run(ref);
+              return function ($24) {
+                  return $22($23($24));
               };
           })())(component))(NoAction.value)(body);
       });

@@ -19,11 +19,12 @@ import Halogen.HTML.Properties as HP
     Make a select dropdown given the action function, the hide function,
     the default option, and a list of options
 -}
-select :: forall a b r m. Ord a => (a -> Maybe b) -> (a -> Boolean) -> a ->
-    Array (Tuple String a) -> H.ComponentHTML b r m
-select act hide sel options = HH.select
+select :: forall a b r m. Ord a => String -> (a -> Maybe b) -> (a -> Boolean)
+    -> a -> Array (Tuple String a) -> H.ComponentHTML b r m
+select id act hide sel options = HH.select
     [ HE.onValueChange $ flip M.lookup forwardMap >=> act
     , HP.value $ maybe "-- Choose one --" identity $ M.lookup sel backwardMap
+    , HP.id_ id
     ]
     $ default <> (option <$> options)
     where

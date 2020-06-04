@@ -2,6 +2,7 @@ module Proof
     ( Deduction(..)
     , Proof(..)
     , empty
+    , isEmpty
     , addDeduction
     , renderReason
     , getAssumptions
@@ -19,6 +20,7 @@ import Data.Either as E
 import Data.Maybe (Maybe(..))
 import Data.Array as A
 import Data.Traversable (traverse)
+import Data.Foldable (length)
 
 import WFF (WFF)
 import Deduction
@@ -46,6 +48,9 @@ empty = Proof
     { lines : []
     , assumptions : Set.empty
     }
+
+isEmpty :: Proof -> Boolean
+isEmpty (Proof p) = length p.lines == 0
 
 pack :: Deduction ->
     {formula :: WFF String, isAssumption :: Boolean, assumptions :: Set Int}

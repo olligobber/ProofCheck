@@ -88,6 +88,9 @@ input {
   #proof-box .assumptions, #proof-box .line-number {
     width: 10%;
     display: inline-block; }
+    #proof-box .assumptions input, #proof-box .line-number input {
+      color: inherit;
+      width: 80%; }
   #proof-box .formula {
     width: 50%;
     display: inline-block; }

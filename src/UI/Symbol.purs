@@ -111,7 +111,7 @@ newSymbolRow state = HH.tr
     [ HP.id_ "new-symbol" ]
     [ HH.td
         []
-        [ select (Just <<< Binary) (const false) state.binary
+        [ select "operator-select" (Just <<< Binary) (const false) state.binary
             [ Tuple "Binary" true
             , Tuple "Unary" false
             ]

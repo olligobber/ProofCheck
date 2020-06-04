@@ -11,7 +11,7 @@ module UI.Proof
 
 import Prelude
     ( class Eq, class Ord, Unit
-    , ($), (<>), (==), (<$>), (+), (<<<)
+    , ($), (<>), (==), (<$>), (+), (<<<), (/=)
     , bind, show, pure, discard, const, unit
     )
 import Halogen as H
@@ -121,7 +121,7 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
         ]
     , HH.td
         [ HP.class_ $ HH.ClassName "line-number" ]
-        [ HH.text $ "(" <> show (length proof.lines + 2) <> ")" ]
+        [ HH.text $ "(" <> show (length proof.lines + 1) <> ")" ]
     , HH.td
         [ HP.class_ $ HH.ClassName "formula" ]
         [ HH.input
@@ -132,7 +132,7 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
         ]
     , HH.td
         [ HP.class_ $ HH.ClassName "reason" ]
-        [ select (Just <<< Reason) (const false) state.reason
+        [ select "reason-dropdown" (Just <<< Reason) (const false) state.reason
             [ Tuple "A" $ Full Assumption
             , Tuple "MP" $ Full ModusPonens
             , Tuple "MT" $ Full ModusTollens
@@ -155,22 +155,22 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
                 Full (Introduction _ _)  -> []
                 _ -> [ HP.class_ $ HH.ClassName "short" ])
             [ case state.reason of
-                PartSymbol -> select
+                PartSymbol -> select "symbol-dropdown"
                     (Just <<< Reason) (const false) PartSymbol $
                         A.mapWithIndex (\i sym ->
                             Tuple (getName sym) $ Full $ Definition sym i)
                         state.symbols
-                Full d@(Definition _ _) -> select
+                Full d@(Definition _ _) -> select "symbol-dropdown"
                     (Just <<< Reason) (const false) (Full d) $
                         A.mapWithIndex (\i sym ->
                             Tuple (getName sym) $ Full $ Definition sym i)
                         state.symbols
-                PartSequent -> select
+                PartSequent -> select "sequent-dropdown"
                     (Just <<< Reason) (const false) PartSequent $
                         A.mapWithIndex (\i seq ->
                             Tuple (Seq.render seq) $ Full $ Introduction seq i)
                         state.sequents
-                Full d@(Introduction _ _) -> select
+                Full d@(Introduction _ _) -> select "sequent-dropdown"
                     (Just <<< Reason) (const false) (Full d) $
                         A.mapWithIndex (\i seq ->
                             Tuple (Seq.render seq) $ Full $ Introduction seq i)
@@ -183,11 +183,11 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
             , HP.value state.references
             , HP.id_ "reference-input"
             ] <> case state.reason of
-                PartSymbol -> [ HP.class_ $ HH.ClassName "long" ]
-                Full (Definition _ _) -> [ HP.class_ $ HH.ClassName "long" ]
-                PartSequent -> [ HP.class_ $ HH.ClassName "long" ]
-                Full (Introduction _ _)  -> [ HP.class_ $ HH.ClassName "long" ]
-                _ -> []
+                PartSymbol -> [ ]
+                Full (Definition _ _) -> [ ]
+                PartSequent -> [ ]
+                Full (Introduction _ _)  -> [ ]
+                _ -> [ HP.class_ $ HH.ClassName "long" ]
         ]
     ]
 
@@ -258,13 +258,13 @@ handleAction AddLine = do
     formp <- parse state.formula
     case do
         assumptions <- E.note "Assumptions are not integers" $
-            Set.fromFoldable <$>
-            traverse fromString (SU.words $ commastospaces state.assumptions)
+            Set.fromFoldable <$> traverse fromString
+            (A.filter (_ /= "") $ SU.words $ commastospaces state.assumptions)
         deduction <- formp
         rule <- toDeduction state.reason
         reasons <- E.note "References are not integers" $
-            A.sort <$>
-            traverse fromString (SU.words $ commastospaces state.assumptions)
+            A.sort <$> traverse fromString
+            (A.filter (_ /= "") $ SU.words $ commastospaces state.assumptions)
         pure $ Deduction {assumptions, deduction, rule, reasons}
     of
         Left e -> error e

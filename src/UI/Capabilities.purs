@@ -33,6 +33,9 @@ module UI.Capabilities
     , undo
     , redo
     , new
+    , canUndo
+    , canRedo
+    , canNew
     ) where
 
 import Prelude
@@ -116,6 +119,9 @@ class Monad m <= History m where
     undo :: m Unit
     redo :: m Unit
     new :: m Unit
+    canUndo :: m Boolean
+    canRedo :: m Boolean
+    canNew :: m Boolean
 
 instance readSymbolsHalogenM :: ReadSymbols m =>
     ReadSymbols (HalogenM s a t o m) where
@@ -160,3 +166,6 @@ instance historyHalogenM :: History m => History (HalogenM s a t Unit m) where
     undo = lift undo *> raise unit
     redo = lift redo *> raise unit
     new = lift new *> raise unit
+    canUndo = lift canUndo
+    canRedo = lift canRedo
+    canNew = lift canNew
