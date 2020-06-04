@@ -1,6 +1,7 @@
 module Parser (parseSymbol, parse) where
 
-import Prelude (($), (||), (&&), (<$>), (<>), (<<<), (>>>), bind, pure, show)
+import Prelude
+    (($), (||), (&&), (<$>), (<>), (<<<), (>>>), (<*), bind, pure, show)
 import Control.Alt ((<|>))
 import Control.Lazy (class Lazy, defer)
 import Data.Array as A
@@ -17,6 +18,7 @@ import Text.Parsing.Parser.Combinators as PC
 import Text.Parsing.Parser.String as PS
 import Text.Parsing.Parser.Token as PT
 import Text.Parsing.Parser.Pos as PP
+import Data.String as S
 
 import WFF (UnaryOp, BinaryOp, WFF)
 import WFF as WFF
@@ -79,12 +81,24 @@ expression :: Lazy (Parser String (WFF String)) =>
     SymbolMap -> Parser String (WFF String)
 expression m = maybeBinaryExpression m <|> unaryExpression m
 
-showError :: P.ParseError -> String
-showError (P.ParseError e (PP.Position p)) =
-    "Parsing Error: " <> e <> " at position " <> show p.column
+showError :: String -> P.ParseError -> String
+showError s (P.ParseError e (PP.Position p)) =
+    "Parsing Error: " <>
+    e <>
+    " at position " <>
+    show p.column <>
+    " when parsing \"" <>
+    s <>
+    "\""
+
+removeSpaces :: String -> String
+removeSpaces = S.replaceAll (S.Pattern " ") (S.Replacement "")
 
 parseSymbol :: String -> Either String String
-parseSymbol s = E.either (showError >>> Left) Right $ P.runParser s symbol
+parseSymbol s = E.either (showError s >>> Left) Right $ P.runParser s $
+    symbol <* PS.eof
 
 parse :: SymbolMap -> String -> Either String (WFF String)
-parse m s = E.either (showError >>> Left) Right $ P.runParser s $ expression m
+parse m s = E.either (showError (removeSpaces s) >>> Left) Right $
+    P.runParser (removeSpaces s) $
+    expression m <* PS.eof

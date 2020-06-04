@@ -10,7 +10,7 @@ module UI.Sequent
 
 import Prelude
     ( Unit
-    , ($), (<$>), (<>), (<<<)
+    , ($), (<$>), (<>), (<<<), (/=)
     , bind, pure, otherwise, discard, unit, const
     )
 import Halogen as H
@@ -21,6 +21,7 @@ import Data.String as S
 import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse, sequence)
 import Data.Either (Either(..))
+import Data.Array as A
 
 import WFF as WFF
 import Sequent (Sequent(..))
@@ -150,7 +151,7 @@ handleAction (Ante s) = H.modify_ $ _ { ante = s }
 handleAction (Conse s) = H.modify_ $ _ { conse = s }
 handleAction Add = do
     state <- H.get
-    antesp <- traverse parse $ splitCommas state.ante
+    antesp <- traverse parse $ A.filter (_ /= "") $ splitCommas state.ante
     consep <- parse state.conse
     case do
         ante <- sequence antesp

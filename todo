@@ -1,11 +1,10 @@
 fix
 	stop fields clearing on error
 	invalid line number error?
-	make parser error if it didn't consume all input
-	filter spaces before parsing
+	make si/def dropdown remain when one is selected
 	import/export window
 	save/load from storage
-
+	disallow use of undone sequents
 add
 	symbol replacement
 	si(s) vs si
