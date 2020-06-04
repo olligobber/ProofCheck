@@ -1,7 +1,9 @@
 module Main (main) where
 
-import Prelude (Unit, pure, unit)
+import Prelude (Unit)
 import Effect (Effect)
 
+import UI (run)
+
 main :: Effect Unit
-main = pure unit
+main = run

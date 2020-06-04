@@ -17,6 +17,7 @@ You can edit this file as you like.
   , "profunctor-lenses"
   , "psci-support"
   , "strings"
+  , "stringutils"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

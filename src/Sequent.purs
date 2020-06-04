@@ -28,6 +28,9 @@ data Sequent a = Sequent
     , conse :: WFF a
     }
 
+derive instance eqSequent :: Eq a => Eq (Sequent a)
+derive instance ordSequent :: Ord a => Ord (Sequent a)
+
 instance functorSequent :: Functor Sequent where
     map f (Sequent s) = Sequent
         { ante : map f <$> s.ante, conse : f <$> s.conse }

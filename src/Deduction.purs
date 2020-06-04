@@ -8,6 +8,7 @@ module Deduction
 import Prelude
     ( (<>), (<$>), ($)
     , map, bind, pure, discard, not
+    , class Eq, class Ord
     )
 import Data.Either (Either(..))
 import Data.Maybe (Maybe(..))
@@ -35,6 +36,9 @@ data DeductionRule
     | RAA
     | Definition Symbol Int
     | Introduction (Sequent String) Int
+
+derive instance eqDeductionRule :: Eq DeductionRule
+derive instance ordDeductionRule :: Ord DeductionRule
 
 isAssumption :: DeductionRule -> Boolean
 isAssumption Assumption = true

@@ -15,6 +15,7 @@ import Data.Int (toNumber, fromNumber)
 import Data.Set as S
 import Data.Traversable (traverse)
 import Data.Foldable (foldM)
+import Data.Array (sort)
 
 import Json.WFF as JW
 import Json.Deduction as JD
@@ -30,7 +31,7 @@ fromDeduction (Deduction d) = AC.fromObject $ O.fromFoldable
     , Tuple "formula" $ JW.toJson d.deduction
     , Tuple "rule" $ JD.toJson d.rule
     , Tuple "references" $ AC.fromArray $
-        AC.fromNumber <<< toNumber <$> S.toUnfoldable d.reasons
+        AC.fromNumber <<< toNumber <$> d.reasons
     ]
 
 toDeduction :: SymbolMap -> Array Symbol -> Array (Sequent String) -> Proof ->
@@ -46,7 +47,7 @@ toDeduction symbolMap syms seqs (Proof p) j = do
     refArr <- E.note "Deduction references are not a list" $
         AC.toArray refJson
     reasons <- E.note "Deduction references are not integers" $
-        S.fromFoldable <$>
+        sort <$>
         traverse (AC.toNumber >=> fromNumber) refArr
     case O.lookup "assumptions" o of
         Just assJson -> do

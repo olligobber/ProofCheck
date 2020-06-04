@@ -24,7 +24,7 @@ module WFF
 import Prelude
     ( class Eq, class Ord, class Functor, class Apply, class Applicative
     , class Bind, class Monad, class Show
-    , not, show, map
+    , not, show, map, compare
     , (<>), ($), (<$>), (<*>), (>>=), (<<<), (==), (&&), (||), (<=))
 import Data.Foldable (class Foldable, foldMap, foldlDefault, foldrDefault)
 import Data.Traversable (class Traversable, sequence, traverseDefault)
@@ -48,6 +48,8 @@ bmapmap = bmap <<< liftIso bmap
 
 instance eqBoolFunction :: Eq a => Eq (BMap a) where
     eq (BMap f) (BMap g) = f true == g true && f false == g false
+instance ordBoolFunction :: Ord a => Ord (BMap a) where
+    compare (BMap f) (BMap g) = compare [f true, f false] [g true, g false]
 
 instance showBoolFunction :: Show a => Show (BMap a) where
     show (BMap f) =
@@ -79,6 +81,7 @@ data WFF a
     | Binary { operator :: BinaryOp, left :: WFF a, right :: WFF a }
 
 derive instance eqWFF :: Eq a => Eq (WFF a)
+derive instance ordWFF :: Ord a => Ord (WFF a)
 
 instance showWFF :: Show a => Show (WFF a) where
     show (Prop p) = "Prop (" <> show p <> ")"

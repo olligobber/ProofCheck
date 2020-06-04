@@ -25,7 +25,8 @@ import Symbol (SymbolMap)
 symbol :: Parser String String
 symbol = fromCharArray <$> A.some
     ( PS.satisfy
-        ((U.isPunctuation || U.isSymbol) && (_ `A.notElem` ['(',')','∃','∀']))
+        ( (U.isPunctuation || U.isSymbol) &&
+        (_ `A.notElem` [',','(',')','∃','∀']) )
         <?> "Symbol or Punctuation"
     )
 

@@ -3,12 +3,14 @@ module Symbol
     , makeUnary
     , makeBinary
     , toSequents
+    , getName
     , SymbolMap
     , defaultMap
     , updateMap
     ) where
 
-import Prelude (class Eq, Unit, (==), ($), (<$), (<$>), (<>), unit, otherwise)
+import Prelude
+    (class Eq, class Ord, Unit, (==), ($), (<$), (<$>), (<>), unit, otherwise)
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
 import Data.Traversable (traverse)
@@ -24,6 +26,9 @@ data Symbol
     = UnarySymbol { operator :: UnaryOp, definition :: WFF Unit }
     | BinarySymbol { operator :: BinaryOp, definition :: WFF Boolean }
     -- true is left, false is right
+
+derive instance eqSymbol :: Eq Symbol
+derive instance ordSymbol :: Ord Symbol
 
 makeUnary :: forall a. Eq a => a -> String -> WFF a -> Either String Symbol
 makeUnary p s w = case renamed of
@@ -68,6 +73,10 @@ toSequents (BinarySymbol s) =
     where
         withOp = Binary {operator : s.operator, left : Prop 1, right : Prop 0}
         noOp = (if _ then 1 else 0) <$> s.definition
+
+getName :: Symbol -> String
+getName (UnarySymbol u) = u.operator.symbol
+getName (BinarySymbol b) = b.operator.symbol
 
 type SymbolMap = Map String (Either UnaryOp BinaryOp)
 

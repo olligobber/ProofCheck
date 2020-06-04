@@ -27,7 +27,7 @@ data Deduction = Deduction
     { assumptions :: Set Int
     , deduction :: WFF String
     , rule :: DeductionRule
-    , reasons :: Set Int
+    , reasons :: Array Int
     }
 
 data Proof = Proof
@@ -39,7 +39,7 @@ renderReason :: Deduction -> String
 renderReason (Deduction d) =
     renderRule d.rule
     <> " "
-    <> joinWith "," (show <$> Set.toUnfoldable d.reasons)
+    <> joinWith "," (show <$> d.reasons)
 
 empty :: Proof
 empty = Proof
@@ -58,8 +58,7 @@ pack (Deduction d) =
 addDeduction :: Deduction -> Proof -> Either String Proof
 addDeduction (Deduction d) (Proof p) = do
     antes <- E.note "Invalid line number"
-        $ traverse (A.index p.lines >>> map pack)
-        $ Set.toUnfoldable d.reasons
+        $ traverse (A.index p.lines >>> map pack) d.reasons
     assumptions <- matchDeduction antes d.deduction d.rule
     case assumptions of
         Just x | x == d.assumptions -> Right $ Proof $
@@ -83,8 +82,7 @@ getNextUnused s = case Set.findMin $ plus `Set.difference` s of
 getAssumptions :: Deduction -> Proof -> Either String (Set Int)
 getAssumptions (Deduction d) (Proof p) = do
     antes <- E.note "Invalid line number"
-        $ traverse (A.index p.lines >>> map pack)
-        $ Set.toUnfoldable d.reasons
+        $ traverse (A.index p.lines >>> map pack) d.reasons
     assumptions <- matchDeduction antes d.deduction d.rule
     case assumptions of
         Just s -> pure s

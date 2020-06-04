@@ -9,17 +9,6 @@
         <title>ProofCheck</title>
     </head>
     <body>
-        <div id="elm-app"></div>
-        <script src="build/main.js"></script>
-        <script>
-            var storedState = localStorage.getItem('proof');
-            var startingState = storedState ? JSON.parse(storedState) : null;
-            var elmDiv = document.getElementById('elm-app');
-            var myApp = Elm.Main.embed(elmDiv, startingState);
-            myApp.ports.storeProof.subscribe(function(proof) {
-                var proofJson = JSON.stringify(proof)
-                localStorage.setItem('proof', proofJson);
-            });
-        </script>
+        <script src="index.js"></script>
     </body>
 </html>
