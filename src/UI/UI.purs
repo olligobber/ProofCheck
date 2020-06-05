@@ -3,7 +3,7 @@ module UI
     ) where
 
 import Prelude
-    (Unit, ($), (<>), (<<<), (*>), (<$>), bind, const, unit, pure)
+    (Unit, ($), (<>), (<<<), (*>), (<$>), (==), bind, const, unit, pure)
 import Effect (Effect)
 import Data.Symbol (SProxy(..))
 import Halogen as H
@@ -26,6 +26,7 @@ import UI.Capabilities
     , class WriteProof, class History, class ReadProof
     , Window(..)
     , getErrors, setWindow, undo, redo, new, clear, canNew, canUndo, canRedo
+    , getWindow
     )
 
 data Action
@@ -38,7 +39,8 @@ data Action
     | NoAction
 
 type State =
-    { errors :: Maybe (Array String)
+    { window :: Window
+    , errors :: Maybe (Array String)
     , ableNew :: Boolean
     , ableUndo :: Boolean
     , ableRedo :: Boolean
@@ -68,7 +70,8 @@ component = H.mkComponent
 
 initialState :: State
 initialState =
-    { errors : Nothing
+    { window : NoWindow
+    , errors : Nothing
     , ableNew : false
     , ableUndo : false
     , ableRedo : false
@@ -99,7 +102,7 @@ menu state = HH.div
         [ HH.text "Undo" ]
     , HH.div
         [ HP.class_ $ HH.ClassName $
-            if state.ableRedo then 
+            if state.ableRedo then
                 "menu-button"
             else
                 "menu-button disabled"
@@ -110,19 +113,22 @@ menu state = HH.div
     , HH.div
         [ HP.class_ $ HH.ClassName "menu-button"
         , HP.id_ "symbol-window-button"
-        , HE.onClick $ const $ Just $ Open SymbolWindow
+        , HE.onClick $ const $ Just $ Open $
+            if state.window == SymbolWindow then NoWindow else SymbolWindow
         ]
         [ HH.text "Symbols" ]
     , HH.div
         [ HP.class_ $ HH.ClassName "menu-button"
         , HP.id_ "sequent-window-button"
-        , HE.onClick $ const $ Just $ Open SequentWindow
+        , HE.onClick $ const $ Just $ Open $
+            if state.window == SequentWindow then NoWindow else SequentWindow
         ]
         [ HH.text "Sequents" ]
     , HH.div
         [ HP.class_ $ HH.ClassName "menu-button"
         , HP.id_ "import-export-window-button"
-        , HE.onClick $ const $ Just $ Open IEWindow
+        , HE.onClick $ const $ Just $ Open $
+            if state.window == IEWindow then NoWindow else IEWindow
         ]
         [ HH.text "Import/Export" ]
     ]
@@ -162,6 +168,7 @@ handleAction :: forall m.
     ReadError m =>
     Nav m =>
     History m =>
+    ReadNav m =>
     Action -> H.HalogenM State Action Slots Unit m Unit
 handleAction Update = do
     _ <- H.query _sequents unit $ UISeq.Update unit
@@ -171,7 +178,8 @@ handleAction Update = do
     ableNew <- canNew
     ableUndo <- canUndo
     ableRedo <- canRedo
-    H.put {errors, ableNew, ableUndo, ableRedo}
+    window <- getWindow
+    H.put {window, errors, ableNew, ableUndo, ableRedo}
 handleAction (Open w) = setWindow w *> handleAction Update
 handleAction Undo = undo *> handleAction Update
 handleAction Redo = redo *> handleAction Update

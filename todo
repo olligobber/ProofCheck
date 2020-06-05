@@ -1,7 +1,6 @@
 fix
 	import/export window
 	save/load from storage
-	make re-opening active window close it
 add
 	symbol replacement
 	si(s) vs si

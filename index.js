@@ -27365,6 +27365,7 @@ var PS = {};
   exports["ReadError"] = ReadError;
   exports["getErrors"] = getErrors;
   exports["ReadNav"] = ReadNav;
+  exports["getWindow"] = getWindow;
   exports["isSymbolWindow"] = isSymbolWindow;
   exports["isSequentWindow"] = isSequentWindow;
   exports["Nav"] = Nav;
@@ -27377,6 +27378,7 @@ var PS = {};
   exports["canUndo"] = canUndo;
   exports["canRedo"] = canRedo;
   exports["canNew"] = canNew;
+  exports["eqWindow"] = eqWindow;
   exports["readSymbolsHalogenM"] = readSymbolsHalogenM;
   exports["writeSymbolsHalogenM"] = writeSymbolsHalogenM;
   exports["readSequentsHalogenM"] = readSequentsHalogenM;
@@ -28685,6 +28687,7 @@ var PS = {};
   var Control_Apply = $PS["Control.Apply"];
   var Control_Bind = $PS["Control.Bind"];
   var Control_Monad_State_Class = $PS["Control.Monad.State.Class"];
+  var Data_Eq = $PS["Data.Eq"];
   var Data_Function = $PS["Data.Function"];
   var Data_Functor = $PS["Data.Functor"];
   var Data_Maybe = $PS["Data.Maybe"];
@@ -28776,9 +28779,28 @@ var PS = {};
               return "menu-button";
           };
           return "menu-button disabled";
-      })())), Halogen_HTML_Properties.id_("redo-button"), Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(Redo.value))) ])([ Halogen_HTML_Core.text("Redo") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("symbol-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(new Open(UI_Capabilities.SymbolWindow.value)))) ])([ Halogen_HTML_Core.text("Symbols") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("sequent-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(new Open(UI_Capabilities.SequentWindow.value)))) ])([ Halogen_HTML_Core.text("Sequents") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("import-export-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(new Open(UI_Capabilities.IEWindow.value)))) ])([ Halogen_HTML_Core.text("Import/Export") ]) ]);
+      })())), Halogen_HTML_Properties.id_("redo-button"), Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(Redo.value))) ])([ Halogen_HTML_Core.text("Redo") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("symbol-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(Open.create((function () {
+          var $19 = Data_Eq.eq(UI_Capabilities.eqWindow)(state.window)(UI_Capabilities.SymbolWindow.value);
+          if ($19) {
+              return UI_Capabilities.NoWindow.value;
+          };
+          return UI_Capabilities.SymbolWindow.value;
+      })())))) ])([ Halogen_HTML_Core.text("Symbols") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("sequent-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(Open.create((function () {
+          var $20 = Data_Eq.eq(UI_Capabilities.eqWindow)(state.window)(UI_Capabilities.SequentWindow.value);
+          if ($20) {
+              return UI_Capabilities.NoWindow.value;
+          };
+          return UI_Capabilities.SequentWindow.value;
+      })())))) ])([ Halogen_HTML_Core.text("Sequents") ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("menu-button"), Halogen_HTML_Properties.id_("import-export-window-button"), Halogen_HTML_Events.onClick(Data_Function["const"](Data_Maybe.Just.create(Open.create((function () {
+          var $21 = Data_Eq.eq(UI_Capabilities.eqWindow)(state.window)(UI_Capabilities.IEWindow.value);
+          if ($21) {
+              return UI_Capabilities.NoWindow.value;
+          };
+          return UI_Capabilities.IEWindow.value;
+      })())))) ])([ Halogen_HTML_Core.text("Import/Export") ]) ]);
   };
   var initialState = {
+      window: UI_Capabilities.NoWindow.value,
       errors: Data_Maybe.Nothing.value,
       ableNew: false,
       ableUndo: false,
@@ -28791,26 +28813,31 @@ var PS = {};
       return function (dictReadError) {
           return function (dictNav) {
               return function (dictHistory) {
-                  return function (v) {
-                      if (v instanceof Update) {
-                          return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(Halogen_Query_HalogenM.query()(new Data_Symbol.IsSymbol(function () {
-                              return "sequents";
-                          }))(Data_Ord.ordUnit)(_sequents)(Data_Unit.unit)(new UI_Sequent.Update(Data_Unit.unit)))(function () {
+                  return function (dictReadNav) {
+                      return function (v) {
+                          if (v instanceof Update) {
                               return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(Halogen_Query_HalogenM.query()(new Data_Symbol.IsSymbol(function () {
-                                  return "symbols";
-                              }))(Data_Ord.ordUnit)(_symbols)(Data_Unit.unit)(new UI_Symbol.Update(Data_Unit.unit)))(function () {
+                                  return "sequents";
+                              }))(Data_Ord.ordUnit)(_sequents)(Data_Unit.unit)(new UI_Sequent.Update(Data_Unit.unit)))(function () {
                                   return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(Halogen_Query_HalogenM.query()(new Data_Symbol.IsSymbol(function () {
-                                      return "proof";
-                                  }))(Data_Ord.ordUnit)(_proof)(Data_Unit.unit)(new UI_Proof.Update(Data_Unit.unit)))(function () {
-                                      return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getErrors(UI_Capabilities.readErrorHalogenM(dictReadError)))(function (errors) {
-                                          return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.canNew(UI_Capabilities.historyHalogenM(dictHistory)))(function (ableNew) {
-                                              return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.canUndo(UI_Capabilities.historyHalogenM(dictHistory)))(function (ableUndo) {
-                                                  return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.canRedo(UI_Capabilities.historyHalogenM(dictHistory)))(function (ableRedo) {
-                                                      return Control_Monad_State_Class.put(Halogen_Query_HalogenM.monadStateHalogenM)({
-                                                          errors: errors,
-                                                          ableNew: ableNew,
-                                                          ableUndo: ableUndo,
-                                                          ableRedo: ableRedo
+                                      return "symbols";
+                                  }))(Data_Ord.ordUnit)(_symbols)(Data_Unit.unit)(new UI_Symbol.Update(Data_Unit.unit)))(function () {
+                                      return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(Halogen_Query_HalogenM.query()(new Data_Symbol.IsSymbol(function () {
+                                          return "proof";
+                                      }))(Data_Ord.ordUnit)(_proof)(Data_Unit.unit)(new UI_Proof.Update(Data_Unit.unit)))(function () {
+                                          return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getErrors(UI_Capabilities.readErrorHalogenM(dictReadError)))(function (errors) {
+                                              return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.canNew(UI_Capabilities.historyHalogenM(dictHistory)))(function (ableNew) {
+                                                  return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.canUndo(UI_Capabilities.historyHalogenM(dictHistory)))(function (ableUndo) {
+                                                      return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.canRedo(UI_Capabilities.historyHalogenM(dictHistory)))(function (ableRedo) {
+                                                          return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getWindow(UI_Capabilities.readNavHalogenM(dictReadNav)))(function (window) {
+                                                              return Control_Monad_State_Class.put(Halogen_Query_HalogenM.monadStateHalogenM)({
+                                                                  window: window,
+                                                                  errors: errors,
+                                                                  ableNew: ableNew,
+                                                                  ableUndo: ableUndo,
+                                                                  ableRedo: ableRedo
+                                                              });
+                                                          });
                                                       });
                                                   });
                                               });
@@ -28818,27 +28845,27 @@ var PS = {};
                                       });
                                   });
                               });
-                          });
+                          };
+                          if (v instanceof Open) {
+                              return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(UI_Capabilities.setWindow(UI_Capabilities.navHalogenM(dictNav))(v.value0))(handleAction(dictError)(dictReadError)(dictNav)(dictHistory)(dictReadNav)(Update.value));
+                          };
+                          if (v instanceof Undo) {
+                              return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(UI_Capabilities.undo(UI_Capabilities.historyHalogenM(dictHistory)))(handleAction(dictError)(dictReadError)(dictNav)(dictHistory)(dictReadNav)(Update.value));
+                          };
+                          if (v instanceof Redo) {
+                              return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(UI_Capabilities.redo(UI_Capabilities.historyHalogenM(dictHistory)))(handleAction(dictError)(dictReadError)(dictNav)(dictHistory)(dictReadNav)(Update.value));
+                          };
+                          if (v instanceof New) {
+                              return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(UI_Capabilities["new"](UI_Capabilities.historyHalogenM(dictHistory)))(handleAction(dictError)(dictReadError)(dictNav)(dictHistory)(dictReadNav)(Update.value));
+                          };
+                          if (v instanceof ClearError) {
+                              return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(UI_Capabilities.clear(UI_Capabilities.errorHalogenM(dictError)))(handleAction(dictError)(dictReadError)(dictNav)(dictHistory)(dictReadNav)(Update.value));
+                          };
+                          if (v instanceof NoAction) {
+                              return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(Data_Unit.unit);
+                          };
+                          throw new Error("Failed pattern match at UI (line 166, column 1 - line 172, column 56): " + [ v.constructor.name ]);
                       };
-                      if (v instanceof Open) {
-                          return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(UI_Capabilities.setWindow(UI_Capabilities.navHalogenM(dictNav))(v.value0))(handleAction(dictError)(dictReadError)(dictNav)(dictHistory)(Update.value));
-                      };
-                      if (v instanceof Undo) {
-                          return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(UI_Capabilities.undo(UI_Capabilities.historyHalogenM(dictHistory)))(handleAction(dictError)(dictReadError)(dictNav)(dictHistory)(Update.value));
-                      };
-                      if (v instanceof Redo) {
-                          return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(UI_Capabilities.redo(UI_Capabilities.historyHalogenM(dictHistory)))(handleAction(dictError)(dictReadError)(dictNav)(dictHistory)(Update.value));
-                      };
-                      if (v instanceof New) {
-                          return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(UI_Capabilities["new"](UI_Capabilities.historyHalogenM(dictHistory)))(handleAction(dictError)(dictReadError)(dictNav)(dictHistory)(Update.value));
-                      };
-                      if (v instanceof ClearError) {
-                          return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(UI_Capabilities.clear(UI_Capabilities.errorHalogenM(dictError)))(handleAction(dictError)(dictReadError)(dictNav)(dictHistory)(Update.value));
-                      };
-                      if (v instanceof NoAction) {
-                          return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(Data_Unit.unit);
-                      };
-                      throw new Error("Failed pattern match at UI (line 160, column 1 - line 165, column 56): " + [ v.constructor.name ]);
                   };
               };
           };
@@ -28869,7 +28896,7 @@ var PS = {};
                                                       return Halogen_HTML_Elements.div([  ])([ Halogen_HTML_Core.text(e) ]);
                                                   })(state.errors.value0)) ];
                                               };
-                                              throw new Error("Failed pattern match at UI (line 150, column 10 - line 158, column 14): " + [ state.errors.constructor.name ]);
+                                              throw new Error("Failed pattern match at UI (line 156, column 10 - line 164, column 14): " + [ state.errors.constructor.name ]);
                                           })()));
                                       };
                                   };
@@ -28885,7 +28912,7 @@ var PS = {};
       initialState: Data_Function["const"](initialState),
       render: render(UI_AppState.readSymbolsAppStateM)(UI_AppState.writeSymbolsAppStateM)(UI_AppState.readSequentsAppStateM)(UI_AppState.writeSequentsAppStateM)(UI_AppState.readProofAppStateM)(UI_AppState.writeProofAppStateM)(UI_AppState.errorAppStateM)(UI_AppState.readNavAppStateM)(UI_AppState.navAppStateM),
       "eval": Halogen_Component.mkEval({
-          handleAction: handleAction(UI_AppState.errorAppStateM)(UI_AppState.readErrorAppStateM)(UI_AppState.navAppStateM)(UI_AppState.historyAppStateM),
+          handleAction: handleAction(UI_AppState.errorAppStateM)(UI_AppState.readErrorAppStateM)(UI_AppState.navAppStateM)(UI_AppState.historyAppStateM)(UI_AppState.readNavAppStateM),
           handleQuery: Halogen_Component.defaultEval.handleQuery,
           receive: Halogen_Component.defaultEval.receive,
           initialize: Halogen_Component.defaultEval.initialize,
@@ -28895,10 +28922,10 @@ var PS = {};
   var run = Halogen_Aff_Util.runHalogenAff(Control_Bind.bind(Effect_Aff.bindAff)(Halogen_Aff_Util.awaitBody)(function (body) {
       return Control_Bind.bind(Effect_Aff.bindAff)(Effect_Class.liftEffect(Effect_Aff.monadEffectAff)(Effect_Ref["new"](UI_AppState.start)))(function (ref) {
           return Halogen_VDom_Driver.runUI(Halogen_Component.hoist(Halogen_HTML_Core.bifunctorHTML)(Effect_Aff.functorAff)((function () {
-              var $22 = Effect_Class.liftEffect(Effect_Aff.monadEffectAff);
-              var $23 = UI_AppState.run(ref);
-              return function ($24) {
-                  return $22($23($24));
+              var $26 = Effect_Class.liftEffect(Effect_Aff.monadEffectAff);
+              var $27 = UI_AppState.run(ref);
+              return function ($28) {
+                  return $26($27($28));
               };
           })())(component))(NoAction.value)(body);
       });
