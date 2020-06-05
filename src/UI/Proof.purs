@@ -264,7 +264,7 @@ handleAction AddLine = do
         rule <- toDeduction state.reason
         reasons <- E.note "References are not integers" $
             A.sort <$> traverse fromString
-            (A.filter (_ /= "") $ SU.words $ commastospaces state.assumptions)
+            (A.filter (_ /= "") $ SU.words $ commastospaces state.references)
         pure $ Deduction {assumptions, deduction, rule, reasons}
     of
         Left e -> error e

@@ -1,10 +1,10 @@
 fix
 	stop fields clearing on error
-	invalid line number error?
 	make si/def dropdown remain when one is selected
 	import/export window
 	save/load from storage
 	disallow use of undone sequents
+	make re-opening active window close it
 add
 	symbol replacement
 	si(s) vs si

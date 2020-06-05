@@ -9,7 +9,7 @@ module Proof
     ) where
 
 import Prelude
-    ( (<>), (<$>), ($), (>>>), (==), (/=), (+)
+    ( (<>), (<$>), ($), (>>>), (==), (/=), (+), (-)
     , show, bind, map, pure
     )
 import Data.String.Common (joinWith)
@@ -62,8 +62,8 @@ pack (Deduction d) =
 
 addDeduction :: Deduction -> Proof -> Either String Proof
 addDeduction (Deduction d) (Proof p) = do
-    antes <- E.note "Invalid line number"
-        $ traverse (A.index p.lines >>> map pack) d.reasons
+    antes <- E.note "Invalid line number for reason"
+        $ traverse ((_ - 1) >>> A.index p.lines >>> map pack) d.reasons
     assumptions <- matchDeduction antes d.deduction d.rule
     case assumptions of
         Just x | x == d.assumptions -> Right $ Proof $
@@ -86,8 +86,8 @@ getNextUnused s = case Set.findMin $ plus `Set.difference` s of
 
 getAssumptions :: Deduction -> Proof -> Either String (Set Int)
 getAssumptions (Deduction d) (Proof p) = do
-    antes <- E.note "Invalid line number"
-        $ traverse (A.index p.lines >>> map pack) d.reasons
+    antes <- E.note "Invalid line number for reason"
+        $ traverse ((_ - 1) >>> A.index p.lines >>> map pack) d.reasons
     assumptions <- matchDeduction antes d.deduction d.rule
     case assumptions of
         Just s -> pure s

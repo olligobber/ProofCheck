@@ -26537,11 +26537,13 @@ var PS = {};
   });
   var addDeduction = function (v) {
       return function (v1) {
-          return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Invalid line number")(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)((function () {
-              var $34 = Data_Functor.map(Data_Maybe.functorMaybe)(pack);
-              var $35 = Data_Array.index(v1.value0.lines);
-              return function ($36) {
-                  return $34($35($36));
+          return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Invalid line number for reason")(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)((function () {
+              var $36 = Data_Functor.map(Data_Maybe.functorMaybe)(pack);
+              var $37 = Data_Array.index(v1.value0.lines);
+              return function ($38) {
+                  return $36($37((function (v2) {
+                      return v2 - 1 | 0;
+                  })($38)));
               };
           })())(v.value0.reasons)))(function (antes) {
               return Control_Bind.bind(Data_Either.bindEither)(Deduction_1.matchDeduction(antes)(v.value0.deduction)(v.value0.rule))(function (assumptions) {
@@ -28072,7 +28074,7 @@ var PS = {};
                                       return Control_Bind.bind(Data_Either.bindEither)(toDeduction(state.reason))(function (rule) {
                                           return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("References are not integers")(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.sort(Data_Ord.ordInt))(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)(Data_Int.fromString)(Data_Array.filter(function (v2) {
                                               return v2 !== "";
-                                          })(Data_String_Utils.words(commastospaces(state.assumptions)))))))(function (reasons) {
+                                          })(Data_String_Utils.words(commastospaces(state.references)))))))(function (reasons) {
                                               return Control_Applicative.pure(Data_Either.applicativeEither)(new Proof.Deduction({
                                                   assumptions: assumptions,
                                                   deduction: deduction,
