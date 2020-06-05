@@ -1,8 +1,6 @@
 fix
-	fix sequent permutations
 	import/export window
 	save/load from storage
-	disallow use of undone sequents
 	make re-opening active window close it
 add
 	symbol replacement

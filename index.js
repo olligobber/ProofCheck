@@ -27401,15 +27401,18 @@ var PS = {};
   var Control_Monad_Trans_Class = $PS["Control.Monad.Trans.Class"];
   var Data_Array = $PS["Data.Array"];
   var Data_Either = $PS["Data.Either"];
+  var Data_Eq = $PS["Data.Eq"];
   var Data_Foldable = $PS["Data.Foldable"];
   var Data_Functor = $PS["Data.Functor"];
   var Data_Maybe = $PS["Data.Maybe"];
   var Data_Semigroup = $PS["Data.Semigroup"];
   var Data_Semiring = $PS["Data.Semiring"];
   var Data_Unit = $PS["Data.Unit"];
+  var Deduction = $PS["Deduction"];
   var Effect = $PS["Effect"];
   var Effect_Ref = $PS["Effect.Ref"];
   var Proof = $PS["Proof"];
+  var Sequent = $PS["Sequent"];
   var $$Symbol = $PS["Symbol"];
   var UI_Capabilities = $PS["UI.Capabilities"];                
   var AppStateM = function (x) {
@@ -27546,7 +27549,7 @@ var PS = {};
               };
           });
       };
-      throw new Error("Failed pattern match at UI.AppState (line 163, column 30 - line 170, column 14): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at UI.AppState (line 173, column 30 - line 180, column 14): " + [ v.constructor.name ]);
   }), Control_Bind.bind(bindAppStateM)(get)(function (state) {
       var v = Data_Array.unsnoc(state.history);
       if (v instanceof Data_Maybe.Nothing) {
@@ -27563,35 +27566,52 @@ var PS = {};
               };
           });
       };
-      throw new Error("Failed pattern match at UI.AppState (line 155, column 30 - line 162, column 14): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at UI.AppState (line 165, column 30 - line 172, column 14): " + [ v.constructor.name ]);
   }));
   var writeProofAppStateM = new UI_Capabilities.WriteProof(function () {
       return monadAppStateM;
-  }, function (deduction) {
-      return Control_Bind.bind(bindAppStateM)(get)(function (state) {
-          var v = Proof.addDeduction(deduction)(state.present.proof);
-          if (v instanceof Data_Either.Left) {
-              return Data_Functor.voidRight(functorAppStateM)(false)(UI_Capabilities.error(errorAppStateM)(v.value0));
+  }, function (v) {
+      var validate = function (s) {
+          var v1 = Proof.addDeduction(v)(s.present.proof);
+          if (v1 instanceof Data_Either.Left) {
+              return Data_Functor.voidRight(functorAppStateM)(false)(UI_Capabilities.error(errorAppStateM)(v1.value0));
           };
-          if (v instanceof Data_Either.Right) {
-              return Control_Bind.discard(Control_Bind.discardUnit)(bindAppStateM)(modify(function (v1) {
+          if (v1 instanceof Data_Either.Right) {
+              return Control_Bind.discard(Control_Bind.discardUnit)(bindAppStateM)(modify(function (v2) {
                   return {
-                      history: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.history)([ state.present ]),
+                      history: Data_Semigroup.append(Data_Semigroup.semigroupArray)(s.history)([ s.present ]),
                       future: [  ],
                       present: {
-                          sequents: state.present.sequents,
-                          symbols: state.present.symbols,
-                          symbolMap: state.present.symbolMap,
-                          proof: v.value0
+                          sequents: s.present.sequents,
+                          symbols: s.present.symbols,
+                          symbolMap: s.present.symbolMap,
+                          proof: v1.value0
                       },
                       error: Data_Maybe.Nothing.value,
-                      window: v1.window
+                      window: v2.window
                   };
               }))(function () {
                   return Control_Applicative.pure(applicativeAppStateM)(true);
               });
           };
-          throw new Error("Failed pattern match at UI.AppState (line 129, column 9 - line 139, column 26): " + [ v.constructor.name ]);
+          throw new Error("Failed pattern match at UI.AppState (line 139, column 26 - line 149, column 30): " + [ v1.constructor.name ]);
+      };
+      return Control_Bind.bind(bindAppStateM)(get)(function (state) {
+          if (v.value0.rule instanceof Deduction.Introduction) {
+              var v1 = Data_Array.index(state.present.sequents)(v.value0.rule.value1);
+              if (v1 instanceof Data_Maybe.Just && Data_Eq.eq(Sequent.eqSequent(Data_Eq.eqString))(v.value0.rule.value0)(v1.value0)) {
+                  return validate(state);
+              };
+              return Data_Functor.voidRight(functorAppStateM)(false)(UI_Capabilities.error(errorAppStateM)("Sequent is not available"));
+          };
+          if (v.value0.rule instanceof Deduction.Definition) {
+              var v1 = Data_Array.index(state.present.symbols)(v.value0.rule.value1);
+              if (v1 instanceof Data_Maybe.Just && Data_Eq.eq($$Symbol.eqSymbol)(v.value0.rule.value0)(v1.value0)) {
+                  return validate(state);
+              };
+              return Data_Functor.voidRight(functorAppStateM)(false)(UI_Capabilities.error(errorAppStateM)("Symbol is not available"));
+          };
+          return validate(state);
       });
   });
   var writeSequentsAppStateM = new UI_Capabilities.WriteSequents(function () {
@@ -27642,7 +27662,7 @@ var PS = {};
                   return Control_Applicative.pure(applicativeAppStateM)(true);
               });
           };
-          throw new Error("Failed pattern match at UI.AppState (line 95, column 9 - line 107, column 26): " + [ v.constructor.name ]);
+          throw new Error("Failed pattern match at UI.AppState (line 96, column 9 - line 108, column 26): " + [ v.constructor.name ]);
       });
   });
   exports["run"] = run;

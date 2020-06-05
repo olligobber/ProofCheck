@@ -8,7 +8,7 @@ module UI.AppState
 
 import Prelude
     ( class Functor, class Apply, class Applicative, class Bind, class Monad
-    , ($), (>>=), (<$>), (<>), (/=), (||), (<$)
+    , ($), (>>=), (<$>), (<>), (/=), (||), (<$), (==)
     , bind, const, pure, unit, not, discard
     , Unit
     )
@@ -23,8 +23,9 @@ import Control.Applicative (when)
 
 import Sequent (Sequent)
 import Symbol (Symbol, SymbolMap, defaultMap, updateMap)
-import Proof (Proof)
+import Proof (Proof, Deduction(..))
 import Proof as P
+import Deduction (DeductionRule(..))
 import UI.Capabilities
     ( Window(..)
     , class ReadSymbols, class WriteSymbols, class ReadSequents
@@ -125,19 +126,28 @@ instance readProofAppStateM :: ReadProof AppStateM where
     getProof = _.present.proof <$> get
 
 instance writeProofAppStateM :: WriteProof AppStateM where
-    addDeduction deduction = get >>= \state ->
-        case P.addDeduction deduction state.present.proof of
-            Left e -> false <$ error e
-            Right newproof -> do
-                modify $ _
-                    { history = state.history <> [state.present]
-                    , future = []
-                    , present = state.present
-                        { proof = newproof }
-                    , error = Nothing
-                    }
-                pure true
-                
+    addDeduction deduction@(Deduction d) = get >>= \state ->
+        case d.rule of
+            Introduction seq i -> case A.index state.present.sequents i of
+                Just s | seq == s -> validate state
+                _ -> false <$ error "Sequent is not available"
+            Definition sym i -> case A.index state.present.symbols i of
+                Just s | sym == s -> validate state
+                _ -> false <$ error "Symbol is not available"
+            _ -> validate state
+        where
+            validate s = case P.addDeduction deduction s.present.proof of
+                Left e -> false <$ error e
+                Right newproof -> do
+                    modify $ _
+                        { history = s.history <> [s.present]
+                        , future = []
+                        , present = s.present
+                            { proof = newproof }
+                        , error = Nothing
+                        }
+                    pure true
+
 instance errorAppStateM :: Error AppStateM where
     errors e = modify $ _ { error = Just e }
     clear = modify $ _ { error = Nothing }
