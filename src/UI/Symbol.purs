@@ -20,6 +20,7 @@ import Halogen.HTML.Events as HE
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Either (Either(..))
+import Control.Applicative (when)
 
 import WFF as WFF
 import UI.HTMLHelp (select)
@@ -185,8 +186,9 @@ handleAction Add = do
     of
         Left e -> error e
         Right symbol -> do
-            H.modify_ $ _ { name = "", definition = "", binary = true }
-            addSymbol symbol
+            success <- addSymbol symbol
+            when success $
+                H.modify_ $ _ { name = "", definition = "", binary = true }
 handleAction Close = close
 handleAction NoAction = pure unit
 

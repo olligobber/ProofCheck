@@ -8,8 +8,8 @@ module UI.AppState
 
 import Prelude
     ( class Functor, class Apply, class Applicative, class Bind, class Monad
-    , ($), (>>=), (<$>), (<>), (/=), (||)
-    , bind, const, pure, unit, not
+    , ($), (>>=), (<$>), (<>), (/=), (||), (<$)
+    , bind, const, pure, unit, not, discard
     , Unit
     )
 import Data.Maybe (Maybe(..))
@@ -93,16 +93,18 @@ instance readSymbolsAppStateM :: ReadSymbols AppStateM where
 instance writeSymbolsAppStateM :: WriteSymbols AppStateM where
     addSymbol symbol = get >>= \state ->
         case updateMap state.present.symbolMap symbol of
-            Left e -> error e
-            Right newmap -> modify $ _
-                { history = state.history <> [state.present]
-                , future = []
-                , present = state.present
-                    { symbols = state.present.symbols <> [symbol]
-                    , symbolMap = newmap
+            Left e -> false <$ error e
+            Right newmap -> do
+                modify $ _
+                    { history = state.history <> [state.present]
+                    , future = []
+                    , present = state.present
+                        { symbols = state.present.symbols <> [symbol]
+                        , symbolMap = newmap
+                        }
+                    , error = Nothing
                     }
-                , error = Nothing
-                }
+                pure true
 
 instance readSequentsAppStateM :: ReadSequents AppStateM where
     getSequents = _.present.sequents <$> get
@@ -117,6 +119,7 @@ instance writeSequentsAppStateM :: WriteSequents AppStateM where
                 { sequents = state.present.sequents <> [sequent] }
             , error = Nothing
             }
+        pure true
 
 instance readProofAppStateM :: ReadProof AppStateM where
     getProof = _.present.proof <$> get
@@ -124,15 +127,17 @@ instance readProofAppStateM :: ReadProof AppStateM where
 instance writeProofAppStateM :: WriteProof AppStateM where
     addDeduction deduction = get >>= \state ->
         case P.addDeduction deduction state.present.proof of
-            Left e -> error e
-            Right newproof -> modify $ _
-                { history = state.history <> [state.present]
-                , future = []
-                , present = state.present
-                    { proof = newproof }
-                , error = Nothing
-                }
-
+            Left e -> false <$ error e
+            Right newproof -> do
+                modify $ _
+                    { history = state.history <> [state.present]
+                    , future = []
+                    , present = state.present
+                        { proof = newproof }
+                    , error = Nothing
+                    }
+                pure true
+                
 instance errorAppStateM :: Error AppStateM where
     errors e = modify $ _ { error = Just e }
     clear = modify $ _ { error = Nothing }

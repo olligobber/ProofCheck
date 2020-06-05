@@ -27319,7 +27319,7 @@ var PS = {};
       return new WriteSymbols(function () {
           return Halogen_Query_HalogenM.monadHalogenM;
       }, function (s) {
-          return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictWriteSymbols.Monad0())(addSymbol(dictWriteSymbols)(s)))(Halogen_Query_HalogenM.raise(Data_Unit.unit));
+          return Control_Apply.applyFirst(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictWriteSymbols.Monad0())(addSymbol(dictWriteSymbols)(s)))(Halogen_Query_HalogenM.raise(Data_Unit.unit));
       });
   };
   var addSequent = function (dict) {
@@ -27329,7 +27329,7 @@ var PS = {};
       return new WriteSequents(function () {
           return Halogen_Query_HalogenM.monadHalogenM;
       }, function (s) {
-          return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictWriteSequents.Monad0())(addSequent(dictWriteSequents)(s)))(Halogen_Query_HalogenM.raise(Data_Unit.unit));
+          return Control_Apply.applyFirst(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictWriteSequents.Monad0())(addSequent(dictWriteSequents)(s)))(Halogen_Query_HalogenM.raise(Data_Unit.unit));
       });
   };
   var addDeduction = function (dict) {
@@ -27339,7 +27339,7 @@ var PS = {};
       return new WriteProof(function () {
           return Halogen_Query_HalogenM.monadHalogenM;
       }, function (d) {
-          return Control_Apply.applySecond(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictWriteProof.Monad0())(addDeduction(dictWriteProof)(d)))(Halogen_Query_HalogenM.raise(Data_Unit.unit));
+          return Control_Apply.applyFirst(Halogen_Query_HalogenM.applyHalogenM)(Control_Monad_Trans_Class.lift(Halogen_Query_HalogenM.monadTransHalogenM)(dictWriteProof.Monad0())(addDeduction(dictWriteProof)(d)))(Halogen_Query_HalogenM.raise(Data_Unit.unit));
       });
   };
   exports["SequentWindow"] = SequentWindow;
@@ -27503,81 +27503,7 @@ var PS = {};
           };
       });
   });
-  var bindAppStateM = Control_Monad_Reader_Trans.bindReaderT(Effect.bindEffect);
-  var writeProofAppStateM = new UI_Capabilities.WriteProof(function () {
-      return monadAppStateM;
-  }, function (deduction) {
-      return Control_Bind.bind(bindAppStateM)(get)(function (state) {
-          var v = Proof.addDeduction(deduction)(state.present.proof);
-          if (v instanceof Data_Either.Left) {
-              return UI_Capabilities.error(errorAppStateM)(v.value0);
-          };
-          if (v instanceof Data_Either.Right) {
-              return modify(function (v1) {
-                  return {
-                      history: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.history)([ state.present ]),
-                      future: [  ],
-                      present: {
-                          sequents: state.present.sequents,
-                          symbols: state.present.symbols,
-                          symbolMap: state.present.symbolMap,
-                          proof: v.value0
-                      },
-                      error: Data_Maybe.Nothing.value,
-                      window: v1.window
-                  };
-              });
-          };
-          throw new Error("Failed pattern match at UI.AppState (line 126, column 9 - line 134, column 18): " + [ v.constructor.name ]);
-      });
-  });
-  var writeSequentsAppStateM = new UI_Capabilities.WriteSequents(function () {
-      return monadAppStateM;
-  }, function (sequent) {
-      return Control_Bind.bind(bindAppStateM)(get)(function (state) {
-          return modify(function (v) {
-              return {
-                  history: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.history)([ state.present ]),
-                  future: [  ],
-                  present: {
-                      sequents: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.present.sequents)([ sequent ]),
-                      symbols: state.present.symbols,
-                      symbolMap: state.present.symbolMap,
-                      proof: state.present.proof
-                  },
-                  error: Data_Maybe.Nothing.value,
-                  window: v.window
-              };
-          });
-      });
-  });
-  var writeSymbolsAppStateM = new UI_Capabilities.WriteSymbols(function () {
-      return monadAppStateM;
-  }, function (symbol) {
-      return Control_Bind.bind(bindAppStateM)(get)(function (state) {
-          var v = $$Symbol.updateMap(state.present.symbolMap)(symbol);
-          if (v instanceof Data_Either.Left) {
-              return UI_Capabilities.error(errorAppStateM)(v.value0);
-          };
-          if (v instanceof Data_Either.Right) {
-              return modify(function (v1) {
-                  return {
-                      history: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.history)([ state.present ]),
-                      future: [  ],
-                      present: {
-                          sequents: state.present.sequents,
-                          symbols: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.present.symbols)([ symbol ]),
-                          symbolMap: v.value0,
-                          proof: state.present.proof
-                      },
-                      error: Data_Maybe.Nothing.value,
-                      window: v1.window
-                  };
-              });
-          };
-          throw new Error("Failed pattern match at UI.AppState (line 95, column 9 - line 105, column 18): " + [ v.constructor.name ]);
-      });
-  });                                                                              
+  var bindAppStateM = Control_Monad_Reader_Trans.bindReaderT(Effect.bindEffect);   
   var applicativeAppStateM = Control_Monad_Reader_Trans.applicativeReaderT(Effect.applicativeEffect);
   var historyAppStateM = new UI_Capabilities.History(function () {
       return monadAppStateM;
@@ -27620,7 +27546,7 @@ var PS = {};
               };
           });
       };
-      throw new Error("Failed pattern match at UI.AppState (line 158, column 30 - line 165, column 14): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at UI.AppState (line 163, column 30 - line 170, column 14): " + [ v.constructor.name ]);
   }), Control_Bind.bind(bindAppStateM)(get)(function (state) {
       var v = Data_Array.unsnoc(state.history);
       if (v instanceof Data_Maybe.Nothing) {
@@ -27637,8 +27563,88 @@ var PS = {};
               };
           });
       };
-      throw new Error("Failed pattern match at UI.AppState (line 150, column 30 - line 157, column 14): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at UI.AppState (line 155, column 30 - line 162, column 14): " + [ v.constructor.name ]);
   }));
+  var writeProofAppStateM = new UI_Capabilities.WriteProof(function () {
+      return monadAppStateM;
+  }, function (deduction) {
+      return Control_Bind.bind(bindAppStateM)(get)(function (state) {
+          var v = Proof.addDeduction(deduction)(state.present.proof);
+          if (v instanceof Data_Either.Left) {
+              return Data_Functor.voidRight(functorAppStateM)(false)(UI_Capabilities.error(errorAppStateM)(v.value0));
+          };
+          if (v instanceof Data_Either.Right) {
+              return Control_Bind.discard(Control_Bind.discardUnit)(bindAppStateM)(modify(function (v1) {
+                  return {
+                      history: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.history)([ state.present ]),
+                      future: [  ],
+                      present: {
+                          sequents: state.present.sequents,
+                          symbols: state.present.symbols,
+                          symbolMap: state.present.symbolMap,
+                          proof: v.value0
+                      },
+                      error: Data_Maybe.Nothing.value,
+                      window: v1.window
+                  };
+              }))(function () {
+                  return Control_Applicative.pure(applicativeAppStateM)(true);
+              });
+          };
+          throw new Error("Failed pattern match at UI.AppState (line 129, column 9 - line 139, column 26): " + [ v.constructor.name ]);
+      });
+  });
+  var writeSequentsAppStateM = new UI_Capabilities.WriteSequents(function () {
+      return monadAppStateM;
+  }, function (sequent) {
+      return Control_Bind.bind(bindAppStateM)(get)(function (state) {
+          return Control_Bind.discard(Control_Bind.discardUnit)(bindAppStateM)(modify(function (v) {
+              return {
+                  history: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.history)([ state.present ]),
+                  future: [  ],
+                  present: {
+                      sequents: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.present.sequents)([ sequent ]),
+                      symbols: state.present.symbols,
+                      symbolMap: state.present.symbolMap,
+                      proof: state.present.proof
+                  },
+                  error: Data_Maybe.Nothing.value,
+                  window: v.window
+              };
+          }))(function () {
+              return Control_Applicative.pure(applicativeAppStateM)(true);
+          });
+      });
+  });
+  var writeSymbolsAppStateM = new UI_Capabilities.WriteSymbols(function () {
+      return monadAppStateM;
+  }, function (symbol) {
+      return Control_Bind.bind(bindAppStateM)(get)(function (state) {
+          var v = $$Symbol.updateMap(state.present.symbolMap)(symbol);
+          if (v instanceof Data_Either.Left) {
+              return Data_Functor.voidRight(functorAppStateM)(false)(UI_Capabilities.error(errorAppStateM)(v.value0));
+          };
+          if (v instanceof Data_Either.Right) {
+              return Control_Bind.discard(Control_Bind.discardUnit)(bindAppStateM)(modify(function (v1) {
+                  return {
+                      history: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.history)([ state.present ]),
+                      future: [  ],
+                      present: {
+                          sequents: state.present.sequents,
+                          symbols: Data_Semigroup.append(Data_Semigroup.semigroupArray)(state.present.symbols)([ symbol ]),
+                          symbolMap: v.value0,
+                          proof: state.present.proof
+                      },
+                      error: Data_Maybe.Nothing.value,
+                      window: v1.window
+                  };
+              }))(function () {
+                  return Control_Applicative.pure(applicativeAppStateM)(true);
+              });
+          };
+          throw new Error("Failed pattern match at UI.AppState (line 95, column 9 - line 107, column 26): " + [ v.constructor.name ]);
+      });
+  });
   exports["run"] = run;
   exports["start"] = start;
   exports["readSymbolsAppStateM"] = readSymbolsAppStateM;
@@ -27838,7 +27844,7 @@ var PS = {};
       if (v instanceof PartSequent) {
           return new Data_Either.Left("Select a sequent or other reason");
       };
-      throw new Error("Failed pattern match at UI.Proof (line 59, column 1 - line 59, column 63): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at UI.Proof (line 60, column 1 - line 60, column 63): " + [ v.constructor.name ]);
   };
   var renderDeduction = function (i) {
       return function (v) {
@@ -27922,7 +27928,7 @@ var PS = {};
           if (x instanceof PartSequent && y instanceof PartSequent) {
               return Data_Ordering.EQ.value;
           };
-          throw new Error("Failed pattern match at UI.Proof (line 57, column 1 - line 57, column 60): " + [ x.constructor.name, y.constructor.name ]);
+          throw new Error("Failed pattern match at UI.Proof (line 58, column 1 - line 58, column 60): " + [ x.constructor.name, y.constructor.name ]);
       };
   });
   var renderNewLine = function (state) {
@@ -28089,30 +28095,30 @@ var PS = {};
                                   return UI_Capabilities.error(UI_Capabilities.errorHalogenM(dictError))(v1.value0);
                               };
                               if (v1 instanceof Data_Either.Right) {
-                                  return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v2) {
-                                      var $98 = {};
-                                      for (var $99 in v2) {
-                                          if ({}.hasOwnProperty.call(v2, $99)) {
-                                              $98[$99] = v2[$99];
+                                  return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.addDeduction(UI_Capabilities.writeProofHalogenM(dictWriteProof))(v1.value0))(function (success) {
+                                      return Control_Applicative.when(Halogen_Query_HalogenM.applicativeHalogenM)(success)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v2) {
+                                          var $98 = {};
+                                          for (var $99 in v2) {
+                                              if ({}.hasOwnProperty.call(v2, $99)) {
+                                                  $98[$99] = v2[$99];
+                                              };
                                           };
-                                      };
-                                      $98.assumptions = "";
-                                      $98.formula = "";
-                                      $98.reason = new Full(Deduction.Assumption.value);
-                                      $98.references = "";
-                                      return $98;
-                                  }))(function () {
-                                      return UI_Capabilities.addDeduction(UI_Capabilities.writeProofHalogenM(dictWriteProof))(v1.value0);
+                                          $98.assumptions = "";
+                                          $98.formula = "";
+                                          $98.reason = new Full(Deduction.Assumption.value);
+                                          $98.references = "";
+                                          return $98;
+                                      }));
                                   });
                               };
-                              throw new Error("Failed pattern match at UI.Proof (line 259, column 5 - line 278, column 27): " + [ v1.constructor.name ]);
+                              throw new Error("Failed pattern match at UI.Proof (line 260, column 5 - line 279, column 18): " + [ v1.constructor.name ]);
                           });
                       });
                   };
                   if (v instanceof NoAction) {
                       return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(Data_Unit.unit);
                   };
-                  throw new Error("Failed pattern match at UI.Proof (line 247, column 1 - line 251, column 56): " + [ v.constructor.name ]);
+                  throw new Error("Failed pattern match at UI.Proof (line 248, column 1 - line 252, column 56): " + [ v.constructor.name ]);
               };
           };
       };
@@ -28235,7 +28241,7 @@ var PS = {};
       if (Data_Boolean.otherwise) {
           return Halogen_HTML_Elements.div([  ])([  ]);
       };
-      throw new Error("Failed pattern match at UI.Sequent (line 117, column 1 - line 117, column 57): " + [ state.constructor.name ]);
+      throw new Error("Failed pattern match at UI.Sequent (line 118, column 1 - line 118, column 57): " + [ state.constructor.name ]);
   };
   var initialState = {
       sequents: [  ],
@@ -28313,8 +28319,8 @@ var PS = {};
                                           return UI_Capabilities.error(UI_Capabilities.errorHalogenM(dictError))(v1.value0);
                                       };
                                       if (v1 instanceof Data_Either.Right) {
-                                          return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.addSequent(UI_Capabilities.writeSequentsHalogenM(dictWriteSequents))(v1.value0))(function () {
-                                              return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v2) {
+                                          return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.addSequent(UI_Capabilities.writeSequentsHalogenM(dictWriteSequents))(v1.value0))(function (success) {
+                                              return Control_Applicative.when(Halogen_Query_HalogenM.applicativeHalogenM)(success)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v2) {
                                                   var $41 = {};
                                                   for (var $42 in v2) {
                                                       if ({}.hasOwnProperty.call(v2, $42)) {
@@ -28324,10 +28330,10 @@ var PS = {};
                                                   $41.ante = "";
                                                   $41.conse = "";
                                                   return $41;
-                                              });
+                                              }));
                                           });
                                       };
-                                      throw new Error("Failed pattern match at UI.Sequent (line 156, column 5 - line 164, column 52): " + [ v1.constructor.name ]);
+                                      throw new Error("Failed pattern match at UI.Sequent (line 157, column 5 - line 165, column 67): " + [ v1.constructor.name ]);
                                   });
                               });
                           });
@@ -28338,7 +28344,7 @@ var PS = {};
                       if (v instanceof NoAction) {
                           return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(Data_Unit.unit);
                       };
-                      throw new Error("Failed pattern match at UI.Sequent (line 144, column 1 - line 149, column 56): " + [ v.constructor.name ]);
+                      throw new Error("Failed pattern match at UI.Sequent (line 145, column 1 - line 150, column 56): " + [ v.constructor.name ]);
                   };
               };
           };
@@ -28469,7 +28475,7 @@ var PS = {};
               return "B";
           })(v.value0.definition))) ]) ]);
       };
-      throw new Error("Failed pattern match at UI.Symbol (line 81, column 1 - line 81, column 61): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at UI.Symbol (line 82, column 1 - line 82, column 61): " + [ v.constructor.name ]);
   };
   var newSymbolRow = function (state) {
       return Halogen_HTML_Elements.tr([ Halogen_HTML_Properties.id_("new-symbol") ])([ Halogen_HTML_Elements.td([  ])([ UI_HTMLHelp.select(Data_Ord.ordBoolean)("operator-select")(function ($54) {
@@ -28497,7 +28503,7 @@ var PS = {};
       if (Data_Boolean.otherwise) {
           return Halogen_HTML_Elements.div([  ])([  ]);
       };
-      throw new Error("Failed pattern match at UI.Symbol (line 142, column 1 - line 142, column 57): " + [ state.constructor.name ]);
+      throw new Error("Failed pattern match at UI.Symbol (line 143, column 1 - line 143, column 57): " + [ state.constructor.name ]);
   };
   var initialState = {
       symbols: [  ],
@@ -28585,22 +28591,22 @@ var PS = {};
                                       return UI_Capabilities.error(UI_Capabilities.errorHalogenM(dictError))(v1.value0);
                                   };
                                   if (v1 instanceof Data_Either.Right) {
-                                      return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v2) {
-                                          var $50 = {};
-                                          for (var $51 in v2) {
-                                              if ({}.hasOwnProperty.call(v2, $51)) {
-                                                  $50[$51] = v2[$51];
+                                      return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.addSymbol(UI_Capabilities.writeSymbolsHalogenM(dictWriteSymbols))(v1.value0))(function (success) {
+                                          return Control_Applicative.when(Halogen_Query_HalogenM.applicativeHalogenM)(success)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v2) {
+                                              var $50 = {};
+                                              for (var $51 in v2) {
+                                                  if ({}.hasOwnProperty.call(v2, $51)) {
+                                                      $50[$51] = v2[$51];
+                                                  };
                                               };
-                                          };
-                                          $50.name = "";
-                                          $50.definition = "";
-                                          $50.binary = true;
-                                          return $50;
-                                      }))(function () {
-                                          return UI_Capabilities.addSymbol(UI_Capabilities.writeSymbolsHalogenM(dictWriteSymbols))(v1.value0);
+                                              $50.name = "";
+                                              $50.definition = "";
+                                              $50.binary = true;
+                                              return $50;
+                                          }));
                                       });
                                   };
-                                  throw new Error("Failed pattern match at UI.Symbol (line 178, column 5 - line 189, column 29): " + [ v1.constructor.name ]);
+                                  throw new Error("Failed pattern match at UI.Symbol (line 179, column 5 - line 191, column 76): " + [ v1.constructor.name ]);
                               });
                           });
                       };
@@ -28610,7 +28616,7 @@ var PS = {};
                       if (v instanceof NoAction) {
                           return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(Data_Unit.unit);
                       };
-                      throw new Error("Failed pattern match at UI.Symbol (line 166, column 1 - line 171, column 56): " + [ v.constructor.name ]);
+                      throw new Error("Failed pattern match at UI.Symbol (line 167, column 1 - line 172, column 56): " + [ v.constructor.name ]);
                   };
               };
           };

@@ -22,6 +22,7 @@ import Data.Maybe (Maybe(..))
 import Data.Traversable (traverse, sequence)
 import Data.Either (Either(..))
 import Data.Array as A
+import Control.Applicative (when)
 
 import WFF as WFF
 import Sequent (Sequent(..))
@@ -160,8 +161,8 @@ handleAction Add = do
     of
         Left e -> error e
         Right s -> do
-            addSequent s
-            H.modify_ $ _ { ante = "", conse = "" }
+            success <- addSequent s
+            when success $ H.modify_ $ _ { ante = "", conse = "" }
 handleAction Close = close
 handleAction NoAction = pure unit
 

@@ -42,7 +42,7 @@ import Prelude
     ( class Monad, class Eq
     , Unit
     , pure, unit
-    , (<<<), (==), (<$>), (/=), (*>), (>>=), ($)
+    , (<<<), (==), (<$>), (/=), (*>), (>>=), ($), (<*)
     )
 import Data.Maybe (Maybe(Nothing))
 import Data.Either (Either)
@@ -70,19 +70,19 @@ parse :: forall m. ReadSymbols m => String -> m (Either String (WFF String))
 parse s = getSymbolMap >>= \m -> pure $ P.parse m s
 
 class Monad m <= WriteSymbols m where
-    addSymbol :: Symbol -> m Unit
+    addSymbol :: Symbol -> m Boolean
 
 class Monad m <= ReadSequents m where
     getSequents :: m (Array (Sequent String))
 
 class Monad m <= WriteSequents m where
-    addSequent :: Sequent String -> m Unit
+    addSequent :: Sequent String -> m Boolean
 
 class Monad m <= ReadProof m where
     getProof :: m Proof
 
 class Monad m <= WriteProof m where
-    addDeduction :: Deduction -> m Unit
+    addDeduction :: Deduction -> m Boolean
 
 class Monad m <= Error m where
     errors :: Array String -> m Unit
@@ -130,7 +130,7 @@ instance readSymbolsHalogenM :: ReadSymbols m =>
 
 instance writeSymbolsHalogenM :: WriteSymbols m =>
     WriteSymbols (HalogenM s a t Unit m) where
-        addSymbol s = lift (addSymbol s) *> raise unit
+        addSymbol s = lift (addSymbol s) <* raise unit
 
 instance readSequentsHalogenM :: ReadSequents m =>
     ReadSequents (HalogenM s a t o m) where
@@ -138,7 +138,7 @@ instance readSequentsHalogenM :: ReadSequents m =>
 
 instance writeSequentsHalogenM :: WriteSequents m =>
     WriteSequents (HalogenM s a t Unit m) where
-        addSequent s = lift (addSequent s) *> raise unit
+        addSequent s = lift (addSequent s) <* raise unit
 
 instance readProofHalogenM :: ReadProof m =>
     ReadProof (HalogenM s a t o m) where
@@ -146,7 +146,7 @@ instance readProofHalogenM :: ReadProof m =>
 
 instance writeProofHalogenM :: WriteProof m =>
     WriteProof (HalogenM s a t Unit m) where
-        addDeduction d = lift (addDeduction d) *> raise unit
+        addDeduction d = lift (addDeduction d) <* raise unit
 
 instance errorHalogenM :: Error m => Error (HalogenM s a t Unit m) where
     errors e = lift (errors e) *> raise unit

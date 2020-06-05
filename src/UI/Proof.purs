@@ -29,6 +29,7 @@ import Data.Foldable (length)
 import Data.Traversable (traverse)
 import Data.Int (fromString)
 import Data.Tuple (Tuple(..))
+import Control.Applicative (when)
 
 import WFF as W
 import UI.HTMLHelp (select)
@@ -269,13 +270,14 @@ handleAction AddLine = do
     of
         Left e -> error e
         Right d -> do
-            H.modify_ $ _
+            success <- addDeduction d
+            when success $ H.modify_ $ _
                 { assumptions = ""
                 , formula = ""
                 , reason =Full Assumption
                 , references = ""
                 }
-            addDeduction d
+
 handleAction NoAction = pure unit
 
 handleQuery :: forall a m.
