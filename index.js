@@ -21845,12 +21845,12 @@ var PS = {};
                   return function (v) {
                       return function (v1) {
                           if (Data_Array.length(v.value0.ante) === Data_Array.length(v1.value0.ante)) {
-                              var indexedAnte = Data_Array.zip(indices)(v.value0.ante);
-                              return Control_Bind.bind(Control_Bind.bindArray)(Data_Functor.map(Data_Functor.functorArray)(Data_Array.unzip)(permute(Data_Tuple.eqTuple(dictEq1)(WFF.eqWFF(dictOrd.Eq0())))(indexedAnte)))(function (v2) {
-                                  var v3 = match1(dictOrd)(dictEq)(Sequent.create({
+                              var indexedAnte = Data_Array.zip(indices)(v1.value0.ante);
+                              return Control_Bind.bind(Control_Bind.bindArray)(Data_Functor.map(Data_Functor.functorArray)(Data_Array.unzip)(permute(Data_Tuple.eqTuple(dictEq1)(WFF.eqWFF(dictEq)))(indexedAnte)))(function (v2) {
+                                  var v3 = match1(dictOrd)(dictEq)(new Sequent(v.value0))(Sequent.create({
                                       ante: v2.value1,
-                                      conse: v.value0.conse
-                                  }))(new Sequent(v1.value0));
+                                      conse: v1.value0.conse
+                                  }));
                                   if (v3 instanceof Mapping.Mapping) {
                                       return [ {
                                           permutation: v2.value0,
@@ -27851,6 +27851,15 @@ var PS = {};
           return Halogen_HTML_Elements.tr([  ])([ Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("assumptions") ])([ Halogen_HTML_Core.text(Data_String_Common.joinWith(",")(Data_Functor.map(Data_Functor.functorArray)(Data_Show.show(Data_Show.showInt))(Data_Set.toUnfoldable(Data_Unfoldable.unfoldableArray)(v.value0.assumptions)))) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("line-number") ])([ Halogen_HTML_Core.text("(" + (Data_Show.show(Data_Show.showInt)(i + 1 | 0) + ")")) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("formula") ])([ Halogen_HTML_Core.text(WFF.render(v.value0.deduction)) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("reason") ])([ Halogen_HTML_Core.text(Proof.renderReason(new Proof.Deduction(v.value0))) ]) ]);
       };
   };
+  var makePartial = function (v) {
+      if (v instanceof Full && v.value0 instanceof Deduction.Definition) {
+          return PartSymbol.value;
+      };
+      if (v instanceof Full && v.value0 instanceof Deduction.Introduction) {
+          return PartSequent.value;
+      };
+      return v;
+  };
   var lineHeading = Halogen_HTML_Elements.tr([  ])([ Halogen_HTML_Elements.th([ Halogen_HTML_Properties.class_("assumptions") ])([ Halogen_HTML_Core.text("Assumptions") ]), Halogen_HTML_Elements.th([ Halogen_HTML_Properties.class_("line-number") ])([ Halogen_HTML_Core.text("Line No.") ]), Halogen_HTML_Elements.th([ Halogen_HTML_Properties.class_("formula") ])([ Halogen_HTML_Core.text("Formula") ]), Halogen_HTML_Elements.th([ Halogen_HTML_Properties.class_("reason") ])([ Halogen_HTML_Core.text("Reason") ]) ]);
   var initialState = {
       symbols: [  ],
@@ -27869,16 +27878,16 @@ var PS = {};
                       return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getSequents(UI_Capabilities.readSequentsHalogenM(dictReadSequents)))(function (sequents) {
                           return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getProof(UI_Capabilities.readProofHalogenM(dictReadProof)))(function (proof) {
                               return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                                  var $39 = {};
-                                  for (var $40 in v1) {
-                                      if ({}.hasOwnProperty.call(v1, $40)) {
-                                          $39[$40] = v1[$40];
+                                  var $47 = {};
+                                  for (var $48 in v1) {
+                                      if ({}.hasOwnProperty.call(v1, $48)) {
+                                          $47[$48] = v1[$48];
                                       };
                                   };
-                                  $39.symbols = symbols;
-                                  $39.sequents = sequents;
-                                  $39.proof = proof;
-                                  return $39;
+                                  $47.symbols = symbols;
+                                  $47.sequents = sequents;
+                                  $47.proof = proof;
+                                  return $47;
                               }))(function () {
                                   return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(new Data_Maybe.Just(v.value0));
                               });
@@ -27932,13 +27941,13 @@ var PS = {};
       };
   });
   var renderNewLine = function (state) {
-      return Halogen_HTML_Elements.tr([ Halogen_HTML_Properties.id_("new-line") ])([ Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("assumptions") ])([ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($102) {
-          return Data_Maybe.Just.create(Assumptions.create($102));
-      }), Halogen_HTML_Properties.value(state.assumptions), Halogen_HTML_Properties.id_("assumptions-input") ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("line-number") ])([ Halogen_HTML_Core.text("(" + (Data_Show.show(Data_Show.showInt)(Data_Foldable.length(Data_Foldable.foldableArray)(Data_Semiring.semiringInt)(state.proof.value0.lines) + 1 | 0) + ")")) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("formula") ])([ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($103) {
-          return Data_Maybe.Just.create(Formula.create($103));
-      }), Halogen_HTML_Properties.id_("formula-input"), Halogen_HTML_Properties.value(state.formula) ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("reason") ])([ UI_HTMLHelp.select(ordPartialDeduction)("reason-dropdown")(function ($104) {
-          return Data_Maybe.Just.create(Reason.create($104));
-      })(Data_Function["const"](false))(state.reason)([ Data_Tuple.Tuple.create("A")(new Full(Deduction.Assumption.value)), Data_Tuple.Tuple.create("MP")(new Full(Deduction.ModusPonens.value)), Data_Tuple.Tuple.create("MT")(new Full(Deduction.ModusTollens.value)), Data_Tuple.Tuple.create("DN")(new Full(Deduction.DoubleNegation.value)), Data_Tuple.Tuple.create("CP")(new Full(Deduction.ConditionalProof.value)), Data_Tuple.Tuple.create("&I")(new Full(Deduction.AndIntroduction.value)), Data_Tuple.Tuple.create("&E")(new Full(Deduction.AndElimination.value)), Data_Tuple.Tuple.create("|I")(new Full(Deduction.OrIntroduction.value)), Data_Tuple.Tuple.create("|E")(new Full(Deduction.OrElimination.value)), Data_Tuple.Tuple.create("RAA")(new Full(Deduction.RAA.value)), new Data_Tuple.Tuple("SI", PartSequent.value), new Data_Tuple.Tuple("Def", PartSymbol.value) ]), Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Halogen_HTML_Properties.id_("input-dropdown") ])((function () {
+      return Halogen_HTML_Elements.tr([ Halogen_HTML_Properties.id_("new-line") ])([ Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("assumptions") ])([ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($110) {
+          return Data_Maybe.Just.create(Assumptions.create($110));
+      }), Halogen_HTML_Properties.value(state.assumptions), Halogen_HTML_Properties.id_("assumptions-input") ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("line-number") ])([ Halogen_HTML_Core.text("(" + (Data_Show.show(Data_Show.showInt)(Data_Foldable.length(Data_Foldable.foldableArray)(Data_Semiring.semiringInt)(state.proof.value0.lines) + 1 | 0) + ")")) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("formula") ])([ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($111) {
+          return Data_Maybe.Just.create(Formula.create($111));
+      }), Halogen_HTML_Properties.id_("formula-input"), Halogen_HTML_Properties.value(state.formula) ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("reason") ])([ UI_HTMLHelp.select(ordPartialDeduction)("reason-dropdown")(function ($112) {
+          return Data_Maybe.Just.create(Reason.create($112));
+      })(Data_Function["const"](false))(makePartial(state.reason))([ Data_Tuple.Tuple.create("A")(new Full(Deduction.Assumption.value)), Data_Tuple.Tuple.create("MP")(new Full(Deduction.ModusPonens.value)), Data_Tuple.Tuple.create("MT")(new Full(Deduction.ModusTollens.value)), Data_Tuple.Tuple.create("DN")(new Full(Deduction.DoubleNegation.value)), Data_Tuple.Tuple.create("CP")(new Full(Deduction.ConditionalProof.value)), Data_Tuple.Tuple.create("&I")(new Full(Deduction.AndIntroduction.value)), Data_Tuple.Tuple.create("&E")(new Full(Deduction.AndElimination.value)), Data_Tuple.Tuple.create("|I")(new Full(Deduction.OrIntroduction.value)), Data_Tuple.Tuple.create("|E")(new Full(Deduction.OrElimination.value)), Data_Tuple.Tuple.create("RAA")(new Full(Deduction.RAA.value)), new Data_Tuple.Tuple("SI", PartSequent.value), new Data_Tuple.Tuple("Def", PartSymbol.value) ]), Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Halogen_HTML_Properties.id_("input-dropdown") ])((function () {
           if (state.reason instanceof PartSymbol) {
               return [  ];
           };
@@ -27954,8 +27963,8 @@ var PS = {};
           return [ Halogen_HTML_Properties.class_("short") ];
       })()))([ (function () {
           if (state.reason instanceof PartSymbol) {
-              return UI_HTMLHelp.select(ordPartialDeduction)("symbol-dropdown")(function ($105) {
-                  return Data_Maybe.Just.create(Reason.create($105));
+              return UI_HTMLHelp.select(ordPartialDeduction)("symbol-dropdown")(function ($113) {
+                  return Data_Maybe.Just.create(Reason.create($113));
               })(Data_Function["const"](false))(PartSymbol.value)(Data_Array.mapWithIndex(function (i) {
                   return function (sym) {
                       return Data_Tuple.Tuple.create($$Symbol.getName(sym))(Full.create(new Deduction.Definition(sym, i)));
@@ -27963,8 +27972,8 @@ var PS = {};
               })(state.symbols));
           };
           if (state.reason instanceof Full && state.reason.value0 instanceof Deduction.Definition) {
-              return UI_HTMLHelp.select(ordPartialDeduction)("symbol-dropdown")(function ($106) {
-                  return Data_Maybe.Just.create(Reason.create($106));
+              return UI_HTMLHelp.select(ordPartialDeduction)("symbol-dropdown")(function ($114) {
+                  return Data_Maybe.Just.create(Reason.create($114));
               })(Data_Function["const"](false))(new Full(state.reason.value0))(Data_Array.mapWithIndex(function (i) {
                   return function (sym) {
                       return Data_Tuple.Tuple.create($$Symbol.getName(sym))(Full.create(new Deduction.Definition(sym, i)));
@@ -27972,8 +27981,8 @@ var PS = {};
               })(state.symbols));
           };
           if (state.reason instanceof PartSequent) {
-              return UI_HTMLHelp.select(ordPartialDeduction)("sequent-dropdown")(function ($107) {
-                  return Data_Maybe.Just.create(Reason.create($107));
+              return UI_HTMLHelp.select(ordPartialDeduction)("sequent-dropdown")(function ($115) {
+                  return Data_Maybe.Just.create(Reason.create($115));
               })(Data_Function["const"](false))(PartSequent.value)(Data_Array.mapWithIndex(function (i) {
                   return function (seq) {
                       return Data_Tuple.Tuple.create(Sequent.render(seq))(Full.create(new Deduction.Introduction(seq, i)));
@@ -27981,8 +27990,8 @@ var PS = {};
               })(state.sequents));
           };
           if (state.reason instanceof Full && state.reason.value0 instanceof Deduction.Introduction) {
-              return UI_HTMLHelp.select(ordPartialDeduction)("sequent-dropdown")(function ($108) {
-                  return Data_Maybe.Just.create(Reason.create($108));
+              return UI_HTMLHelp.select(ordPartialDeduction)("sequent-dropdown")(function ($116) {
+                  return Data_Maybe.Just.create(Reason.create($116));
               })(Data_Function["const"](false))(new Full(state.reason.value0))(Data_Array.mapWithIndex(function (i) {
                   return function (seq) {
                       return Data_Tuple.Tuple.create(Sequent.render(seq))(Full.create(new Deduction.Introduction(seq, i)));
@@ -27990,8 +27999,8 @@ var PS = {};
               })(state.sequents));
           };
           return Halogen_HTML_Core.text("");
-      })() ]), Halogen_HTML_Elements.input(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Halogen_HTML_Events.onValueChange(function ($109) {
-          return Data_Maybe.Just.create(References.create($109));
+      })() ]), Halogen_HTML_Elements.input(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Halogen_HTML_Events.onValueChange(function ($117) {
+          return Data_Maybe.Just.create(References.create($117));
       }), Halogen_HTML_Properties.value(state.references), Halogen_HTML_Properties.id_("reference-input") ])((function () {
           if (state.reason instanceof PartSymbol) {
               return [  ];
@@ -28012,8 +28021,8 @@ var PS = {};
       return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.id_("proof-box") ])([ Halogen_HTML_Elements.table([ Halogen_HTML_Properties.id_("proof-lines") ])(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ lineHeading ])(Data_Semigroup.append(Data_Semigroup.semigroupArray)(Data_Array.mapWithIndex(renderDeduction)(state.proof.value0.lines))([ renderNewLine(state) ]))), Halogen_HTML_Elements.button([ Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(AddLine.value))), Halogen_HTML_Properties.id_("add-line") ])([ Halogen_HTML_Core.text("Add Line") ]) ]);
   };
   var commastospaces = Data_String_Utils.mapChars(function (x) {
-      var $78 = x === ",";
-      if ($78) {
+      var $86 = x === ",";
+      if ($86) {
           return " ";
       };
       return x;
@@ -28024,41 +28033,17 @@ var PS = {};
               return function (v) {
                   if (v instanceof Assumptions) {
                       return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                          var $80 = {};
-                          for (var $81 in v1) {
-                              if ({}.hasOwnProperty.call(v1, $81)) {
-                                  $80[$81] = v1[$81];
-                              };
-                          };
-                          $80.assumptions = v.value0;
-                          return $80;
-                      });
-                  };
-                  if (v instanceof Formula) {
-                      return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                          var $84 = {};
-                          for (var $85 in v1) {
-                              if ({}.hasOwnProperty.call(v1, $85)) {
-                                  $84[$85] = v1[$85];
-                              };
-                          };
-                          $84.formula = v.value0;
-                          return $84;
-                      });
-                  };
-                  if (v instanceof Reason) {
-                      return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
                           var $88 = {};
                           for (var $89 in v1) {
                               if ({}.hasOwnProperty.call(v1, $89)) {
                                   $88[$89] = v1[$89];
                               };
                           };
-                          $88.reason = v.value0;
+                          $88.assumptions = v.value0;
                           return $88;
                       });
                   };
-                  if (v instanceof References) {
+                  if (v instanceof Formula) {
                       return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
                           var $92 = {};
                           for (var $93 in v1) {
@@ -28066,8 +28051,32 @@ var PS = {};
                                   $92[$93] = v1[$93];
                               };
                           };
-                          $92.references = v.value0;
+                          $92.formula = v.value0;
                           return $92;
+                      });
+                  };
+                  if (v instanceof Reason) {
+                      return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
+                          var $96 = {};
+                          for (var $97 in v1) {
+                              if ({}.hasOwnProperty.call(v1, $97)) {
+                                  $96[$97] = v1[$97];
+                              };
+                          };
+                          $96.reason = v.value0;
+                          return $96;
+                      });
+                  };
+                  if (v instanceof References) {
+                      return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
+                          var $100 = {};
+                          for (var $101 in v1) {
+                              if ({}.hasOwnProperty.call(v1, $101)) {
+                                  $100[$101] = v1[$101];
+                              };
+                          };
+                          $100.references = v.value0;
+                          return $100;
                       });
                   };
                   if (v instanceof AddLine) {
@@ -28097,28 +28106,28 @@ var PS = {};
                               if (v1 instanceof Data_Either.Right) {
                                   return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.addDeduction(UI_Capabilities.writeProofHalogenM(dictWriteProof))(v1.value0))(function (success) {
                                       return Control_Applicative.when(Halogen_Query_HalogenM.applicativeHalogenM)(success)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v2) {
-                                          var $98 = {};
-                                          for (var $99 in v2) {
-                                              if ({}.hasOwnProperty.call(v2, $99)) {
-                                                  $98[$99] = v2[$99];
+                                          var $106 = {};
+                                          for (var $107 in v2) {
+                                              if ({}.hasOwnProperty.call(v2, $107)) {
+                                                  $106[$107] = v2[$107];
                                               };
                                           };
-                                          $98.assumptions = "";
-                                          $98.formula = "";
-                                          $98.reason = new Full(Deduction.Assumption.value);
-                                          $98.references = "";
-                                          return $98;
+                                          $106.assumptions = "";
+                                          $106.formula = "";
+                                          $106.reason = new Full(Deduction.Assumption.value);
+                                          $106.references = "";
+                                          return $106;
                                       }));
                                   });
                               };
-                              throw new Error("Failed pattern match at UI.Proof (line 260, column 5 - line 279, column 18): " + [ v1.constructor.name ]);
+                              throw new Error("Failed pattern match at UI.Proof (line 266, column 5 - line 285, column 18): " + [ v1.constructor.name ]);
                           });
                       });
                   };
                   if (v instanceof NoAction) {
                       return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(Data_Unit.unit);
                   };
-                  throw new Error("Failed pattern match at UI.Proof (line 248, column 1 - line 252, column 56): " + [ v.constructor.name ]);
+                  throw new Error("Failed pattern match at UI.Proof (line 254, column 1 - line 258, column 56): " + [ v.constructor.name ]);
               };
           };
       };

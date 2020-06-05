@@ -62,6 +62,11 @@ toDeduction (Full d) = Right d
 toDeduction PartSymbol = Left "Select a symbol or other reason"
 toDeduction PartSequent = Left "Select a sequent or other reason"
 
+makePartial :: PartialDeduction -> PartialDeduction
+makePartial (Full (Definition _ _)) = PartSymbol
+makePartial (Full (Introduction _ _)) = PartSequent
+makePartial d = d
+
 data Action
     = Assumptions String
     | Formula String
@@ -133,20 +138,21 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
         ]
     , HH.td
         [ HP.class_ $ HH.ClassName "reason" ]
-        [ select "reason-dropdown" (Just <<< Reason) (const false) state.reason
-            [ Tuple "A" $ Full Assumption
-            , Tuple "MP" $ Full ModusPonens
-            , Tuple "MT" $ Full ModusTollens
-            , Tuple "DN" $ Full DoubleNegation
-            , Tuple "CP" $ Full ConditionalProof
-            , Tuple "&I" $ Full AndIntroduction
-            , Tuple "&E" $ Full AndElimination
-            , Tuple "|I" $ Full OrIntroduction
-            , Tuple "|E" $ Full OrElimination
-            , Tuple "RAA" $ Full RAA
-            , Tuple "SI" PartSequent
-            , Tuple "Def" PartSymbol
-            ]
+        [ select "reason-dropdown" (Just <<< Reason) (const false)
+            (makePartial state.reason)
+                [ Tuple "A" $ Full Assumption
+                , Tuple "MP" $ Full ModusPonens
+                , Tuple "MT" $ Full ModusTollens
+                , Tuple "DN" $ Full DoubleNegation
+                , Tuple "CP" $ Full ConditionalProof
+                , Tuple "&I" $ Full AndIntroduction
+                , Tuple "&E" $ Full AndElimination
+                , Tuple "|I" $ Full OrIntroduction
+                , Tuple "|E" $ Full OrElimination
+                , Tuple "RAA" $ Full RAA
+                , Tuple "SI" PartSequent
+                , Tuple "Def" PartSymbol
+                ]
         , HH.div
             ([ HP.id_ "input-dropdown"
             ] <> case state.reason of

@@ -77,14 +77,14 @@ permute l = do
     pure $ A.cons h t
 
 -- Match a sequent to one after substitutions were applied and the antecedents
--- permuted, returning all possible substitutions and permutations
+-- permuted, returning all possible substitutions and inverse permutations
 match :: forall a b i. Ord a => Eq b => Eq i => Array i -> Sequent a ->
     Sequent b -> Array {permutation :: Array i, substitution :: Map a (WFF b)}
 match indices (Sequent small) (Sequent big)
     | A.length small.ante == A.length big.ante = do
-        let indexedAnte = A.zip indices small.ante
-        Tuple permutation smallantes <- A.unzip <$> permute indexedAnte
-        case match1 (Sequent $ small { ante = smallantes}) $ Sequent big of
+        let indexedAnte = A.zip indices big.ante
+        Tuple permutation bigantes <- A.unzip <$> permute indexedAnte
+        case match1 (Sequent small) $ Sequent $ big { ante = bigantes } of
             Mapping substitution -> [{permutation, substitution}]
             None -> []
     | otherwise = []

@@ -1,5 +1,5 @@
 fix
-	make si/def dropdown remain when one is selected
+	fix sequent permutations
 	import/export window
 	save/load from storage
 	disallow use of undone sequents
