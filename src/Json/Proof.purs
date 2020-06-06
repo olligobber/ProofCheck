@@ -55,7 +55,7 @@ toDeduction symbolMap syms seqs (Proof p) j = do
                 AC.toArray assJson
             assumptions <- E.note "Deduction assumptions are not integers" $
                 S.fromFoldable <$>
-                traverse (AC.toNumber >=> fromNumber) refArr
+                traverse (AC.toNumber >=> fromNumber) assArr
             pure $ Deduction { assumptions, deduction, rule, reasons }
         Nothing -> do
             let d = Deduction

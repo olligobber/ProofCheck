@@ -4,6 +4,8 @@ module UI.AppState
     , AppStateM
     , run
     , start
+    , startWith
+    , startWithErr
     ) where
 
 import Prelude
@@ -20,7 +22,12 @@ import Data.Either (Either(..))
 import Data.Array as A
 import Data.Foldable (length)
 import Control.Applicative (when)
+import Web.HTML (window)
+import Web.HTML.Window (localStorage)
+import Web.Storage.Storage (setItem)
+import Data.Argonaut.Core (stringify)
 
+import Json (toJson)
 import Sequent (Sequent)
 import Symbol (Symbol, SymbolMap, defaultMap, updateMap)
 import Proof (Proof, Deduction(..))
@@ -63,6 +70,18 @@ start =
     , window : NoWindow
     }
 
+startWith :: ProofState -> AppState
+startWith present =
+    { history : []
+    , future : []
+    , present
+    , error : Nothing
+    , window : NoWindow
+    }
+
+startWithErr :: String -> AppState
+startWithErr e = start { error = Just [e] }
+
 newtype AppStateM x = AppStateM (ReaderT (Ref AppState) Effect x)
 
 derive newtype instance functorAppStateM :: Functor AppStateM
@@ -87,6 +106,14 @@ put a = modify (const a)
 run :: forall x. Ref AppState -> AppStateM x -> Effect x
 run r (AppStateM f) = runReaderT f r
 
+write :: AppStateM Unit
+write = do
+    state <- get
+    let json = toJson
+            state.present.symbols state.present.sequents state.present.proof
+    let string = stringify json
+    AppStateM $ lift $ window >>= localStorage >>= setItem "proof" string
+
 instance readSymbolsAppStateM :: ReadSymbols AppStateM where
     getSymbols = _.present.symbols <$> get
     getSymbolMap = _.present.symbolMap <$> get
@@ -105,7 +132,7 @@ instance writeSymbolsAppStateM :: WriteSymbols AppStateM where
                         }
                     , error = Nothing
                     }
-                pure true
+                true <$ write
 
 instance readSequentsAppStateM :: ReadSequents AppStateM where
     getSequents = _.present.sequents <$> get
@@ -120,7 +147,7 @@ instance writeSequentsAppStateM :: WriteSequents AppStateM where
                 { sequents = state.present.sequents <> [sequent] }
             , error = Nothing
             }
-        pure true
+        true <$ write
 
 instance readProofAppStateM :: ReadProof AppStateM where
     getProof = _.present.proof <$> get
@@ -146,7 +173,7 @@ instance writeProofAppStateM :: WriteProof AppStateM where
                             { proof = newproof }
                         , error = Nothing
                         }
-                    pure true
+                    true <$ write
 
 instance errorAppStateM :: Error AppStateM where
     errors e = modify $ _ { error = Just e }
@@ -164,24 +191,28 @@ instance navAppStateM :: Nav AppStateM where
 instance historyAppStateM :: History AppStateM where
     undo = get >>= \state -> case A.unsnoc state.history of
         Nothing -> pure unit
-        Just {init, last} -> modify $ _
-            { history = init
-            , future = [state.present] <> state.future
-            , present = last
-            , error = Nothing
-            }
+        Just {init, last} -> do
+            modify $ _
+                { history = init
+                , future = [state.present] <> state.future
+                , present = last
+                , error = Nothing
+                }
+            write
     redo = get >>= \state -> case A.uncons state.future of
         Nothing -> pure unit
-        Just {head, tail} -> modify $ _
-            { history = state.history <> [state.present]
-            , future = tail
-            , present = head
-            , error = Nothing
-            }
+        Just {head, tail} -> do
+            modify $ _
+                { history = state.history <> [state.present]
+                , future = tail
+                , present = head
+                , error = Nothing
+                }
+            write
     new = do
         state <- get
         ableNew <- canNew
-        when ableNew $
+        when ableNew $ do
             modify $ _
                 { history = state.history <> [state.present]
                 , future = []
@@ -193,6 +224,7 @@ instance historyAppStateM :: History AppStateM where
                     }
                 , error = Nothing
                 }
+            write
     canUndo = do
         state <- get
         pure $ length state.history /= 0

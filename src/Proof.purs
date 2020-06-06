@@ -62,14 +62,14 @@ pack (Deduction d) =
 
 addDeduction :: Deduction -> Proof -> Either String Proof
 addDeduction (Deduction d) (Proof p) = do
-    antes <- E.note "Invalid line number for reason"
+    antes <- E.note "Invalid line number in reason"
         $ traverse ((_ - 1) >>> A.index p.lines >>> map pack) d.reasons
     assumptions <- matchDeduction antes d.deduction d.rule
     case assumptions of
         Just x | x == d.assumptions -> Right $ Proof $
             p { lines = p.lines <> [Deduction d] }
-        Just _ -> Left "Incorrect assumptions"
-        _ | Set.size d.assumptions /= 1 -> Left "Incorrect assumptions"
+        Just _ -> Left $ "Incorrect assumptions: " <> show d.assumptions
+        _ | Set.size d.assumptions /= 1 -> Left $ "Wrong number of assumptions: " <> show (Set.size d.assumptions)
         _ | d.assumptions `Set.subset` p.assumptions ->
             Left "Assumption number already in use"
         _ -> Right $ Proof $
@@ -86,7 +86,7 @@ getNextUnused s = case Set.findMin $ plus `Set.difference` s of
 
 getAssumptions :: Deduction -> Proof -> Either String (Set Int)
 getAssumptions (Deduction d) (Proof p) = do
-    antes <- E.note "Invalid line number for reason"
+    antes <- E.note "Invalid line number in reason"
         $ traverse ((_ - 1) >>> A.index p.lines >>> map pack) d.reasons
     assumptions <- matchDeduction antes d.deduction d.rule
     case assumptions of

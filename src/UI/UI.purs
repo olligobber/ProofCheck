@@ -3,7 +3,7 @@ module UI
     ) where
 
 import Prelude
-    (Unit, ($), (<>), (<<<), (*>), (<$>), (==), bind, const, unit, pure)
+    (Unit, ($), (<>), (<<<), (*>), (<$>), (==), (>>=), bind, const, unit, pure)
 import Effect (Effect)
 import Data.Symbol (SProxy(..))
 import Halogen as H
@@ -14,6 +14,11 @@ import Halogen.HTML.Properties as HP
 import Halogen.VDom.Driver (runUI)
 import Effect.Ref as R
 import Data.Maybe (Maybe(..))
+import Web.HTML (window)
+import Web.HTML.Window (localStorage)
+import Web.Storage.Storage (getItem)
+import Data.Argonaut.Parser as AP
+import Data.Either (Either(..))
 
 import UI.AppState (AppStateM)
 import UI.AppState as A
@@ -28,6 +33,7 @@ import UI.Capabilities
     , getErrors, setWindow, undo, redo, new, clear, canNew, canUndo, canRedo
     , getWindow
     )
+import Json (fromJson)
 
 data Action
     = Update
@@ -65,7 +71,10 @@ component :: forall q. H.Component HH.HTML q Action Unit AppStateM
 component = H.mkComponent
     { initialState : const initialState
     , render
-    , eval : H.mkEval $ H.defaultEval { handleAction = handleAction }
+    , eval : H.mkEval $ H.defaultEval
+        { handleAction = handleAction
+        , initialize = Just Update
+        }
     }
 
 initialState :: State
@@ -188,7 +197,17 @@ handleAction ClearError = clear *> handleAction Update
 handleAction NoAction = pure unit
 
 run :: Effect Unit
-run = HA.runHalogenAff do
-    body <- HA.awaitBody
-    ref <- H.liftEffect $ R.new A.start
-    runUI (H.hoist (H.liftEffect <<< A.run ref) component) NoAction body
+run = do
+    pf <- window >>= localStorage >>= getItem "proof"
+    let start = case pf of
+            Nothing -> A.start
+            Just string -> case AP.jsonParser string of
+                Left e -> A.startWithErr $
+                    "Error loading from previous session: " <> e
+                Right j -> case fromJson j of
+                    Left e -> A.startWithErr $
+                        "Error loading from previous session: " <> e
+                    Right p -> A.startWith p
+    ref <- R.new start
+    HA.runHalogenAff $ HA.awaitBody >>=
+        runUI (H.hoist (H.liftEffect <<< A.run ref) component) NoAction

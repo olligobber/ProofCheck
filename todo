@@ -1,6 +1,5 @@
 fix
 	import/export window
-	save/load from storage
 add
 	symbol replacement
 	si(s) vs si
