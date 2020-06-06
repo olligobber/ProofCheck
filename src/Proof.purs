@@ -68,8 +68,8 @@ addDeduction (Deduction d) (Proof p) = do
     case assumptions of
         Just x | x == d.assumptions -> Right $ Proof $
             p { lines = p.lines <> [Deduction d] }
-        Just _ -> Left $ "Incorrect assumptions: " <> show d.assumptions
-        _ | Set.size d.assumptions /= 1 -> Left $ "Wrong number of assumptions: " <> show (Set.size d.assumptions)
+        Just _ -> Left "Incorrect assumptions"
+        _ | Set.size d.assumptions /= 1 -> Left "Wrong number of assumptions"
         _ | d.assumptions `Set.subset` p.assumptions ->
             Left "Assumption number already in use"
         _ -> Right $ Proof $
