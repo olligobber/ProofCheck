@@ -25,10 +25,11 @@ import UI.AppState as A
 import UI.Sequent as UISeq
 import UI.Symbol as UISym
 import UI.Proof as UIP
+import UI.ImEx as UIE
 import UI.Capabilities
     ( class ReadSymbols, class WriteSymbols, class ReadSequents, class ReadNav
     , class WriteSequents, class Nav, class Error, class ReadError
-    , class WriteProof, class History, class ReadProof
+    , class WriteProof, class History, class ReadProof, class ReadFile
     , Window(..)
     , getErrors, setWindow, undo, redo, new, clear, canNew, canUndo, canRedo
     , getWindow
@@ -56,6 +57,7 @@ type Slots =
     ( sequents :: UISeq.Slot Unit
     , symbols :: UISym.Slot Unit
     , proof :: UIP.Slot Unit
+    , imex  :: UIE.Slot Unit
     )
 
 _sequents :: SProxy "sequents"
@@ -66,6 +68,9 @@ _symbols = SProxy
 
 _proof :: SProxy "proof"
 _proof = SProxy
+
+_imex :: SProxy "imex"
+_imex = SProxy
 
 component :: forall q. H.Component HH.HTML q Action Unit AppStateM
 component = H.mkComponent
@@ -152,6 +157,7 @@ render :: forall m.
     Error m =>
     ReadNav m =>
     Nav m =>
+    ReadFile m =>
     State -> H.ComponentHTML Action Slots m
 render state = HH.div
     [ HP.id_ "main" ] $
@@ -161,6 +167,8 @@ render state = HH.div
     , HH.slot _symbols unit UISym.component UISym.NoAction
         (const $ Just Update)
     , HH.slot _proof unit UIP.component UIP.NoAction
+        (const $ Just Update)
+    , HH.slot _imex unit UIE.component UIE.NoAction
         (const $ Just Update)
     ] <> case state.errors of
         Nothing -> []
@@ -183,6 +191,7 @@ handleAction Update = do
     _ <- H.query _sequents unit $ UISeq.Update unit
     _ <- H.query _symbols unit $ UISym.Update unit
     _ <- H.query _proof unit $ UIP.Update unit
+    _ <- H.query _imex unit $ UIE.Update unit
     errors <- getErrors
     ableNew <- canNew
     ableUndo <- canUndo

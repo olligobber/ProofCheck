@@ -36,6 +36,8 @@ module UI.Capabilities
     , canUndo
     , canRedo
     , canNew
+    , class ReadFile
+    , readFile
     ) where
 
 import Prelude
@@ -47,6 +49,7 @@ import Prelude
 import Data.Maybe (Maybe(Nothing))
 import Data.Either (Either)
 import Halogen (HalogenM, lift, raise)
+import Web.Event.Event (Event)
 
 import Symbol (Symbol, SymbolMap)
 import Sequent (Sequent)
@@ -123,6 +126,9 @@ class Monad m <= History m where
     canRedo :: m Boolean
     canNew :: m Boolean
 
+class Monad m <= ReadFile m where
+    readFile :: Event -> m Unit
+
 instance readSymbolsHalogenM :: ReadSymbols m =>
     ReadSymbols (HalogenM s a t o m) where
         getSymbols = lift getSymbols
@@ -169,3 +175,7 @@ instance historyHalogenM :: History m => History (HalogenM s a t Unit m) where
     canUndo = lift canUndo
     canRedo = lift canRedo
     canNew = lift canNew
+
+instance readFileHalogenM :: ReadFile m =>
+    ReadFile (HalogenM s a t Unit m) where
+        readFile f = lift (readFile f) *> raise unit

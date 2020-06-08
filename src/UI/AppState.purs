@@ -26,8 +26,11 @@ import Web.HTML (window)
 import Web.HTML.Window (localStorage)
 import Web.Storage.Storage (setItem)
 import Data.Argonaut.Core (stringify)
+import Data.Argonaut.Parser as AP
+import Effect.Promise (runPromise)
 
-import Json (toJson)
+import UI.File as F
+import Json (toJson, fromJson)
 import Sequent (Sequent)
 import Symbol (Symbol, SymbolMap, defaultMap, updateMap)
 import Proof (Proof, Deduction(..))
@@ -37,7 +40,7 @@ import UI.Capabilities
     ( Window(..)
     , class ReadSymbols, class WriteSymbols, class ReadSequents
     , class WriteSequents, class ReadProof, class WriteProof, class Error
-    , class ReadError, class ReadNav, class Nav, class History
+    , class ReadError, class ReadNav, class Nav, class History, class ReadFile
     , error, canNew
     )
 
@@ -237,3 +240,28 @@ instance historyAppStateM :: History AppStateM where
             length state.present.sequents /= 0 ||
             length state.present.symbols /= 0 ||
             not (P.isEmpty state.present.proof)
+
+instance readFileAppStateM :: ReadFile AppStateM where
+    readFile e = AppStateM $ do
+        ref <- ask
+        state <- lift $ read ref
+        lift $ runPromise
+            (\s -> case AP.jsonParser s >>= fromJson of
+                Left err -> modify_
+                    (_ { error = Just ["Error loading file: " <> err]})
+                    ref
+                Right p -> modify_
+                    ( _
+                        { history = state.history <> [state.present]
+                        , future = []
+                        , present = p
+                        , error = Nothing
+                        }
+                    )
+                    ref
+            )
+            (const $ modify_
+                (_ { error = Just ["Error loading file"]})
+                ref
+            )
+            (F.readFile e)
