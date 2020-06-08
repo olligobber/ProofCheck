@@ -16,7 +16,7 @@ import Prelude
     )
 import Data.Maybe (Maybe(..))
 import Control.Monad.Reader.Trans (ReaderT, runReaderT, ask, lift)
-import Effect (Effect)
+import Effect.Aff (Aff)
 import Effect.Ref (Ref, read, modify_)
 import Data.Either (Either(..))
 import Data.Array as A
@@ -27,7 +27,8 @@ import Web.HTML.Window (localStorage)
 import Web.Storage.Storage (setItem)
 import Data.Argonaut.Core (stringify)
 import Data.Argonaut.Parser as AP
-import Effect.Promise (runPromise)
+import Control.Promise (toAff)
+import Effect.Class (liftEffect)
 
 import UI.File as F
 import Json (toJson, fromJson)
@@ -85,7 +86,7 @@ startWith present =
 startWithErr :: String -> AppState
 startWithErr e = start { error = Just [e] }
 
-newtype AppStateM x = AppStateM (ReaderT (Ref AppState) Effect x)
+newtype AppStateM x = AppStateM (ReaderT (Ref AppState) Aff x)
 
 derive newtype instance functorAppStateM :: Functor AppStateM
 derive newtype instance applyAppStateM :: Apply AppStateM
@@ -96,17 +97,17 @@ derive newtype instance monadAppStateM :: Monad AppStateM
 get :: AppStateM AppState
 get = AppStateM $ do
     ref <- ask
-    lift $ read ref
+    lift $ liftEffect $ read ref
 
 modify :: (AppState -> AppState) -> AppStateM Unit
 modify f = AppStateM $ do
     ref <- ask
-    lift $ modify_ f ref
+    lift $ liftEffect $ modify_ f ref
 
 put :: AppState -> AppStateM Unit
 put a = modify (const a)
 
-run :: forall x. Ref AppState -> AppStateM x -> Effect x
+run :: forall x. Ref AppState -> AppStateM x -> Aff x
 run r (AppStateM f) = runReaderT f r
 
 write :: AppStateM Unit
@@ -115,7 +116,8 @@ write = do
     let json = toJson
             state.present.symbols state.present.sequents state.present.proof
     let string = stringify json
-    AppStateM $ lift $ window >>= localStorage >>= setItem "proof" string
+    AppStateM $ lift $ liftEffect $
+        window >>= localStorage >>= setItem "proof" string
 
 instance readSymbolsAppStateM :: ReadSymbols AppStateM where
     getSymbols = _.present.symbols <$> get
@@ -242,26 +244,23 @@ instance historyAppStateM :: History AppStateM where
             not (P.isEmpty state.present.proof)
 
 instance readFileAppStateM :: ReadFile AppStateM where
-    readFile e = AppStateM $ do
-        ref <- ask
-        state <- lift $ read ref
-        lift $ runPromise
-            (\s -> case AP.jsonParser s >>= fromJson of
-                Left err -> modify_
-                    (_ { error = Just ["Error loading file: " <> err]})
-                    ref
-                Right p -> modify_
-                    ( _
-                        { history = state.history <> [state.present]
-                        , future = []
-                        , present = p
-                        , error = Nothing
-                        }
-                    )
-                    ref
-            )
-            (const $ modify_
-                (_ { error = Just ["Error loading file"]})
-                ref
-            )
-            (F.readFile e)
+    readFile e = do
+        state <- get
+        AppStateM $ do
+            ref <- ask
+            lift $ do
+                string <- toAff $ F.readFile e
+                liftEffect $ case AP.jsonParser string >>= fromJson of
+                    Left err -> modify_
+                        (_ { error = Just ["Error loading file: " <> err]})
+                        ref
+                    Right p -> modify_
+                        ( _
+                            { history = state.history <> [state.present]
+                            , future = []
+                            , present = p
+                            , error = Nothing
+                            }
+                        )
+                        ref
+        write

@@ -3,6 +3,6 @@ module UI.File
     ) where
 
 import Web.Event.Event (Event)
-import Effect.Promise (Promise)
+import Control.Promise (Promise)
 
 foreign import readFile :: Event -> Promise String

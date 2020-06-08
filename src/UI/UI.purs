@@ -3,7 +3,7 @@ module UI
     ) where
 
 import Prelude
-    (Unit, ($), (<>), (<<<), (*>), (<$>), (==), (>>=), bind, const, unit, pure)
+    (Unit, ($), (<>), (*>), (<$>), (==), (>>=), bind, const, unit, pure)
 import Effect (Effect)
 import Data.Symbol (SProxy(..))
 import Halogen as H
@@ -219,4 +219,4 @@ run = do
                     Right p -> A.startWith p
     ref <- R.new start
     HA.runHalogenAff $ HA.awaitBody >>=
-        runUI (H.hoist (H.liftEffect <<< A.run ref) component) NoAction
+        runUI (H.hoist (A.run ref) component) NoAction
