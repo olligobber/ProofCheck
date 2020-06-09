@@ -3,7 +3,7 @@ module Json.Proof
     , fromJson
     ) where
 
-import Prelude (($), (<<<), (<$>), (>=>), pure, bind, flip)
+import Prelude (($), (<<<), (<$>), (>=>), (-), (+), pure, bind, flip, map)
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core as AC
 import Foreign.Object as O
@@ -31,7 +31,7 @@ fromDeduction (Deduction d) = AC.fromObject $ O.fromFoldable
     , Tuple "formula" $ JW.toJson d.deduction
     , Tuple "rule" $ JD.toJson d.rule
     , Tuple "references" $ AC.fromArray $
-        AC.fromNumber <<< toNumber <$> d.reasons
+        AC.fromNumber <<< toNumber <<< (_ - 1) <$> d.reasons
     ]
 
 toDeduction :: SymbolMap -> Array Symbol -> Array (Sequent String) -> Proof ->
@@ -47,7 +47,7 @@ toDeduction symbolMap syms seqs (Proof p) j = do
     refArr <- E.note "Deduction references are not a list" $
         AC.toArray refJson
     reasons <- E.note "Deduction references are not integers" $
-        sort <$>
+        map (_ + 1) <<< sort <$>
         traverse (AC.toNumber >=> fromNumber) refArr
     case O.lookup "assumptions" o of
         Just assJson -> do

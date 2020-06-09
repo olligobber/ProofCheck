@@ -27977,7 +27977,15 @@ var PS = {};
                                       return Control_Bind.bind(Data_Either.bindEither)(Json_Deduction.fromJson(syms)(seqs)(ruleJson))(function (rule) {
                                           return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Deduction is missing references")(Foreign_Object.lookup("references")(o)))(function (refJson) {
                                               return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Deduction references are not a list")(Data_Argonaut_Core.toArray(refJson)))(function (refArr) {
-                                                  return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Deduction references are not integers")(Data_Functor.map(Data_Maybe.functorMaybe)(Data_Array.sort(Data_Ord.ordInt))(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)(Control_Bind.composeKleisli(Data_Maybe.bindMaybe)(Data_Argonaut_Core.toNumber)(Data_Int.fromNumber))(refArr))))(function (reasons) {
+                                                  return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Deduction references are not integers")(Data_Functor.map(Data_Maybe.functorMaybe)((function () {
+                                                      var $18 = Data_Functor.map(Data_Functor.functorArray)(function (v1) {
+                                                          return v1 + 1 | 0;
+                                                      });
+                                                      var $19 = Data_Array.sort(Data_Ord.ordInt);
+                                                      return function ($20) {
+                                                          return $18($19($20));
+                                                      };
+                                                  })())(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)(Control_Bind.composeKleisli(Data_Maybe.bindMaybe)(Data_Argonaut_Core.toNumber)(Data_Int.fromNumber))(refArr))))(function (reasons) {
                                                       var v1 = Foreign_Object.lookup("assumptions")(o);
                                                       if (v1 instanceof Data_Maybe.Just) {
                                                           return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Deduction assumptions are not a list")(Data_Argonaut_Core.toArray(v1.value0)))(function (assArr) {
@@ -28039,10 +28047,12 @@ var PS = {};
       };
   };
   var fromDeduction = function (v) {
-      return Data_Argonaut_Core.fromObject(Foreign_Object.fromFoldable(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("assumptions")(Data_Argonaut_Core.fromArray(Data_Functor.map(Data_Functor.functorArray)(function ($16) {
-          return Data_Argonaut_Core.fromNumber(Data_Int.toNumber($16));
-      })(Data_Set.toUnfoldable(Data_Unfoldable.unfoldableArray)(v.value0.assumptions)))), Data_Tuple.Tuple.create("formula")(Json_WFF.toJson(v.value0.deduction)), Data_Tuple.Tuple.create("rule")(Json_Deduction.toJson(v.value0.rule)), Data_Tuple.Tuple.create("references")(Data_Argonaut_Core.fromArray(Data_Functor.map(Data_Functor.functorArray)(function ($17) {
-          return Data_Argonaut_Core.fromNumber(Data_Int.toNumber($17));
+      return Data_Argonaut_Core.fromObject(Foreign_Object.fromFoldable(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("assumptions")(Data_Argonaut_Core.fromArray(Data_Functor.map(Data_Functor.functorArray)(function ($21) {
+          return Data_Argonaut_Core.fromNumber(Data_Int.toNumber($21));
+      })(Data_Set.toUnfoldable(Data_Unfoldable.unfoldableArray)(v.value0.assumptions)))), Data_Tuple.Tuple.create("formula")(Json_WFF.toJson(v.value0.deduction)), Data_Tuple.Tuple.create("rule")(Json_Deduction.toJson(v.value0.rule)), Data_Tuple.Tuple.create("references")(Data_Argonaut_Core.fromArray(Data_Functor.map(Data_Functor.functorArray)(function ($22) {
+          return Data_Argonaut_Core.fromNumber(Data_Int.toNumber((function (v1) {
+              return v1 - 1 | 0;
+          })($22)));
       })(v.value0.reasons))) ]));
   };
   var toJson = function (v) {
