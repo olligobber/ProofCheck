@@ -213,17 +213,18 @@ input {
 
 #import-export-box {
   left: 25%; }
-  #import-export-box #i-e-description {
-    margin: 2%;
-    text-align: center; }
   #import-export-box #json-input {
     width: 100%;
-    font-family: 'Anonymous Pro', monospace;
     font-size: 1em;
-    border-bottom: 0.2em solid #f9f6e3; }
-    #import-export-box #json-input textarea {
-      width: 95%;
-      margin: 2%;
-      white-space: nowrap; }
+    border-bottom: 0.2em solid #f9f6e3;
+    padding: 1em; }
+  #import-export-box #json-output {
+    width: 100%;
+    font-size: 1em;
+    border-bottom: 0.2em solid #f9f6e3;
+    padding: 1em; }
+    #import-export-box #json-output a {
+      color: inherit;
+      text-decoration: underline; }
 
 /*# sourceMappingURL=index.css.map */

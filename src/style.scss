@@ -299,21 +299,22 @@ input {
 #import-export-box {
     left: 25%;
 
-    #i-e-description {
-        margin: 2%;
-        text-align: center;
-    }
-
     #json-input {
         width: 100%;
-        font-family: 'Anonymous Pro', monospace;
         font-size: 1em;
         border-bottom: .2em solid light-grey();
+        padding: 1em;
+    }
 
-        textarea {
-            width: 95%;
-            margin: 2%;
-            white-space: nowrap;
+    #json-output {
+        width: 100%;
+        font-size: 1em;
+        border-bottom: .2em solid light-grey();
+        padding: 1em;
+
+        a {
+            color: inherit;
+            text-decoration: underline;
         }
     }
 }

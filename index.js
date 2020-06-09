@@ -26816,6 +26816,8 @@ var PS = {};
   var tr = element("tr");
   var div = element("div");
   var button = element("button");
+  var a = element("a");
+  exports["a"] = a;
   exports["button"] = button;
   exports["div"] = div;
   exports["input"] = input;
@@ -26923,7 +26925,9 @@ var PS = {};
       return prop(dictIsProp)("type");
   };
   var value = prop(Halogen_HTML_Core.isPropString)("value");
-  var id_ = prop(Halogen_HTML_Core.isPropString)("id");           
+  var id_ = prop(Halogen_HTML_Core.isPropString)("id");
+  var href = prop(Halogen_HTML_Core.isPropString)("href");           
+  var download = prop(Halogen_HTML_Core.isPropString)("download");
   var disabled = prop(Halogen_HTML_Core.isPropBoolean)("disabled");
   var class_ = (function () {
       var $18 = prop(Halogen_HTML_Core.isPropString)("className");
@@ -26936,7 +26940,9 @@ var PS = {};
   var accept = prop(Halogen_HTML_Core.isPropInputAcceptType)("accept");
   exports["attr"] = attr;
   exports["class_"] = class_;
+  exports["href"] = href;
   exports["id_"] = id_;
+  exports["download"] = download;
   exports["type_"] = type_;
   exports["value"] = value;
   exports["disabled"] = disabled;
@@ -29004,6 +29010,7 @@ var PS = {};
   var Control_Monad_State_Class = $PS["Control.Monad.State.Class"];
   var DOM_HTML_Indexed_InputAcceptType = $PS["DOM.HTML.Indexed.InputAcceptType"];
   var DOM_HTML_Indexed_InputType = $PS["DOM.HTML.Indexed.InputType"];
+  var Data_Argonaut_Core = $PS["Data.Argonaut.Core"];
   var Data_Function = $PS["Data.Function"];
   var Data_Maybe = $PS["Data.Maybe"];
   var Data_MediaType_Common = $PS["Data.MediaType.Common"];
@@ -29014,6 +29021,8 @@ var PS = {};
   var Halogen_HTML_Events = $PS["Halogen.HTML.Events"];
   var Halogen_HTML_Properties = $PS["Halogen.HTML.Properties"];
   var Halogen_Query_HalogenM = $PS["Halogen.Query.HalogenM"];
+  var Json = $PS["Json"];
+  var Proof = $PS["Proof"];
   var UI_Capabilities = $PS["UI.Capabilities"];                
   var Update = (function () {
       function Update(value0) {
@@ -29049,24 +29058,42 @@ var PS = {};
   })();
   var render = function (v) {
       if (v.open) {
-          return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("floating"), Halogen_HTML_Properties.id_("import-export-box") ])([ Halogen_HTML_Elements.div([ Halogen_HTML_Properties.id_("json-input") ])([ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onInput(function ($15) {
-              return Data_Maybe.Just.create(Load.create($15));
-          }), Halogen_HTML_Properties.type_(Halogen_HTML_Core.isPropInputType)(DOM_HTML_Indexed_InputType.InputFile.value), Halogen_HTML_Properties.accept(DOM_HTML_Indexed_InputAcceptType.mediaType(Data_MediaType_Common.applicationJSON)) ]) ]), Halogen_HTML_Elements.div([ Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(Close.value))), Halogen_HTML_Properties.id_("close-button"), Halogen_HTML_Properties.class_("button") ])([ Halogen_HTML_Core.text("Close") ]) ]);
+          return Halogen_HTML_Elements.div([ Halogen_HTML_Properties.class_("floating"), Halogen_HTML_Properties.id_("import-export-box") ])([ Halogen_HTML_Elements.div([ Halogen_HTML_Properties.id_("json-input") ])([ Halogen_HTML_Core.text("Upload proof: "), Halogen_HTML_Elements.input([ Halogen_HTML_Events.onInput(function ($21) {
+              return Data_Maybe.Just.create(Load.create($21));
+          }), Halogen_HTML_Properties.type_(Halogen_HTML_Core.isPropInputType)(DOM_HTML_Indexed_InputType.InputFile.value), Halogen_HTML_Properties.accept(DOM_HTML_Indexed_InputAcceptType.mediaType(Data_MediaType_Common.applicationJSON)) ]) ]), Halogen_HTML_Elements.div([ Halogen_HTML_Properties.id_("json-output") ])([ Halogen_HTML_Core.text("Download proof: "), Halogen_HTML_Elements.a([ Halogen_HTML_Properties.href("data:text/plain;charset=utf-8," + Data_Argonaut_Core.stringify(Json.toJson(v.symbols)(v.sequents)(v.proof))), Halogen_HTML_Properties.download("proof.json") ])([ Halogen_HTML_Core.text("Click here") ]) ]), Halogen_HTML_Elements.div([ Halogen_HTML_Events.onClick(Data_Function["const"](new Data_Maybe.Just(Close.value))), Halogen_HTML_Properties.id_("close-button"), Halogen_HTML_Properties.class_("button") ])([ Halogen_HTML_Core.text("Close") ]) ]);
       };
       return Halogen_HTML_Elements.div([  ])([  ]);
   };
   var initialState = {
-      open: false
+      open: false,
+      sequents: [  ],
+      symbols: [  ],
+      proof: Proof.empty
   };
   var handleQuery = function (dictReadNav) {
-      return function (v) {
-          return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.isIEWindow(UI_Capabilities.readNavHalogenM(dictReadNav)))(function (open) {
-              return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.put(Halogen_Query_HalogenM.monadStateHalogenM)({
-                  open: open
-              }))(function () {
-                  return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(new Data_Maybe.Just(v.value0));
-              });
-          });
+      return function (dictReadSymbols) {
+          return function (dictReadSequents) {
+              return function (dictReadProof) {
+                  return function (v) {
+                      return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.isIEWindow(UI_Capabilities.readNavHalogenM(dictReadNav)))(function (open) {
+                          return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getSequents(UI_Capabilities.readSequentsHalogenM(dictReadSequents)))(function (sequents) {
+                              return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getSymbols(UI_Capabilities.readSymbolsHalogenM(dictReadSymbols)))(function (symbols) {
+                                  return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getProof(UI_Capabilities.readProofHalogenM(dictReadProof)))(function (proof) {
+                                      return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.put(Halogen_Query_HalogenM.monadStateHalogenM)({
+                                          open: open,
+                                          sequents: sequents,
+                                          symbols: symbols,
+                                          proof: proof
+                                      }))(function () {
+                                          return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(new Data_Maybe.Just(v.value0));
+                                      });
+                                  });
+                              });
+                          });
+                      });
+                  };
+              };
+          };
       };
   };
   var handleAction = function (dictNav) {
@@ -29081,24 +29108,30 @@ var PS = {};
               if (v instanceof NoAction) {
                   return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(Data_Unit.unit);
               };
-              throw new Error("Failed pattern match at UI.ImEx (line 80, column 1 - line 83, column 56): " + [ v.constructor.name ]);
+              throw new Error("Failed pattern match at UI.ImEx (line 109, column 1 - line 112, column 56): " + [ v.constructor.name ]);
           };
       };
   };
   var component = function (dictNav) {
       return function (dictReadNav) {
           return function (dictReadFile) {
-              return Halogen_Component.mkComponent({
-                  initialState: Data_Function["const"](initialState),
-                  render: render,
-                  "eval": Halogen_Component.mkEval({
-                      handleAction: handleAction(dictNav)(dictReadFile),
-                      handleQuery: handleQuery(dictReadNav),
-                      receive: Halogen_Component.defaultEval.receive,
-                      initialize: Halogen_Component.defaultEval.initialize,
-                      finalize: Halogen_Component.defaultEval.finalize
-                  })
-              });
+              return function (dictReadSymbols) {
+                  return function (dictReadSequents) {
+                      return function (dictReadProof) {
+                          return Halogen_Component.mkComponent({
+                              initialState: Data_Function["const"](initialState),
+                              render: render,
+                              "eval": Halogen_Component.mkEval({
+                                  handleAction: handleAction(dictNav)(dictReadFile),
+                                  handleQuery: handleQuery(dictReadNav)(dictReadSymbols)(dictReadSequents)(dictReadProof),
+                                  receive: Halogen_Component.defaultEval.receive,
+                                  initialize: Halogen_Component.defaultEval.initialize,
+                                  finalize: Halogen_Component.defaultEval.finalize
+                              })
+                          });
+                      };
+                  };
+              };
           };
       };
   };
@@ -30322,7 +30355,7 @@ var PS = {};
                                                   return "proof";
                                               }))(Data_Ord.ordUnit)(_proof)(Data_Unit.unit)(UI_Proof.component(dictReadSymbols)(dictReadSequents)(dictReadProof)(dictWriteProof)(dictError))(UI_Proof.NoAction.value)(Data_Function["const"](new Data_Maybe.Just(Update.value))), Halogen_HTML.slot()(new Data_Symbol.IsSymbol(function () {
                                                   return "imex";
-                                              }))(Data_Ord.ordUnit)(_imex)(Data_Unit.unit)(UI_ImEx.component(dictNav)(dictReadNav)(dictReadFile))(UI_ImEx.NoAction.value)(Data_Function["const"](new Data_Maybe.Just(Update.value))) ])((function () {
+                                              }))(Data_Ord.ordUnit)(_imex)(Data_Unit.unit)(UI_ImEx.component(dictNav)(dictReadNav)(dictReadFile)(dictReadSymbols)(dictReadSequents)(dictReadProof))(UI_ImEx.NoAction.value)(Data_Function["const"](new Data_Maybe.Just(Update.value))) ])((function () {
                                                   if (state.errors instanceof Data_Maybe.Nothing) {
                                                       return [  ];
                                                   };
