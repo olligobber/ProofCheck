@@ -147,13 +147,13 @@ negOp :: UnaryOp
 negOp = makeUnary not "~"
 
 andOp :: BinaryOp
-andOp = makeBinary (&&) "&"
+andOp = makeBinary (&&) "∧"
 
 orOp :: BinaryOp
-orOp = makeBinary (||) "|"
+orOp = makeBinary (||) "∨"
 
 impliesOp :: BinaryOp
-impliesOp = makeBinary (<=) "->"
+impliesOp = makeBinary (<=) "⇒"
 
 neg :: forall x. WFF x -> WFF x
 neg contents = Unary { operator : negOp, contents }

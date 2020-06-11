@@ -20,7 +20,7 @@ import Control.MonadZero (guard)
 import WFF (WFF(..), (==>), (/\), (\/), neg)
 import Sequent (Sequent(..))
 import Sequent as Seq
-import Symbol (Symbol(..))
+import Symbol (CustomSymbol)
 import Symbol as Sym
 
 data DeductionRule
@@ -34,7 +34,7 @@ data DeductionRule
     | OrIntroduction
     | OrElimination
     | RAA
-    | Definition Symbol Int
+    | Definition CustomSymbol Int
     | Introduction (Sequent String) Int
 
 derive instance eqDeductionRule :: Eq DeductionRule
@@ -55,10 +55,7 @@ renderRule AndElimination = "&E"
 renderRule OrIntroduction = "|I"
 renderRule OrElimination = "|E"
 renderRule RAA = "RAA"
-renderRule (Definition (UnarySymbol s) _) =
-    "Def (" <> s.operator.symbol <> ")"
-renderRule (Definition (BinarySymbol s) _) =
-    "Def (" <> s.operator.symbol <> ")"
+renderRule (Definition s _) = "Def (" <> Sym.getDisplay (Sym.Custom s) <> ")"
 renderRule (Introduction s _) = "SI (" <> Seq.render s <> ")"
 
 toSequents :: DeductionRule -> Array (Sequent (Either Int String))

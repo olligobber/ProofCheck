@@ -1,5 +1,10 @@
-test
-add
-	symbol replacement
-	si(s) vs si
-	first order logic
+tests
+symbol aliases
+	update ui
+first order logic
+	update parser
+	update deduction rules
+	add new symbols
+	make verone json handle "@" and "!" being defined
+si vs si(s)
+delete buttons
