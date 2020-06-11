@@ -190,6 +190,12 @@ input {
     width: 100%;
     font-family: 'Anonymous Pro', monospace;
     font-size: 1.2em; }
+    #symbol-box #symbol-list .symbol-name {
+      text-align: right;
+      width: 20%; }
+    #symbol-box #symbol-list .symbol-def {
+      text-align: left;
+      width: 50%; }
   #symbol-box #new-symbol {
     border-bottom: 0.2em solid #f9f6e3;
     line-height: 3em;
@@ -199,6 +205,9 @@ input {
     width: 2em; }
   #symbol-box #set-def {
     width: 80%; }
+  #symbol-box #alias-select {
+    font-family: 'Anonymous Pro', monospace;
+    font-size: 1.2em; }
 
 #sequent-box {
   left: 20%; }

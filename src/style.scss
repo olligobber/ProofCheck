@@ -262,6 +262,16 @@ input {
         width: 100%;
         font-family: 'Anonymous Pro', monospace;
         font-size: 1.2em;
+
+        .symbol-name {
+            text-align: right;
+            width: 20%
+        }
+
+        .symbol-def {
+            text-align: left;
+            width : 50%
+        }
     }
 
     #new-symbol {
@@ -277,6 +287,11 @@ input {
 
     #set-def {
         width: 80%;
+    }
+
+    #alias-select {
+        font-family: 'Anonymous Pro', monospace;
+        font-size: 1.2em;
     }
 }
 
