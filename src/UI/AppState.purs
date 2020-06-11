@@ -33,7 +33,7 @@ import Effect.Class (liftEffect)
 import UI.File as F
 import Json (toJson, fromJson)
 import Sequent (Sequent)
-import Symbol (Symbol, SymbolMap, defaultMap, updateMap)
+import Symbol (Symbol(..), SymbolMap, defaultMap, defaultSymbols, updateMap)
 import Proof (Proof, Deduction(..))
 import Proof as P
 import Deduction (DeductionRule(..))
@@ -66,7 +66,7 @@ start =
     , future : []
     , present :
         { sequents : []
-        , symbols : []
+        , symbols : defaultSymbols
         , symbolMap : defaultMap
         , proof : P.empty
         }
@@ -75,13 +75,7 @@ start =
     }
 
 startWith :: ProofState -> AppState
-startWith present =
-    { history : []
-    , future : []
-    , present
-    , error : Nothing
-    , window : NoWindow
-    }
+startWith present = start { present = present }
 
 startWithErr :: String -> AppState
 startWithErr e = start { error = Just [e] }
@@ -164,7 +158,7 @@ instance writeProofAppStateM :: WriteProof AppStateM where
                 Just s | seq == s -> validate state
                 _ -> false <$ error "Sequent is not available"
             Definition sym i -> case A.index state.present.symbols i of
-                Just s | sym == s -> validate state
+                Just (Custom s) | sym == s -> validate state
                 _ -> false <$ error "Symbol is not available"
             _ -> validate state
         where
@@ -223,7 +217,7 @@ instance historyAppStateM :: History AppStateM where
                 , future = []
                 , present =
                     { sequents : []
-                    , symbols : []
+                    , symbols : defaultSymbols
                     , symbolMap : defaultMap
                     , proof : P.empty
                     }

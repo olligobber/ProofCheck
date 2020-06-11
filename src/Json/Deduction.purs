@@ -57,10 +57,10 @@ fromString "MP" = Right ModusPonens
 fromString "MT" = Right ModusTollens
 fromString "DN" = Right DoubleNegation
 fromString "CP" = Right ConditionalProof
-fromString "&I" = Right AndIntroduction
-fromString "&E" = Right AndElimination
-fromString "|I" = Right OrIntroduction
-fromString "|E" = Right OrElimination
+fromString "∧I" = Right AndIntroduction
+fromString "∧E" = Right AndElimination
+fromString "∨I" = Right OrIntroduction
+fromString "∨E" = Right OrElimination
 fromString "RAA" = Right RAA
 fromString r = Left $ "Invalid non-indexed deduction rule: " <> r
 

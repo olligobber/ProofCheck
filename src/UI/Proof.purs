@@ -36,7 +36,7 @@ import UI.HTMLHelp (select)
 import Deduction (DeductionRule(..))
 import Proof (Deduction(..), Proof(..))
 import Proof as P
-import Symbol (Symbol, getName)
+import Symbol (Symbol(..), CustomSymbol, getDisplay)
 import Sequent (Sequent)
 import Sequent as Seq
 import UI.Capabilities
@@ -78,7 +78,7 @@ data Action
 type Message = Unit
 
 type State =
-    { symbols :: Array Symbol
+    { symbols :: Array (Tuple Int CustomSymbol)
     , sequents :: Array (Sequent String)
     , proof :: Proof
     , assumptions :: String
@@ -145,10 +145,10 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
                 , Tuple "MT" $ Full ModusTollens
                 , Tuple "DN" $ Full DoubleNegation
                 , Tuple "CP" $ Full ConditionalProof
-                , Tuple "&I" $ Full AndIntroduction
-                , Tuple "&E" $ Full AndElimination
-                , Tuple "|I" $ Full OrIntroduction
-                , Tuple "|E" $ Full OrElimination
+                , Tuple "∧I" $ Full AndIntroduction
+                , Tuple "∧E" $ Full AndElimination
+                , Tuple "∨I" $ Full OrIntroduction
+                , Tuple "∨E" $ Full OrElimination
                 , Tuple "RAA" $ Full RAA
                 , Tuple "SI" PartSequent
                 , Tuple "Def" PartSymbol
@@ -164,14 +164,14 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
             [ case state.reason of
                 PartSymbol -> select "symbol-dropdown"
                     (Just <<< Reason) (const false) PartSymbol $
-                        A.mapWithIndex (\i sym ->
-                            Tuple (getName sym) $ Full $ Definition sym i)
-                        state.symbols
+                        (\(Tuple i sym) -> Tuple (getDisplay $ Custom sym) $
+                            Full $ Definition sym i)
+                        <$> state.symbols
                 Full d@(Definition _ _) -> select "symbol-dropdown"
                     (Just <<< Reason) (const false) (Full d) $
-                        A.mapWithIndex (\i sym ->
-                            Tuple (getName sym) $ Full $ Definition sym i)
-                        state.symbols
+                        (\(Tuple i sym) -> Tuple (getDisplay $ Custom sym) $
+                            Full $ Definition sym i)
+                        <$> state.symbols
                 PartSequent -> select "sequent-dropdown"
                     (Just <<< Reason) (const false) PartSequent $
                         A.mapWithIndex (\i seq ->
@@ -286,13 +286,18 @@ handleAction AddLine = do
 
 handleAction NoAction = pure unit
 
+fromCustom :: Tuple Int Symbol -> Maybe (Tuple Int CustomSymbol)
+fromCustom (Tuple i (Custom s)) = Just $ Tuple i s
+fromCustom _ = Nothing
+
 handleQuery :: forall a m.
     ReadSymbols m =>
     ReadSequents m =>
     ReadProof m =>
     Query a -> H.HalogenM State Action () Message m (Maybe a)
 handleQuery (Update a) = do
-    symbols <- getSymbols
+    symbols <- A.mapMaybe fromCustom <<< A.mapWithIndex Tuple <$>
+        getSymbols
     sequents <- getSequents
     proof <- getProof
     H.modify_ $ _ { symbols = symbols, sequents = sequents, proof = proof }

@@ -1,6 +1,7 @@
 module UI.Symbol
     ( Action(..)
     , Message
+    , SymbolInput
     , State
     , Slot
     , Query(..)
@@ -9,7 +10,8 @@ module UI.Symbol
     ) where
 
 import Prelude
-    ( (<$>), (<>), ($), (<<<), (<$)
+    ( class Eq, class Ord
+    , (<$>), (<>), ($), (<<<), (<$), (>>=)
     , Unit
     , const, otherwise, bind, discard, pure, unit
     )
@@ -21,15 +23,20 @@ import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Either (Either(..))
 import Control.Applicative (when)
+import Data.Array as A
+import Data.Map as M
 
 import WFF as WFF
 import UI.HTMLHelp (select)
 import Parser (parseSymbol)
-import Symbol (Symbol(..), makeUnary, makeBinary)
+import Symbol
+    ( Symbol(..), CustomSymbol(..), SymbolAlias(..)
+    , makeUnary, makeBinary, getTyped, getDisplay
+    )
 import UI.Capabilities
     ( class ReadSymbols, class WriteSymbols, class Nav, class Error
     , class ReadNav
-    , parse, error, getSymbols, addSymbol, isSymbolWindow, close
+    , parse, error, getSymbols, addSymbol, isSymbolWindow, close, getSymbolMap
     )
 
 type Slot = H.Slot Query Message
@@ -39,19 +46,29 @@ data Query a = Update a
 data Action
     = Name String
     | Def String
-    | Binary Boolean
+    | Type SymbolInput
+    | SetAlias String
     | Add
     | Close
     | NoAction
 
 type Message = Unit
 
+data SymbolInput
+    = UnaryIn
+    | BinaryIn
+    | AliasIn
+
+derive instance eqSymbolInput :: Eq SymbolInput
+derive instance ordSymbolInput :: Ord SymbolInput
+
 type State =
     { symbols :: Array Symbol
     , open :: Boolean
     , name :: String
     , definition :: String
-    , binary :: Boolean
+    , input :: SymbolInput
+    , alias :: String
     }
 
 component :: forall m.
@@ -76,11 +93,12 @@ initialState =
     , open : false
     , name : ""
     , definition : ""
-    , binary : true
+    , alias : ""
+    , input : BinaryIn
     }
 
 symbolRow :: forall m. Symbol -> H.ComponentHTML Action () m
-symbolRow (UnarySymbol s) = HH.tr
+symbolRow (Custom (UnarySymbol s)) = HH.tr
     []
     [ HH.td [] []
     , HH.td
@@ -93,7 +111,7 @@ symbolRow (UnarySymbol s) = HH.tr
         [ HP.class_ $ HH.ClassName "symbol-def" ]
         [ HH.text $ WFF.render $ "A" <$ s.definition ]
     ]
-symbolRow (BinarySymbol s) = HH.tr
+symbolRow (Custom (BinarySymbol s)) = HH.tr
     []
     [ HH.td [] []
     , HH.td
@@ -106,37 +124,93 @@ symbolRow (BinarySymbol s) = HH.tr
         [ HP.class_ $ HH.ClassName "symbol-def" ]
         [ HH.text $ WFF.render $ (if _ then "A" else "B") <$> s.definition ]
     ]
+symbolRow (Alias s) = HH.tr
+    []
+    [ HH.td [] []
+    , HH.td
+        [ HP.class_ $ HH.ClassName "symbol-name" ]
+        [ HH.text $ getTyped $ Alias s ]
+    , HH.td
+        [ HP.class_ $ HH.ClassName "equiv-symbol" ]
+        [ HH.text " ↦ " ]
+    , HH.td
+        [ HP.class_ $ HH.ClassName "symbol-def" ]
+        [ HH.text $ getDisplay $ Alias s ]
+    ]
+symbolRow (Builtin s) = HH.tr
+    []
+    [ HH.td [] []
+    , HH.td
+        [ HP.class_ $ HH.ClassName "symbol-name" ]
+        [ HH.text $ getTyped $ Builtin s ]
+    , HH.td
+        [ HP.class_ $ HH.ClassName "equiv-symbol" ]
+        []
+    , HH.td
+        [ HP.class_ $ HH.ClassName "symbol-def" ]
+        [ HH.text "builtin symbol" ]
+    ]
+
+notAlias :: Symbol -> Boolean
+notAlias (Alias _) = false
+notAlias _ = true
 
 newSymbolRow :: forall m. State -> H.ComponentHTML Action () m
 newSymbolRow state = HH.tr
     [ HP.id_ "new-symbol" ]
     [ HH.td
         []
-        [ select "operator-select" (Just <<< Binary) (const false) state.binary
-            [ Tuple "Binary" true
-            , Tuple "Unary" false
+        [ select "operator-select" (Just <<< Type) (const false) state.input
+            [ Tuple "Binary" BinaryIn
+            , Tuple "Unary" UnaryIn
+            , Tuple "Alias" AliasIn
             ]
         ]
     , HH.td
         [ HP.class_ $ HH.ClassName "symbol-name" ]
-        [ HH.text (if state.binary then "A" else "")
-        , HH.input
-            [ HE.onValueChange $ Just <<< Name
-            , HP.value state.name
-            , HP.id_ "choose-name"
-            ] -- todo make input type text?
-        , HH.text (if state.binary then "B" else "A")
-        ]
+        $ case state.input of
+            BinaryIn ->
+                [ HH.text "A"
+                , HH.input
+                    [ HE.onValueChange $ Just <<< Name
+                    , HP.value state.name
+                    , HP.id_ "choose-name"
+                    ] -- todo make input type text?
+                , HH.text "B"
+                ]
+            UnaryIn ->
+                [ HH.input
+                    [ HE.onValueChange $ Just <<< Name
+                    , HP.value state.name
+                    , HP.id_ "choose-name"
+                    ] -- todo make input type text?
+                , HH.text "A"
+                ]
+            AliasIn ->
+                [ HH.input
+                    [ HE.onValueChange $ Just <<< Name
+                    , HP.value state.name
+                    , HP.id_ "choose-name"
+                    ] -- todo make input type text?
+                ]
     , HH.td
         [ HP.class_ $ HH.ClassName "equiv-symbol" ]
-        [ HH.text " ≡ " ]
+        [ HH.text $ case state.input of
+            AliasIn -> " ↦ "
+            _ -> " ≡ "
+        ]
     , HH.td
         [ HP.class_ $ HH.ClassName "symbol-def" ]
-        [ HH.input
-            [ HE.onValueChange $ Just <<< Def
-            , HP.value state.definition
-            , HP.id_ "set-def"
-            ] -- todo make input type text?
+        [ case state.input of
+            AliasIn -> select "alias-select" (Just <<< SetAlias) (const false)
+                state.alias $
+                    (\x -> Tuple x x) <<< getDisplay <$>
+                    A.filter notAlias state.symbols
+            _ -> HH.input
+                [ HE.onValueChange $ Just <<< Def
+                , HP.value state.definition
+                , HP.id_ "set-def"
+                ] -- todo make input type text?
         ]
     ]
 
@@ -172,23 +246,52 @@ handleAction :: forall m.
     Action -> H.HalogenM State Action () Message m Unit
 handleAction (Name n) = H.modify_ $ _ { name = n }
 handleAction (Def d) = H.modify_ $ _ { definition = d }
-handleAction (Binary b) = H.modify_ $ _ { binary = b }
-handleAction Add = do
-    state <- H.get
-    defp <- parse state.definition
-    case do
-        name <- parseSymbol state.name
-        def <- defp
-        if state.binary then
+handleAction (Type t) = H.modify_ $ _ { input = t }
+handleAction (SetAlias a) = H.modify_ $ _ { alias = a }
+handleAction Add = H.get >>= \state -> case state.input of
+    BinaryIn -> parse state.definition >>= \defp ->
+        case do
+            name <- parseSymbol state.name
+            def <- defp
             makeBinary "A" "B" name def
-        else
+        of
+            Left e -> error e
+            Right symbol -> do
+                success <- addSymbol $ Custom symbol
+                when success $ H.modify_ $ _
+                    { name = "", definition = "", input = BinaryIn, alias = "" }
+    UnaryIn -> parse state.definition >>= \defp ->
+        case do
+            name <- parseSymbol state.name
+            def <- defp
             makeUnary "A" name def
-    of
-        Left e -> error e
-        Right symbol -> do
-            success <- addSymbol symbol
-            when success $
-                H.modify_ $ _ { name = "", definition = "", binary = true }
+        of
+            Left e -> error e
+            Right symbol -> do
+                success <- addSymbol $ Custom symbol
+                when success $ H.modify_ $ _
+                    { name = "", definition = "", input = BinaryIn, alias = "" }
+    AliasIn -> getSymbolMap >>= \m ->
+        case parseSymbol state.name of
+            Left e -> error e
+            Right name -> case M.lookup state.alias m of
+                Nothing -> error "Select a symbol to alias"
+                Just (Left operator) -> do
+                    success <- addSymbol $ Alias $ UnaryAlias { name, operator }
+                    when success $ H.modify_ $ _
+                        { name = ""
+                        , definition = ""
+                        , input = BinaryIn
+                        , alias = ""
+                        }
+                Just (Right operator) -> do
+                    success <- addSymbol $ Alias $ BinaryAlias { name, operator }
+                    when success $ H.modify_ $ _
+                        { name = ""
+                        , definition = ""
+                        , input = BinaryIn
+                        , alias = ""
+                        }
 handleAction Close = close
 handleAction NoAction = pure unit
 
