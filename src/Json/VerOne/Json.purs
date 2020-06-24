@@ -28,7 +28,7 @@ fromObject :: Object Json -> Either String
 fromObject o = do
     symJson <- E.note "Json is missing symbols" $ O.lookup "symbols" o
     {symbols, symbolMap} <- JSym.allFromJson symJson
-    let csymbols = S.defaultSymbols <> (S.Custom <$> symbols)
+    let csymbols = S.oldDefaultSymbols <> (S.Custom <$> symbols)
     seqJson <- E.note "Json is missing sequents" $ O.lookup "sequents" o
     seqArr <- E.note "Sequents are not in a list" $ AC.toArray seqJson
     sequents <- traverse (JSeq.fromJson symbolMap) seqArr

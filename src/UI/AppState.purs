@@ -33,7 +33,8 @@ import Effect.Class (liftEffect)
 import UI.File as F
 import Json (toJson, fromJson)
 import Sequent (Sequent)
-import Symbol (Symbol(..), SymbolMap, defaultMap, defaultSymbols, updateMap)
+import Symbol
+    (Symbol(..), SymbolMap, newDefaultMap, newDefaultSymbols, updateMap)
 import Proof (Proof, Deduction(..))
 import Proof as P
 import Deduction (DeductionRule(..))
@@ -66,8 +67,8 @@ start =
     , future : []
     , present :
         { sequents : []
-        , symbols : defaultSymbols
-        , symbolMap : defaultMap
+        , symbols : newDefaultSymbols
+        , symbolMap : newDefaultMap
         , proof : P.empty
         }
     , error : Nothing
@@ -217,8 +218,8 @@ instance historyAppStateM :: History AppStateM where
                 , future = []
                 , present =
                     { sequents : []
-                    , symbols : defaultSymbols
-                    , symbolMap : defaultMap
+                    , symbols : newDefaultSymbols
+                    , symbolMap : newDefaultMap
                     , proof : P.empty
                     }
                 , error = Nothing

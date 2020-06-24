@@ -20,7 +20,7 @@ import Text.Parsing.Parser.Token as PT
 import Text.Parsing.Parser.Pos as PP
 import Data.String as S
 
-import WFF (UnaryOp, BinaryOp, WFF)
+import WFF (BinaryOp, WFF)
 import WFF as WFF
 import Symbol (SymbolMap, Operator(..))
 

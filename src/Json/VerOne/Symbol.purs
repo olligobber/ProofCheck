@@ -56,4 +56,4 @@ addOne s j = do
 
 allFromJson :: Json -> Either String Symbols
 allFromJson = AC.caseJsonArray (Left "Symbols are not in a list")
-    (foldM addOne { symbols : [], symbolMap : S.defaultMap })
+    (foldM addOne { symbols : [], symbolMap : S.oldDefaultMap })

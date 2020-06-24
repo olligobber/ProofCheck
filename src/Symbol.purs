@@ -12,9 +12,11 @@ module Symbol
     , getDisplay
     , getTyped
     , getOperator
-    , defaultSymbols
+    , oldDefaultSymbols
+    , newDefaultSymbols
     , SymbolMap
-    , defaultMap
+    , oldDefaultMap
+    , newDefaultMap
     , updateMap
     , makeMap
     ) where
@@ -161,8 +163,8 @@ getTyped :: Symbol -> String
 getTyped (Alias a) = a.name
 getTyped s = getDisplay $ getOperator s
 
-defaultSymbols :: Array Symbol
-defaultSymbols =
+oldDefaultSymbols :: Array Symbol
+oldDefaultSymbols =
     [ Builtin $ BuiltinSymbol $ UnaryOperator WFF.negOp
     , Builtin $ BuiltinSymbol $ BinaryOperator WFF.andOp
     , Builtin $ BuiltinSymbol $ BinaryOperator WFF.orOp
@@ -174,10 +176,16 @@ defaultSymbols =
     , Alias { name : "->", operator : BinaryOperator WFF.impliesOp }
     ]
 
+newDefaultSymbols :: Array Symbol
+newDefaultSymbols = oldDefaultSymbols <>
+    [ Alias { name : "@", operator : QuantOperator WFF.Forall }
+    , Alias { name : "!", operator : QuantOperator WFF.Exists }
+    ]
+
 type SymbolMap = Map String Operator
 
-defaultMap :: SymbolMap
-defaultMap = M.fromFoldable
+oldDefaultMap :: SymbolMap
+oldDefaultMap = M.fromFoldable
     [ Tuple "~" $ UnaryOperator WFF.negOp
     , Tuple "∧" $ BinaryOperator WFF.andOp
     , Tuple "∨" $ BinaryOperator WFF.orOp
@@ -187,6 +195,12 @@ defaultMap = M.fromFoldable
     , Tuple "->" $ BinaryOperator WFF.impliesOp
     , Tuple "∀" $ QuantOperator WFF.Forall
     , Tuple "∃" $ QuantOperator WFF.Exists
+    ]
+
+newDefaultMap :: SymbolMap
+newDefaultMap = oldDefaultMap <> M.fromFoldable
+    [ Tuple "@" $ QuantOperator WFF.Forall
+    , Tuple "!" $ QuantOperator WFF.Exists
     ]
 
 updateMap :: SymbolMap -> Symbol -> Either String SymbolMap

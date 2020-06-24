@@ -21079,6 +21079,7 @@ var PS = {};
   exports["intersectionWith"] = intersectionWith;
   exports["size"] = size;
   exports["eqMap"] = eqMap;
+  exports["semigroupMap"] = semigroupMap;
   exports["monoidMap"] = monoidMap;
   exports["functorMap"] = functorMap;
   exports["foldableMap"] = foldableMap;
@@ -22924,6 +22925,7 @@ var PS = {};
   var Data_Maybe = $PS["Data.Maybe"];
   var Data_Ord = $PS["Data.Ord"];
   var Data_Ordering = $PS["Data.Ordering"];
+  var Data_Semigroup = $PS["Data.Semigroup"];
   var Data_Tuple = $PS["Data.Tuple"];
   var Data_Unit = $PS["Data.Unit"];
   var Data_Void = $PS["Data.Void"];
@@ -23010,6 +23012,25 @@ var PS = {};
       };
       return Builtin;
   })();
+  var oldDefaultSymbols = [ Builtin.create(BuiltinSymbol(new UnaryOperator(WFF.negOp))), Builtin.create(BuiltinSymbol(new BinaryOperator(WFF.andOp))), Builtin.create(BuiltinSymbol(new BinaryOperator(WFF.orOp))), Builtin.create(BuiltinSymbol(new BinaryOperator(WFF.impliesOp))), Builtin.create(BuiltinSymbol(new QuantOperator(WFF.Forall.value))), Builtin.create(BuiltinSymbol(new QuantOperator(WFF.Exists.value))), new Alias({
+      name: "&",
+      operator: new BinaryOperator(WFF.andOp)
+  }), new Alias({
+      name: "|",
+      operator: new BinaryOperator(WFF.orOp)
+  }), new Alias({
+      name: "->",
+      operator: new BinaryOperator(WFF.impliesOp)
+  }) ];
+  var oldDefaultMap = Data_Map_Internal.fromFoldable(Data_Ord.ordString)(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("~")(new UnaryOperator(WFF.negOp)), Data_Tuple.Tuple.create("\u2227")(new BinaryOperator(WFF.andOp)), Data_Tuple.Tuple.create("\u2228")(new BinaryOperator(WFF.orOp)), Data_Tuple.Tuple.create("\u21d2")(new BinaryOperator(WFF.impliesOp)), Data_Tuple.Tuple.create("&")(new BinaryOperator(WFF.andOp)), Data_Tuple.Tuple.create("|")(new BinaryOperator(WFF.orOp)), Data_Tuple.Tuple.create("->")(new BinaryOperator(WFF.impliesOp)), Data_Tuple.Tuple.create("\u2200")(new QuantOperator(WFF.Forall.value)), Data_Tuple.Tuple.create("\u2203")(new QuantOperator(WFF.Exists.value)) ]);
+  var newDefaultSymbols = Data_Semigroup.append(Data_Semigroup.semigroupArray)(oldDefaultSymbols)([ new Alias({
+      name: "@",
+      operator: new QuantOperator(WFF.Forall.value)
+  }), new Alias({
+      name: "!",
+      operator: new QuantOperator(WFF.Exists.value)
+  }) ]);
+  var newDefaultMap = Data_Semigroup.append(Data_Map_Internal.semigroupMap(Data_Ord.ordString))(oldDefaultMap)(Data_Map_Internal.fromFoldable(Data_Ord.ordString)(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("@")(new QuantOperator(WFF.Forall.value)), Data_Tuple.Tuple.create("!")(new QuantOperator(WFF.Exists.value)) ]));
 
   // Make a custom unary symbol
   var makeUnary = function (dictEq) {
@@ -23038,9 +23059,9 @@ var PS = {};
                               definition: v.value0
                           }));
                       };
-                      throw new Error("Failed pattern match at Symbol (line 80, column 25 - line 85, column 14): " + [ v.constructor.name ]);
+                      throw new Error("Failed pattern match at Symbol (line 82, column 25 - line 87, column 14): " + [ v.constructor.name ]);
                   };
-                  throw new Error("Failed pattern match at Symbol (line 78, column 19 - line 85, column 14): " + [ removedVars.constructor.name ]);
+                  throw new Error("Failed pattern match at Symbol (line 80, column 19 - line 87, column 14): " + [ removedVars.constructor.name ]);
               };
           };
       };
@@ -23078,9 +23099,9 @@ var PS = {};
                                   definition: v.value0
                               }));
                           };
-                          throw new Error("Failed pattern match at Symbol (line 97, column 25 - line 102, column 14): " + [ v.constructor.name ]);
+                          throw new Error("Failed pattern match at Symbol (line 99, column 25 - line 104, column 14): " + [ v.constructor.name ]);
                       };
-                      throw new Error("Failed pattern match at Symbol (line 95, column 22 - line 102, column 14): " + [ removedVars.constructor.name ]);
+                      throw new Error("Failed pattern match at Symbol (line 97, column 22 - line 104, column 14): " + [ removedVars.constructor.name ]);
                   };
               };
           };
@@ -23099,7 +23120,7 @@ var PS = {};
       if (v instanceof Builtin) {
           return v.value0;
       };
-      throw new Error("Failed pattern match at Symbol (line 149, column 1 - line 149, column 34): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Symbol (line 151, column 1 - line 151, column 34): " + [ v.constructor.name ]);
   };
   var getDisplay = function (v) {
       if (v instanceof UnaryOperator) {
@@ -23111,7 +23132,7 @@ var PS = {};
       if (v instanceof QuantOperator) {
           return WFF.renderQ(v.value0);
       };
-      throw new Error("Failed pattern match at Symbol (line 155, column 1 - line 155, column 33): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Symbol (line 157, column 1 - line 157, column 33): " + [ v.constructor.name ]);
   };
   var getTyped = function (v) {
       if (v instanceof Alias) {
@@ -23127,7 +23148,7 @@ var PS = {};
           if (Data_Boolean.otherwise) {
               return Data_Either.Right.create(Data_Map_Internal.insert(Data_Ord.ordString)(getTyped(s))(getOperator(s))(m));
           };
-          throw new Error("Failed pattern match at Symbol (line 192, column 1 - line 192, column 60): " + [ m.constructor.name, s.constructor.name ]);
+          throw new Error("Failed pattern match at Symbol (line 206, column 1 - line 206, column 60): " + [ m.constructor.name, s.constructor.name ]);
       };
   };
   var fromIdentity = function (v) {
@@ -23180,7 +23201,7 @@ var PS = {};
               conse: withOp
           }) ];
       };
-      throw new Error("Failed pattern match at Symbol (line 129, column 1 - line 129, column 69): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Symbol (line 131, column 1 - line 131, column 69): " + [ v.constructor.name ]);
   }; 
 
   // true is left, false is right
@@ -23225,20 +23246,9 @@ var PS = {};
               };
               return Data_Ord.compare(WFF.ordBinaryOp)(x.value0.operator)(y.value0.operator);
           };
-          throw new Error("Failed pattern match at Symbol (line 56, column 1 - line 56, column 52): " + [ x.constructor.name, y.constructor.name ]);
+          throw new Error("Failed pattern match at Symbol (line 58, column 1 - line 58, column 52): " + [ x.constructor.name, y.constructor.name ]);
       };
   });
-  var defaultSymbols = [ Builtin.create(BuiltinSymbol(new UnaryOperator(WFF.negOp))), Builtin.create(BuiltinSymbol(new BinaryOperator(WFF.andOp))), Builtin.create(BuiltinSymbol(new BinaryOperator(WFF.orOp))), Builtin.create(BuiltinSymbol(new BinaryOperator(WFF.impliesOp))), Builtin.create(BuiltinSymbol(new QuantOperator(WFF.Forall.value))), Builtin.create(BuiltinSymbol(new QuantOperator(WFF.Exists.value))), new Alias({
-      name: "&",
-      operator: new BinaryOperator(WFF.andOp)
-  }), new Alias({
-      name: "|",
-      operator: new BinaryOperator(WFF.orOp)
-  }), new Alias({
-      name: "->",
-      operator: new BinaryOperator(WFF.impliesOp)
-  }) ];
-  var defaultMap = Data_Map_Internal.fromFoldable(Data_Ord.ordString)(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("~")(new UnaryOperator(WFF.negOp)), Data_Tuple.Tuple.create("\u2227")(new BinaryOperator(WFF.andOp)), Data_Tuple.Tuple.create("\u2228")(new BinaryOperator(WFF.orOp)), Data_Tuple.Tuple.create("\u21d2")(new BinaryOperator(WFF.impliesOp)), Data_Tuple.Tuple.create("&")(new BinaryOperator(WFF.andOp)), Data_Tuple.Tuple.create("|")(new BinaryOperator(WFF.orOp)), Data_Tuple.Tuple.create("->")(new BinaryOperator(WFF.impliesOp)), Data_Tuple.Tuple.create("\u2200")(new QuantOperator(WFF.Forall.value)), Data_Tuple.Tuple.create("\u2203")(new QuantOperator(WFF.Exists.value)) ]);
   exports["QuantOperator"] = QuantOperator;
   exports["UnaryOperator"] = UnaryOperator;
   exports["BinaryOperator"] = BinaryOperator;
@@ -23256,13 +23266,16 @@ var PS = {};
   exports["getDisplay"] = getDisplay;
   exports["getTyped"] = getTyped;
   exports["getOperator"] = getOperator;
-  exports["defaultSymbols"] = defaultSymbols;
-  exports["defaultMap"] = defaultMap;
+  exports["oldDefaultSymbols"] = oldDefaultSymbols;
+  exports["newDefaultSymbols"] = newDefaultSymbols;
+  exports["oldDefaultMap"] = oldDefaultMap;
+  exports["newDefaultMap"] = newDefaultMap;
   exports["updateMap"] = updateMap;
   exports["eqCustomSymbol"] = eqCustomSymbol;
   exports["ordCustomSymbol"] = ordCustomSymbol;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["Deduction"] = $PS["Deduction"] || {};
   var exports = $PS["Deduction"];
@@ -23493,17 +23506,6 @@ var PS = {};
       };
       throw new Error("Failed pattern match at Deduction (line 47, column 1 - line 47, column 38): " + [ v.constructor.name ]);
   };
-
-  /**
- * 
- *     Check a deduction was correctly applied, given
- *         - the list of referenced formulas, whether they were assumptions, and
- *             what assumptions they rely on
- *         - the conclusion
- *         - the deduction rule
- *     returns either an error or the assumptions the conclusion relies on,
- *     using Nothing as a flag that this is a new assumption
- */  
   var matchDeduction = function (a) {
       return function (conse) {
           return function (v) {
@@ -28456,6 +28458,7 @@ var PS = {};
   exports["fromJson"] = fromJson;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["Json.Symbol"] = $PS["Json.Symbol"] || {};
   var exports = $PS["Json.Symbol"];
@@ -28907,12 +28910,11 @@ var PS = {};
   };
   var allFromJson = Data_Argonaut_Core.caseJsonArray(new Data_Either.Left("Symbols are not in a list"))(Data_Foldable.foldM(Data_Foldable.foldableArray)(Data_Either.monadEither)(addOne)({
       symbols: [  ],
-      symbolMap: $$Symbol.defaultMap
+      symbolMap: $$Symbol.oldDefaultMap
   }));
   exports["allFromJson"] = allFromJson;
 })(PS);
 (function($PS) {
-  // Generated by purs version 0.13.8
   "use strict";
   $PS["Json.VerOne"] = $PS["Json.VerOne"] || {};
   var exports = $PS["Json.VerOne"];
@@ -28931,7 +28933,7 @@ var PS = {};
   var fromObject = function (o) {
       return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Json is missing symbols")(Foreign_Object.lookup("symbols")(o)))(function (symJson) {
           return Control_Bind.bind(Data_Either.bindEither)(Json_VerOne_Symbol.allFromJson(symJson))(function (v) {
-              var csymbols = Data_Semigroup.append(Data_Semigroup.semigroupArray)($$Symbol.defaultSymbols)(Data_Functor.map(Data_Functor.functorArray)($$Symbol.Custom.create)(v.symbols));
+              var csymbols = Data_Semigroup.append(Data_Semigroup.semigroupArray)($$Symbol.oldDefaultSymbols)(Data_Functor.map(Data_Functor.functorArray)($$Symbol.Custom.create)(v.symbols));
               return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Json is missing sequents")(Foreign_Object.lookup("sequents")(o)))(function (seqJson) {
                   return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Sequents are not in a list")(Data_Argonaut_Core.toArray(seqJson)))(function (seqArr) {
                       return Control_Bind.bind(Data_Either.bindEither)(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Either.applicativeEither)(Json_VerOne_Sequent.fromJson(v.symbolMap))(seqArr))(function (sequents) {
@@ -29415,7 +29417,6 @@ var PS = {};
   exports["setItem"] = $foreign.setItem;
 })(PS);
 (function($PS) {
-  // Generated by purs version 0.13.8
   "use strict";
   $PS["UI.AppState"] = $PS["UI.AppState"] || {};
   var exports = $PS["UI.AppState"];
@@ -29458,8 +29459,8 @@ var PS = {};
       future: [  ],
       present: {
           sequents: [  ],
-          symbols: $$Symbol.defaultSymbols,
-          symbolMap: $$Symbol.defaultMap,
+          symbols: $$Symbol.newDefaultSymbols,
+          symbolMap: $$Symbol.newDefaultMap,
           proof: Proof.empty
       },
       error: Data_Maybe.Nothing.value,
@@ -29600,7 +29601,7 @@ var PS = {};
                               return $45;
                           })(ref);
                       };
-                      throw new Error("Failed pattern match at UI.AppState (line 247, column 30 - line 259, column 28): " + [ v.constructor.name ]);
+                      throw new Error("Failed pattern match at UI.AppState (line 248, column 30 - line 260, column 28): " + [ v.constructor.name ]);
                   })());
               }));
           })))(function () {
@@ -29634,7 +29635,7 @@ var PS = {};
                   return Data_Functor.voidRight(functorAppStateM)(true)(write);
               });
           };
-          throw new Error("Failed pattern match at UI.AppState (line 165, column 26 - line 175, column 34): " + [ v1.constructor.name ]);
+          throw new Error("Failed pattern match at UI.AppState (line 166, column 26 - line 176, column 34): " + [ v1.constructor.name ]);
       };
       return Control_Bind.bind(bindAppStateM)(get)(function (state) {
           if (v.value0.rule instanceof Deduction.Introduction) {
@@ -29702,7 +29703,7 @@ var PS = {};
                   return Data_Functor.voidRight(functorAppStateM)(true)(write);
               });
           };
-          throw new Error("Failed pattern match at UI.AppState (line 122, column 9 - line 134, column 30): " + [ v.constructor.name ]);
+          throw new Error("Failed pattern match at UI.AppState (line 123, column 9 - line 135, column 30): " + [ v.constructor.name ]);
       });
   });                                                                               
   var applicativeAppStateM = Control_Monad_Reader_Trans.applicativeReaderT(Effect_Aff.applicativeAff);
@@ -29722,8 +29723,8 @@ var PS = {};
                   future: [  ],
                   present: {
                       sequents: [  ],
-                      symbols: $$Symbol.defaultSymbols,
-                      symbolMap: $$Symbol.defaultMap,
+                      symbols: $$Symbol.newDefaultSymbols,
+                      symbolMap: $$Symbol.newDefaultMap,
                       proof: Proof.empty
                   },
                   error: Data_Maybe.Nothing.value,
@@ -29751,7 +29752,7 @@ var PS = {};
               return write;
           });
       };
-      throw new Error("Failed pattern match at UI.AppState (line 201, column 30 - line 210, column 18): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at UI.AppState (line 202, column 30 - line 211, column 18): " + [ v.constructor.name ]);
   }), Control_Bind.bind(bindAppStateM)(get)(function (state) {
       var v = Data_Array.unsnoc(state.history);
       if (v instanceof Data_Maybe.Nothing) {
@@ -29770,7 +29771,7 @@ var PS = {};
               return write;
           });
       };
-      throw new Error("Failed pattern match at UI.AppState (line 191, column 30 - line 200, column 18): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at UI.AppState (line 192, column 30 - line 201, column 18): " + [ v.constructor.name ]);
   }));
   exports["run"] = run;
   exports["start"] = start;
@@ -29976,6 +29977,7 @@ var PS = {};
   exports["select"] = select;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["UI.Proof"] = $PS["UI.Proof"] || {};
   var exports = $PS["UI.Proof"];
@@ -30658,6 +30660,7 @@ var PS = {};
   exports["component"] = component;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["UI.Symbol"] = $PS["UI.Symbol"] || {};
   var exports = $PS["UI.Symbol"];
