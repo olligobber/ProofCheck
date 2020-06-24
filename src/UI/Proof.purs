@@ -79,7 +79,7 @@ type Message = Unit
 
 type State =
     { symbols :: Array (Tuple Int CustomSymbol)
-    , sequents :: Array (Sequent String)
+    , sequents :: Array (Sequent String String String)
     , proof :: Proof
     , assumptions :: String
     , formula :: String

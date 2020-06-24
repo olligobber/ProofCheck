@@ -4,7 +4,7 @@ module Json.Symbol
     , allFromJson
     ) where
 
-import Prelude (($), (<>), (<$), (<$>), (&&), bind, pure)
+import Prelude (($), (<>), (<$), (<$>), (&&), bind, pure, const)
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core as AC
 import Data.Either (Either(..))
@@ -14,6 +14,8 @@ import Data.Tuple (Tuple(..))
 import Foreign.Object as O
 import Data.Map as M
 import Data.Maybe (Maybe(..))
+import Data.Identity
+import Data.Void (absurd)
 
 import Json.WFF as JW
 import Parser (parseSymbol)
@@ -23,16 +25,15 @@ import WFF as WFF
 
 toJson :: Symbol -> Json
 toJson (Custom (S.UnarySymbol u)) = AC.fromObject $ O.fromFoldable
-    [ Tuple "symbol" $ AC.fromString u.operator.symbol
+    [ Tuple "symbol" $ AC.fromString $ WFF.renderUnaryOp u.operator
     , Tuple "prop" $ AC.fromString "A"
-    , Tuple "definition" $ JW.toJson $ "A" <$ u.definition
+    , Tuple "definition" $ JW.toJson $ S.renderableUnary u.definition
     ]
 toJson (Custom (S.BinarySymbol b)) = AC.fromObject $ O.fromFoldable
-    [ Tuple "symbol" $ AC.fromString b.operator.symbol
+    [ Tuple "symbol" $ AC.fromString $ WFF.renderBinaryOp b.operator
     , Tuple "propa" $ AC.fromString "A"
     , Tuple "propb" $ AC.fromString "B"
-    , Tuple "definition" $
-        JW.toJson $ (if _ then "A" else "B") <$> b.definition
+    , Tuple "definition" $ JW.toJson $ S.renderableBinary b.definition
     ]
 toJson (Builtin b) = AC.fromObject $ O.fromFoldable
     [ Tuple "symbol" $ AC.fromString $ S.getDisplay $ Builtin b
@@ -72,10 +73,10 @@ fromObject m o | O.member "builtin" o = do
     symbol <- AC.caseJsonString (Left "Symbol name is not a string")
         parseSymbol symJson
     case symbol of
-        "~" ->Right $ Builtin $ S.UnaryBuiltin { operator : WFF.negOp }
-        "∧" -> Right $ Builtin $ S.BinaryBuiltin { operator : WFF.andOp }
-        "∨" -> Right $ Builtin $ S.BinaryBuiltin { operator : WFF.orOp }
-        "⇒" -> Right $ Builtin $ S.BinaryBuiltin { operator : WFF.impliesOp }
+        "~" ->Right $ Builtin $ S.UnaryBuiltin { operator : WFF.UnaryOp "~" }
+        "∧" -> Right $ Builtin $ S.BinaryBuiltin { operator : WFF.BinaryOp "∧" }
+        "∨" -> Right $ Builtin $ S.BinaryBuiltin { operator : WFF.BinaryOp "∨" }
+        "⇒" -> Right $ Builtin $ S.BinaryBuiltin { operator : WFF.BinaryOp "⇒" }
         _ -> Left $ "Unrecognised builtin symbol: " <> symbol
 fromObject m o | O.member "alias" o = do
     symJson <- E.note "Symbol is missing name" $ O.lookup "symbol" o

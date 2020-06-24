@@ -46,7 +46,7 @@ import UI.Capabilities
     )
 
 type ProofState =
-    { sequents :: Array (Sequent String)
+    { sequents :: Array (Sequent String String String)
     , symbols :: Array Symbol
     , symbolMap :: SymbolMap
     , proof :: Proof

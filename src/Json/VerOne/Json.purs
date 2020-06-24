@@ -22,7 +22,7 @@ import Proof (Proof)
 fromObject :: Object Json -> Either String
     { symbolMap :: SymbolMap
     , symbols :: Array Symbol
-    , sequents :: Array (Sequent String)
+    , sequents :: Array (Sequent String String String)
     , proof :: Proof
     }
 fromObject o = do

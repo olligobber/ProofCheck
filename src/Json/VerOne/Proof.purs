@@ -22,8 +22,9 @@ import Proof (Deduction(..), Proof(..))
 import Symbol (CustomSymbol, SymbolMap)
 import Sequent (Sequent)
 
-toDeduction :: SymbolMap -> Array CustomSymbol -> Array (Sequent String) ->
-    Proof -> Json -> Either String Deduction
+toDeduction :: SymbolMap -> Array CustomSymbol ->
+    Array (Sequent String String String) -> Proof -> Json ->
+    Either String Deduction
 toDeduction symbolMap syms seqs (Proof p) j = do
     o <- E.note "Deduction is not an object" $ AC.toObject j
     formJson <- E.note "Deduction is missing formula" $ O.lookup "formula" o
@@ -51,8 +52,8 @@ toDeduction symbolMap syms seqs (Proof p) j = do
             assumptions <- P.getAssumptions d $ Proof p
             pure $ Deduction { assumptions, deduction, rule, reasons }
 
-fromJson :: SymbolMap -> Array CustomSymbol -> Array (Sequent String) -> Json
-    -> Either String Proof
+fromJson :: SymbolMap -> Array CustomSymbol ->
+    Array (Sequent String String String) -> Json -> Either String Proof
 fromJson symbolMap syms seqs j = do
     linesArr <- E.note "Proof is not a list" $ AC.toArray j
     let startP = Proof

@@ -16,13 +16,14 @@ import Json.WFF as JW
 import Sequent (Sequent(..))
 import Symbol (SymbolMap)
 
-toJson :: Sequent String -> Json
+toJson :: Sequent String String String -> Json
 toJson (Sequent s) = AC.fromObject $ O.fromFoldable
     [ Tuple "ante" $ AC.fromArray $ JW.toJson <$> s.ante
     , Tuple "conse" $ JW.toJson $ s.conse
     ]
 
-fromObject :: SymbolMap -> O.Object Json -> Either String (Sequent String)
+fromObject :: SymbolMap -> O.Object Json ->
+    Either String (Sequent String String String)
 fromObject m o = do
     anteJson <- E.note "Sequent is missing ante" $ O.lookup "ante" o
     ante <- AC.caseJsonArray (Left "Sequent ante is not a list")
@@ -31,5 +32,5 @@ fromObject m o = do
     conse <- JW.fromJson m conseJson
     pure $ Sequent { ante, conse }
 
-fromJson :: SymbolMap -> Json -> Either String (Sequent String)
+fromJson :: SymbolMap -> Json -> Either String (Sequent String String String)
 fromJson m = AC.caseJsonObject (Left "Sequent is not an object") $ fromObject m

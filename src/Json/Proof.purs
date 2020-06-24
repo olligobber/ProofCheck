@@ -33,8 +33,8 @@ fromDeduction (Deduction d) = AC.fromObject $ O.fromFoldable
         AC.fromNumber <<< toNumber <$> d.reasons
     ]
 
-toDeduction :: SymbolMap -> Array Symbol -> Array (Sequent String) -> Proof ->
-    Json -> Either String Deduction
+toDeduction :: SymbolMap -> Array Symbol -> Array (Sequent String String String)
+    -> Proof -> Json -> Either String Deduction
 toDeduction symbolMap syms seqs (Proof p) j = do
     o <- E.note "Deduction is not an object" $ AC.toObject j
     formJson <- E.note "Deduction is missing formula" $ O.lookup "formula" o
@@ -60,8 +60,8 @@ toDeduction symbolMap syms seqs (Proof p) j = do
 toJson :: Proof -> Json
 toJson (Proof p) = AC.fromArray $ fromDeduction <$> p.lines
 
-fromJson :: SymbolMap -> Array Symbol -> Array (Sequent String) -> Json ->
-    Either String Proof
+fromJson :: SymbolMap -> Array Symbol -> Array (Sequent String String String) ->
+    Json -> Either String Proof
 fromJson symbolMap syms seqs j = do
     linesArr <- E.note "Proof is not a list" $ AC.toArray j
     let startP = Proof

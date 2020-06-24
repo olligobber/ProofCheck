@@ -46,7 +46,7 @@ data Action
 type Message = Unit
 
 type State =
-    { sequents :: Array (Sequent String)
+    { sequents :: Array (Sequent String String String)
     , open :: Boolean
     , ante :: String
     , conse :: String
@@ -101,7 +101,8 @@ renderNewSeq state = HH.tr
         ]
     ]
 
-renderSequent :: forall a m. Sequent String -> H.ComponentHTML a () m
+renderSequent :: forall a m.
+    Sequent String String String -> H.ComponentHTML a () m
 renderSequent (Sequent seq) = HH.tr
     []
     [ HH.td

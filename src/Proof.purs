@@ -27,7 +27,7 @@ import Deduction
 
 data Deduction = Deduction
     { assumptions :: Set Int
-    , deduction :: WFF String
+    , deduction :: WFF String String String
     , rule :: DeductionRule
     , reasons :: Array Int
     }
@@ -53,7 +53,10 @@ isEmpty :: Proof -> Boolean
 isEmpty (Proof p) = length p.lines == 0
 
 pack :: Deduction ->
-    {formula :: WFF String, isAssumption :: Boolean, assumptions :: Set Int}
+    { formula :: WFF String String String
+    , isAssumption :: Boolean
+    , assumptions :: Set Int
+    }
 pack (Deduction d) =
     { formula : d.deduction
     , isAssumption : isAssumption d.rule

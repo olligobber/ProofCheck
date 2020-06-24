@@ -40,16 +40,16 @@ definedSymbol m = do
         Just o -> pure o
         Nothing -> P.failWithPosition ("Unrecognised symbol: " <> s) p
 
-proposition :: Parser String (WFF String)
-proposition = WFF.Prop <<< fromCharArray <$> A.some PT.letter
+proposition :: Parser String (WFF String String String)
+proposition = WFF.prop <<< fromCharArray <$> A.some PT.letter
 
-safeExpression :: Lazy (Parser String (WFF String)) =>
-    SymbolMap -> Parser String (WFF String)
+safeExpression :: Lazy (Parser String (WFF String String String)) =>
+    SymbolMap -> Parser String (WFF String String String)
 safeExpression m = proposition
     <|> PC.between (PS.char '(') (PS.char ')') (defer \_ -> expression m)
 
-unaryExpression :: Lazy (Parser String (WFF String)) =>
-    SymbolMap -> Parser String (WFF String)
+unaryExpression :: Lazy (Parser String (WFF String String String)) =>
+    SymbolMap -> Parser String (WFF String String String)
 unaryExpression m = do
     p <- P.position
     o <- definedSymbol m
@@ -58,8 +58,9 @@ unaryExpression m = do
         Left operator -> pure $ WFF.Unary { operator, contents }
         Right _ -> P.failWithPosition "Expected Unary Symbol" p
 
-tailBinaryExpression :: Lazy (Parser String (WFF String)) => SymbolMap ->
-    Parser String { operator :: BinaryOp, right :: WFF String }
+tailBinaryExpression :: Lazy (Parser String (WFF String String String)) =>
+    SymbolMap ->
+    Parser String { operator :: BinaryOp, right :: WFF String String String }
 tailBinaryExpression m = do
     p <- P.position
     o <- definedSymbol m
@@ -68,8 +69,8 @@ tailBinaryExpression m = do
         Right operator -> pure { operator, right }
         Left _ -> P.failWithPosition "Expected Binary Symbol" p
 
-maybeBinaryExpression :: Lazy (Parser String (WFF String)) =>
-    SymbolMap -> Parser String (WFF String)
+maybeBinaryExpression :: Lazy (Parser String (WFF String String String)) =>
+    SymbolMap -> Parser String (WFF String String String)
 maybeBinaryExpression m = do
     left <- safeExpression m
     rest <- PC.option Nothing $ Just <$> tailBinaryExpression m
@@ -77,8 +78,8 @@ maybeBinaryExpression m = do
         Nothing -> pure left
         Just {right, operator} -> pure $ WFF.Binary $ {left, operator, right}
 
-expression :: Lazy (Parser String (WFF String)) =>
-    SymbolMap -> Parser String (WFF String)
+expression :: Lazy (Parser String (WFF String String String)) =>
+    SymbolMap -> Parser String (WFF String String String)
 expression m = maybeBinaryExpression m <|> unaryExpression m
 
 showError :: String -> P.ParseError -> String
@@ -98,7 +99,7 @@ parseSymbol :: String -> Either String String
 parseSymbol s = E.either (showError s >>> Left) Right $ P.runParser s $
     symbol <* PS.eof
 
-parse :: SymbolMap -> String -> Either String (WFF String)
+parse :: SymbolMap -> String -> Either String (WFF String String String)
 parse m s = E.either (showError (removeSpaces s) >>> Left) Right $
     P.runParser (removeSpaces s) $
     expression m <* PS.eof

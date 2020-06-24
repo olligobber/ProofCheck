@@ -21,7 +21,7 @@ import Symbol (Symbol, SymbolMap)
 import Sequent (Sequent)
 import Proof (Proof)
 
-toJson :: Array Symbol -> Array (Sequent String) -> Proof -> Json
+toJson :: Array Symbol -> Array (Sequent String String String) -> Proof -> Json
 toJson syms seqs p = AC.fromObject $ O.fromFoldable
     [ Tuple "version" $ AC.fromNumber 2.0
     , Tuple "symbols" $ AC.fromArray $ JSym.toJson <$> syms
@@ -32,7 +32,7 @@ toJson syms seqs p = AC.fromObject $ O.fromFoldable
 fromObject :: O.Object Json -> Either String
     { symbolMap :: SymbolMap
     , symbols :: Array Symbol
-    , sequents :: Array (Sequent String)
+    , sequents :: Array (Sequent String String String)
     , proof :: Proof
     }
 fromObject o = do
@@ -48,7 +48,7 @@ fromObject o = do
 fromJson :: Json -> Either String
     { symbolMap :: SymbolMap
     , symbols :: Array Symbol
-    , sequents :: Array (Sequent String)
+    , sequents :: Array (Sequent String String String)
     , proof :: Proof
     }
 fromJson j = do

@@ -11,5 +11,5 @@ import WFF (WFF)
 import Parser (parse)
 import Symbol (SymbolMap)
 
-fromJson :: SymbolMap -> Json -> Either String (WFF String)
+fromJson :: SymbolMap -> Json -> Either String (WFF String String String)
 fromJson m = AC.caseJsonString (Left "Formula is not a string") $ parse m

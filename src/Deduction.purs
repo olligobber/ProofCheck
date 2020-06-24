@@ -7,7 +7,7 @@ module Deduction
 
 import Prelude
     ( (<>), (<$>), ($)
-    , map, bind, pure, discard, not
+    , bind, pure, discard, not
     , class Eq, class Ord
     )
 import Data.Either (Either(..))
@@ -17,7 +17,7 @@ import Data.Set as Set
 import Data.Array as A
 import Control.MonadZero (guard)
 
-import WFF (WFF(..), (==>), (/\), (\/), neg)
+import WFF (WFF, (==>), (/\), (\/), neg, prop)
 import Sequent (Sequent(..))
 import Sequent as Seq
 import Symbol (CustomSymbol)
@@ -35,7 +35,7 @@ data DeductionRule
     | OrElimination
     | RAA
     | Definition CustomSymbol Int
-    | Introduction (Sequent String) Int
+    | Introduction (Sequent String String String) Int
 
 derive instance eqDeductionRule :: Eq DeductionRule
 derive instance ordDeductionRule :: Ord DeductionRule
@@ -58,38 +58,46 @@ renderRule RAA = "RAA"
 renderRule (Definition s _) = "Def (" <> Sym.getDisplay (Sym.Custom s) <> ")"
 renderRule (Introduction s _) = "SI (" <> Seq.render s <> ")"
 
-toSequents :: DeductionRule -> Array (Sequent (Either Int String))
-toSequents Assumption = [ Left <$> Sequent {ante : [], conse : Prop 1} ]
+toSequents :: DeductionRule -> Array (Sequent String String String)
+toSequents Assumption = [ Sequent {ante : [], conse : prop "A"} ]
 toSequents ModusPonens =
-    [ Left <$> Sequent {ante : [Prop 1, Prop 1 ==> Prop 2], conse : Prop 2} ]
-toSequents ModusTollens = map Left <$>
-    [ Sequent {ante : [neg $ Prop 2, Prop 1 ==> Prop 2], conse : neg $ Prop 1} ]
-toSequents DoubleNegation =
-    [ Left <$> Sequent {ante : [Prop 1], conse : neg $ neg $ Prop 1}
-    , Left <$> Sequent {ante : [neg $ neg $ Prop 1], conse : Prop 1}
-    ]
-toSequents ConditionalProof =
-    [ Left <$> Sequent {ante : [Prop 1, Prop 2], conse : Prop 1 ==> Prop 2} ]
-toSequents AndIntroduction =
-    [ Left <$> Sequent {ante : [Prop 1, Prop 2], conse : Prop 1 /\ Prop 2} ]
-toSequents AndElimination =
-    [ Left <$> Sequent {ante : [Prop 1 /\ Prop 2], conse : Prop 1}
-    , Left <$> Sequent {ante : [Prop 1 /\ Prop 2], conse : Prop 2}
-    ]
-toSequents OrIntroduction =
-    [ Left <$> Sequent {ante : [Prop 1], conse : Prop 1 \/ Prop 2}
-    , Left <$> Sequent {ante : [Prop 2], conse : Prop 1 \/ Prop 2}
-    ]
-toSequents OrElimination =
-    [ Left <$> Sequent
-        { ante : [Prop 1, Prop 2, Prop 1 \/ Prop 2, Prop 3, Prop 3]
-        , conse : Prop 3
+    [ Sequent {ante : [prop "A", prop "A" ==> prop "B"], conse : prop "B"}]
+toSequents ModusTollens =
+    [ Sequent
+        { ante : [neg $ prop "B", prop "A" ==> prop "B"]
+        , conse : neg $ prop "A"
         }
     ]
-toSequents RAA = map Left <$>
-    [ Sequent {ante : [Prop 1, Prop 2 /\ neg (Prop 2)], conse : neg $ Prop 1} ]
-toSequents (Definition s _) = map Left <$> Sym.toSequents s
-toSequents (Introduction s _) = [ Right <$> s ]
+toSequents DoubleNegation =
+    [ Sequent {ante : [prop "A"], conse : neg $ neg $ prop "A"}
+    , Sequent {ante : [neg $ neg $ prop "A"], conse : prop "A"}
+    ]
+toSequents ConditionalProof =
+    [ Sequent {ante : [prop "A", prop "B"], conse : prop "A" ==> prop "B"} ]
+toSequents AndIntroduction =
+    [ Sequent {ante : [prop "A", prop "B"], conse : prop "A" /\ prop "B"} ]
+toSequents AndElimination =
+    [ Sequent {ante : [prop "A" /\ prop "B"], conse : prop "A"}
+    , Sequent {ante : [prop "A" /\ prop "B"], conse : prop "B"}
+    ]
+toSequents OrIntroduction =
+    [ Sequent {ante : [prop "A"], conse : prop "A" \/ prop "B"}
+    , Sequent {ante : [prop "B"], conse : prop "A" \/ prop "B"}
+    ]
+toSequents OrElimination =
+    [ Sequent
+        { ante : [prop "A", prop "B", prop "A" \/ prop "B", prop "C", prop "C"]
+        , conse : prop "C"
+        }
+    ]
+toSequents RAA =
+    [ Sequent
+        { ante : [prop "A", prop "B" /\ neg (prop "B")]
+        , conse : neg $ prop "A"
+        }
+    ]
+toSequents (Definition s _) = Sym.toSequents s
+toSequents (Introduction s _) = [ s ]
 
 {-
     Check a deduction was correctly applied, given
@@ -101,8 +109,11 @@ toSequents (Introduction s _) = [ Right <$> s ]
     using Nothing as a flag that this is a new assumption
 -}
 matchDeduction :: Array
-    {formula :: WFF String, isAssumption :: Boolean, assumptions :: Set Int} ->
-    WFF String -> DeductionRule -> Either String (Maybe (Set Int))
+    { formula :: WFF String String String
+    , isAssumption :: Boolean
+    , assumptions :: Set Int
+    } ->
+    WFF String String String -> DeductionRule -> Either String (Maybe (Set Int))
 matchDeduction a conse d@Assumption =
     case A.head $ do
         s <- toSequents d
@@ -113,8 +124,7 @@ matchDeduction a conse d@Assumption =
 matchDeduction a conse d@ConditionalProof =
     case A.head $ do
         s <- toSequents d
-        perm <- _.permutation <$> Seq.match a s
-            (Sequent {ante : _.formula <$> a, conse})
+        perm <- Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
         assumption <- A.fromFoldable $ A.index perm 0
         conclusion <- A.fromFoldable $ A.index perm 1
         guard $ assumption.isAssumption
@@ -126,8 +136,7 @@ matchDeduction a conse d@ConditionalProof =
 matchDeduction a conse d@OrElimination =
     case A.head $ do
         s <- toSequents d
-        perm <- _.permutation <$> Seq.match a s
-            (Sequent {ante : _.formula <$> a, conse})
+        perm <- Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
         firstA <- A.fromFoldable $ A.index perm 0
         secondA <- A.fromFoldable $ A.index perm 1
         orA <- A.fromFoldable $ A.index perm 2
@@ -150,8 +159,7 @@ matchDeduction a conse d@OrElimination =
 matchDeduction a conse d@RAA =
     case A.head $ do
         s <- toSequents d
-        perm <- _.permutation <$> Seq.match a s
-            (Sequent {ante : _.formula <$> a, conse})
+        perm <- Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
         assumption <- A.fromFoldable $ A.index perm 0
         contradiction <- A.fromFoldable $ A.index perm 1
         guard $ assumption.isAssumption

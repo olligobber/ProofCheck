@@ -11,7 +11,7 @@ module UI.Symbol
 
 import Prelude
     ( class Eq, class Ord
-    , (<$>), (<>), ($), (<<<), (<$), (>>=)
+    , (<$>), (<>), ($), (<<<), (>>=)
     , Unit
     , const, otherwise, bind, discard, pure, unit
     )
@@ -31,7 +31,8 @@ import UI.HTMLHelp (select)
 import Parser (parseSymbol)
 import Symbol
     ( Symbol(..), CustomSymbol(..), SymbolAlias(..)
-    , makeUnary, makeBinary, getTyped, getDisplay
+    , makeUnary, makeBinary, getTyped, getDisplay, renderableUnary
+    , renderableBinary
     )
 import UI.Capabilities
     ( class ReadSymbols, class WriteSymbols, class Nav, class Error
@@ -103,26 +104,26 @@ symbolRow (Custom (UnarySymbol s)) = HH.tr
     [ HH.td [] []
     , HH.td
         [ HP.class_ $ HH.ClassName "symbol-name" ]
-        [ HH.text $ s.operator.symbol <> "A" ]
+        [ HH.text $ WFF.renderUnaryOp s.operator <> "A" ]
     , HH.td
         [ HP.class_ $ HH.ClassName "equiv-symbol" ]
         [ HH.text " ≡ " ]
     , HH.td
         [ HP.class_ $ HH.ClassName "symbol-def" ]
-        [ HH.text $ WFF.render $ "A" <$ s.definition ]
+        [ HH.text $ WFF.render $ renderableUnary s.definition ]
     ]
 symbolRow (Custom (BinarySymbol s)) = HH.tr
     []
     [ HH.td [] []
     , HH.td
         [ HP.class_ $ HH.ClassName "symbol-name" ]
-        [ HH.text $ "A" <> s.operator.symbol <> "B" ]
+        [ HH.text $ "A" <> WFF.renderBinaryOp s.operator <> "B" ]
     , HH.td
         [ HP.class_ $ HH.ClassName "equiv-symbol" ]
         [ HH.text " ≡ " ]
     , HH.td
         [ HP.class_ $ HH.ClassName "symbol-def" ]
-        [ HH.text $ WFF.render $ (if _ then "A" else "B") <$> s.definition ]
+        [ HH.text $ WFF.render $ renderableBinary s.definition ]
     ]
 symbolRow (Alias s) = HH.tr
     []

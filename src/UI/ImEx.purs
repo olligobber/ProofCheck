@@ -43,7 +43,7 @@ type Message = Unit
 
 type State =
     { open :: Boolean
-    , sequents :: Array (Sequent String)
+    , sequents :: Array (Sequent String String String)
     , symbols :: Array Symbol
     , proof :: Proof
     }

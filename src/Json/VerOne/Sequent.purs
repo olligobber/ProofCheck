@@ -14,7 +14,8 @@ import Json.VerOne.WFF as JW
 import Sequent (Sequent(..))
 import Symbol (SymbolMap)
 
-fromObject :: SymbolMap -> O.Object Json -> Either String (Sequent String)
+fromObject :: SymbolMap -> O.Object Json ->
+    Either String (Sequent String String String)
 fromObject m o = do
     anteJson <- E.note "Sequent is missing ante" $ O.lookup "ante" o
     ante <- AC.caseJsonArray (Left "Sequent ante is not a list")
@@ -23,5 +24,5 @@ fromObject m o = do
     conse <- JW.fromJson m conseJson
     pure $ Sequent { ante, conse }
 
-fromJson :: SymbolMap -> Json -> Either String (Sequent String)
+fromJson :: SymbolMap -> Json -> Either String (Sequent String String String)
 fromJson m = AC.caseJsonObject (Left "Sequent is not an object") $ fromObject m

@@ -29,8 +29,8 @@ toJson (Definition _ i) = AC.fromObject $ O.fromFoldable
     ]
 toJson d = AC.fromString $ D.renderRule d
 
-fromObject :: Array Symbol -> Array (Sequent String) -> O.Object Json ->
-    Either String DeductionRule
+fromObject :: Array Symbol -> Array (Sequent String String String) ->
+    O.Object Json -> Either String DeductionRule
 fromObject syms seqs o = do
     ruleJson <- E.note "Deduction rule is missing name" $ O.lookup "rule" o
     rule <- AC.caseJsonString (Left "Deduction rule name is not a string")
@@ -67,7 +67,7 @@ fromString r = Left $ "Invalid non-indexed deduction rule: " <> r
 badDedType :: forall x. x -> Either String DeductionRule
 badDedType _ = Left "Deduction rule is not an object or string"
 
-fromJson :: Array Symbol -> Array (Sequent String) -> Json ->
+fromJson :: Array Symbol -> Array (Sequent String String String) -> Json ->
     Either String DeductionRule
 fromJson syms seqs = AC.caseJson
     badDedType
