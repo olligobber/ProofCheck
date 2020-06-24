@@ -22,7 +22,7 @@ import Data.String as S
 
 import WFF (UnaryOp, BinaryOp, WFF)
 import WFF as WFF
-import Symbol (SymbolMap)
+import Symbol (SymbolMap, Operator(..))
 
 symbol :: Parser String String
 symbol = fromCharArray <$> A.some
@@ -32,7 +32,7 @@ symbol = fromCharArray <$> A.some
         <?> "Symbol or Punctuation"
     )
 
-definedSymbol :: SymbolMap -> Parser String (Either UnaryOp BinaryOp)
+definedSymbol :: SymbolMap -> Parser String Operator
 definedSymbol m = do
     p <- P.position
     s <- symbol
@@ -55,8 +55,8 @@ unaryExpression m = do
     o <- definedSymbol m
     contents <- safeExpression m
     case o of
-        Left operator -> pure $ WFF.Unary { operator, contents }
-        Right _ -> P.failWithPosition "Expected Unary Symbol" p
+        UnaryOperator operator -> pure $ WFF.Unary { operator, contents }
+        _ -> P.failWithPosition "Expected Unary Symbol" p
 
 tailBinaryExpression :: Lazy (Parser String (WFF String String String)) =>
     SymbolMap ->
@@ -66,8 +66,8 @@ tailBinaryExpression m = do
     o <- definedSymbol m
     right <- safeExpression m
     case o of
-        Right operator -> pure { operator, right }
-        Left _ -> P.failWithPosition "Expected Binary Symbol" p
+        BinaryOperator operator -> pure { operator, right }
+        _ -> P.failWithPosition "Expected Binary Symbol" p
 
 maybeBinaryExpression :: Lazy (Parser String (WFF String String String)) =>
     SymbolMap -> Parser String (WFF String String String)

@@ -55,7 +55,8 @@ renderRule AndElimination = "∧E"
 renderRule OrIntroduction = "∨I"
 renderRule OrElimination = "∨E"
 renderRule RAA = "RAA"
-renderRule (Definition s _) = "Def (" <> Sym.getDisplay (Sym.Custom s) <> ")"
+renderRule (Definition s _) =
+    "Def (" <> Sym.getDisplay (Sym.getOperator $ Sym.Custom s) <> ")"
 renderRule (Introduction s _) = "SI (" <> Seq.render s <> ")"
 
 toSequents :: DeductionRule -> Array (Sequent String String String)

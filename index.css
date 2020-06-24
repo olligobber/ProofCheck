@@ -193,6 +193,9 @@ input {
     #symbol-box #symbol-list .symbol-name {
       text-align: right;
       width: 20%; }
+    #symbol-box #symbol-list .equiv-symbol {
+      width: 5%;
+      text-align: center; }
     #symbol-box #symbol-list .symbol-def {
       text-align: left;
       width: 50%; }

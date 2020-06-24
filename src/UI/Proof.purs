@@ -36,7 +36,7 @@ import UI.HTMLHelp (select)
 import Deduction (DeductionRule(..))
 import Proof (Deduction(..), Proof(..))
 import Proof as P
-import Symbol (Symbol(..), CustomSymbol, getDisplay)
+import Symbol (Symbol(..), CustomSymbol, getDisplay, getOperator)
 import Sequent (Sequent)
 import Sequent as Seq
 import UI.Capabilities
@@ -164,12 +164,14 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
             [ case state.reason of
                 PartSymbol -> select "symbol-dropdown"
                     (Just <<< Reason) (const false) PartSymbol $
-                        (\(Tuple i sym) -> Tuple (getDisplay $ Custom sym) $
+                        (\(Tuple i sym) -> Tuple
+                            (getDisplay $ getOperator $ Custom sym) $
                             Full $ Definition sym i)
                         <$> state.symbols
                 Full d@(Definition _ _) -> select "symbol-dropdown"
                     (Just <<< Reason) (const false) (Full d) $
-                        (\(Tuple i sym) -> Tuple (getDisplay $ Custom sym) $
+                        (\(Tuple i sym) -> Tuple
+                            (getDisplay $ getOperator $ Custom sym) $
                             Full $ Definition sym i)
                         <$> state.symbols
                 PartSequent -> select "sequent-dropdown"

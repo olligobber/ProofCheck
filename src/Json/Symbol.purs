@@ -4,7 +4,7 @@ module Json.Symbol
     , allFromJson
     ) where
 
-import Prelude (($), (<>), (<$), (<$>), (&&), bind, pure, const)
+import Prelude (($), (<>), (<$>), (&&), bind, pure)
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core as AC
 import Data.Either (Either(..))
@@ -14,12 +14,10 @@ import Data.Tuple (Tuple(..))
 import Foreign.Object as O
 import Data.Map as M
 import Data.Maybe (Maybe(..))
-import Data.Identity
-import Data.Void (absurd)
 
 import Json.WFF as JW
 import Parser (parseSymbol)
-import Symbol (Symbol(..), SymbolMap)
+import Symbol (Symbol(..), SymbolMap, BuiltinSymbol(..))
 import Symbol as S
 import WFF as WFF
 
@@ -36,12 +34,12 @@ toJson (Custom (S.BinarySymbol b)) = AC.fromObject $ O.fromFoldable
     , Tuple "definition" $ JW.toJson $ S.renderableBinary b.definition
     ]
 toJson (Builtin b) = AC.fromObject $ O.fromFoldable
-    [ Tuple "symbol" $ AC.fromString $ S.getDisplay $ Builtin b
+    [ Tuple "symbol" $ AC.fromString $ S.getDisplay $ S.getOperator $ Builtin b
     , Tuple "builtin" $ AC.jsonNull
     ]
 toJson (Alias a) = AC.fromObject $ O.fromFoldable
     [ Tuple "symbol" $ AC.fromString $ S.getTyped $ Alias a
-    , Tuple "alias" $ AC.fromString $ S.getDisplay $ Alias a
+    , Tuple "alias" $ AC.fromString $ S.getDisplay $ S.getOperator $ Alias a
     ]
 
 fromObject :: SymbolMap -> O.Object Json -> Either String Symbol
@@ -73,10 +71,12 @@ fromObject m o | O.member "builtin" o = do
     symbol <- AC.caseJsonString (Left "Symbol name is not a string")
         parseSymbol symJson
     case symbol of
-        "~" ->Right $ Builtin $ S.UnaryBuiltin { operator : WFF.UnaryOp "~" }
-        "∧" -> Right $ Builtin $ S.BinaryBuiltin { operator : WFF.BinaryOp "∧" }
-        "∨" -> Right $ Builtin $ S.BinaryBuiltin { operator : WFF.BinaryOp "∨" }
-        "⇒" -> Right $ Builtin $ S.BinaryBuiltin { operator : WFF.BinaryOp "⇒" }
+        "~" -> Right $ Builtin $ BuiltinSymbol $ S.UnaryOperator WFF.negOp
+        "∧" -> Right $ Builtin $ BuiltinSymbol $ S.BinaryOperator WFF.andOp
+        "∨" -> Right $ Builtin $ BuiltinSymbol $ S.BinaryOperator WFF.orOp
+        "⇒" -> Right $ Builtin $ BuiltinSymbol $ S.BinaryOperator WFF.impliesOp
+        "∀" -> Right $ Builtin $ BuiltinSymbol $ S.QuantOperator WFF.Forall
+        "∃" -> Right $ Builtin $ BuiltinSymbol $ S.QuantOperator WFF.Exists
         _ -> Left $ "Unrecognised builtin symbol: " <> symbol
 fromObject m o | O.member "alias" o = do
     symJson <- E.note "Symbol is missing name" $ O.lookup "symbol" o
@@ -87,10 +87,7 @@ fromObject m o | O.member "alias" o = do
         parseSymbol aliasJson
     case M.lookup alias m of
         Nothing -> Left "Symbol alias not found"
-        Just (Left u) -> Right $ Alias $
-            S.UnaryAlias { name : symbol, operator : u }
-        Just (Right b) -> Right $ Alias $
-            S.BinaryAlias { name : symbol, operator : b }
+        Just operator -> Right $ Alias { name : symbol, operator }
 fromObject _ _ = Left "Symbol is missing propositions, builtin, or alias"
 
 fromJson :: SymbolMap -> Json -> Either String Symbol

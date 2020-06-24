@@ -22059,7 +22059,7 @@ var PS = {};
                       })($366));
                   })(traversePredicates(dictApplicative)(f)(v.value0.contents));
               };
-              throw new Error("Failed pattern match at WFF (line 133, column 1 - line 134, column 59): " + [ f.constructor.name, v.constructor.name ]);
+              throw new Error("Failed pattern match at WFF (line 138, column 1 - line 139, column 59): " + [ f.constructor.name, v.constructor.name ]);
           };
       };
   };
@@ -22081,7 +22081,7 @@ var PS = {};
                       if (x instanceof Bound) {
                           return Control_Applicative.pure(dictApplicative)(new Bound(x.value0, x.value1));
                       };
-                      throw new Error("Failed pattern match at WFF (line 151, column 25 - line 153, column 38): " + [ x.constructor.name ]);
+                      throw new Error("Failed pattern match at WFF (line 156, column 25 - line 158, column 38): " + [ x.constructor.name ]);
                   })(v.value0.variables));
               };
               if (v instanceof Unary) {
@@ -22116,7 +22116,7 @@ var PS = {};
                       })($369));
                   })(traverseFree(dictApplicative)(f)(v.value0.contents));
               };
-              throw new Error("Failed pattern match at WFF (line 147, column 1 - line 148, column 59): " + [ f.constructor.name, v.constructor.name ]);
+              throw new Error("Failed pattern match at WFF (line 152, column 1 - line 153, column 59): " + [ f.constructor.name, v.constructor.name ]);
           };
       };
   };
@@ -22138,7 +22138,7 @@ var PS = {};
                       if (x instanceof Bound) {
                           return Control_Apply.apply(dictApplicative.Apply0())(Data_Functor.map((dictApplicative.Apply0()).Functor0())(Bound.create)(f(x.value0)))(Control_Applicative.pure(dictApplicative)(x.value1));
                       };
-                      throw new Error("Failed pattern match at WFF (line 169, column 25 - line 171, column 46): " + [ x.constructor.name ]);
+                      throw new Error("Failed pattern match at WFF (line 174, column 25 - line 176, column 46): " + [ x.constructor.name ]);
                   })(v.value0.variables));
               };
               if (v instanceof Unary) {
@@ -22173,7 +22173,7 @@ var PS = {};
                       };
                   })(f(v.value0.variable)))(traverseBound(dictApplicative)(f)(v.value0.contents));
               };
-              throw new Error("Failed pattern match at WFF (line 165, column 1 - line 166, column 57): " + [ f.constructor.name, v.constructor.name ]);
+              throw new Error("Failed pattern match at WFF (line 170, column 1 - line 171, column 57): " + [ f.constructor.name, v.constructor.name ]);
           };
       };
   };
@@ -22184,7 +22184,7 @@ var PS = {};
       if (v instanceof Bound) {
           return v.value0;
       };
-      throw new Error("Failed pattern match at WFF (line 95, column 1 - line 95, column 51): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at WFF (line 100, column 1 - line 100, column 51): " + [ v.constructor.name ]);
   };
   var renderUnaryOp = function (v) {
       return v;
@@ -22196,7 +22196,7 @@ var PS = {};
       if (v instanceof Exists) {
           return "\u2203";
       };
-      throw new Error("Failed pattern match at WFF (line 78, column 1 - line 78, column 32): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at WFF (line 83, column 1 - line 83, column 32): " + [ v.constructor.name ]);
   };
   var renderBinaryOp = function (v) {
       return v;
@@ -22227,7 +22227,7 @@ var PS = {};
       if (v instanceof Quant) {
           return "(" + (renderQ(v.value0.operator) + (v.value0.variable + (")" + quantRender(v.value0.contents))));
       };
-      throw new Error("Failed pattern match at WFF (line 205, column 1 - line 205, column 45): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at WFF (line 210, column 1 - line 210, column 45): " + [ v.constructor.name ]);
   };
 
   // Renders a WFF to be contained in a quantified WFF
@@ -22243,10 +22243,11 @@ var PS = {};
           variables: [  ]
       });
   };
+  var orOp = "\u2228";
   var or = function (left) {
       return function (right) {
           return new Binary({
-              operator: "\u2228",
+              operator: orOp,
               left: left,
               right: right
           });
@@ -22254,9 +22255,10 @@ var PS = {};
   };
 
   // Builtin operators
+  var negOp = "~";
   var neg = function (contents) {
       return new Unary({
-          operator: "~",
+          operator: negOp,
           contents: contents
       });
   };
@@ -22288,13 +22290,14 @@ var PS = {};
                   contents: mapVars(f)(v.value0.contents)
               });
           };
-          throw new Error("Failed pattern match at WFF (line 191, column 1 - line 192, column 73): " + [ f.constructor.name, v.constructor.name ]);
+          throw new Error("Failed pattern match at WFF (line 196, column 1 - line 197, column 73): " + [ f.constructor.name, v.constructor.name ]);
       };
   };
+  var impliesOp = "\u21d2";
   var implies = function (left) {
       return function (right) {
           return new Binary({
-              operator: "\u21d2",
+              operator: impliesOp,
               left: left,
               right: right
           });
@@ -22310,7 +22313,7 @@ var PS = {};
                   if (v1 instanceof Bound) {
                       return Data_Set.empty;
                   };
-                  throw new Error("Failed pattern match at WFF (line 185, column 5 - line 185, column 37): " + [ v1.constructor.name ]);
+                  throw new Error("Failed pattern match at WFF (line 190, column 5 - line 190, column 37): " + [ v1.constructor.name ]);
               };
               return Data_Foldable.foldMap(Data_Foldable.foldableArray)(Data_Set.monoidSet(dictOrd))(getFree)(v.value0.variables);
           };
@@ -22323,7 +22326,7 @@ var PS = {};
           if (v instanceof Quant) {
               return freeVars(dictOrd)(v.value0.contents);
           };
-          throw new Error("Failed pattern match at WFF (line 183, column 1 - line 183, column 80): " + [ v.constructor.name ]);
+          throw new Error("Failed pattern match at WFF (line 188, column 1 - line 188, column 80): " + [ v.constructor.name ]);
       };
   };
   var eqVariable = function (dictEq) {
@@ -22366,7 +22369,7 @@ var PS = {};
                       };
                       return Data_Ord.compare(Data_Ord.ordInt)(x.value1)(y.value1);
                   };
-                  throw new Error("Failed pattern match at WFF (line 87, column 1 - line 88, column 30): " + [ x.constructor.name, y.constructor.name ]);
+                  throw new Error("Failed pattern match at WFF (line 92, column 1 - line 93, column 30): " + [ x.constructor.name, y.constructor.name ]);
               };
           });
       };
@@ -22410,7 +22413,7 @@ var PS = {};
           if (x instanceof Exists && y instanceof Exists) {
               return Data_Ordering.EQ.value;
           };
-          throw new Error("Failed pattern match at WFF (line 72, column 1 - line 72, column 48): " + [ x.constructor.name, y.constructor.name ]);
+          throw new Error("Failed pattern match at WFF (line 77, column 1 - line 77, column 48): " + [ x.constructor.name, y.constructor.name ]);
       };
   });
   var eqBinaryOp = new Data_Eq.Eq(function (x) {
@@ -22527,7 +22530,7 @@ var PS = {};
                           };
                           return Data_Ord.compare(dictOrd2)(x.value0.variable)(y.value0.variable);
                       };
-                      throw new Error("Failed pattern match at WFF (line 123, column 1 - line 124, column 30): " + [ x.constructor.name, y.constructor.name ]);
+                      throw new Error("Failed pattern match at WFF (line 128, column 1 - line 129, column 30): " + [ x.constructor.name, y.constructor.name ]);
                   };
               });
           };
@@ -22548,7 +22551,7 @@ var PS = {};
               if (v instanceof Data_Either.Right && v1 instanceof Data_Either.Right) {
                   return Data_Eq.eq(dictOrd.Eq0())(v.value0)(v1.value0);
               };
-              throw new Error("Failed pattern match at WFF (line 296, column 1 - line 297, column 52): " + [ v.constructor.name, v1.constructor.name ]);
+              throw new Error("Failed pattern match at WFF (line 313, column 1 - line 314, column 52): " + [ v.constructor.name, v1.constructor.name ]);
           };
       };
   };
@@ -22564,7 +22567,7 @@ var PS = {};
               if (v1 instanceof Data_Either.Right) {
                   return new Data_Either.Right(v1.value0);
               };
-              throw new Error("Failed pattern match at WFF (line 303, column 1 - line 304, column 61): " + [ v.constructor.name, v1.constructor.name ]);
+              throw new Error("Failed pattern match at WFF (line 320, column 1 - line 321, column 61): " + [ v.constructor.name, v1.constructor.name ]);
           };
       };
   };
@@ -22583,7 +22586,7 @@ var PS = {};
                           if (Data_Boolean.otherwise) {
                               return Data_Maybe.Nothing.value;
                           };
-                          throw new Error("Failed pattern match at WFF (line 311, column 1 - line 312, column 60): " + [ m.constructor.name, n.constructor.name ]);
+                          throw new Error("Failed pattern match at WFF (line 328, column 1 - line 329, column 60): " + [ m.constructor.name, n.constructor.name ]);
                       };
                   };
               };
@@ -22629,7 +22632,7 @@ var PS = {};
           if (v1 instanceof Bound) {
               return v1.value1 < v;
           };
-          throw new Error("Failed pattern match at WFF (line 99, column 1 - line 99, column 71): " + [ v.constructor.name, v1.constructor.name ]);
+          throw new Error("Failed pattern match at WFF (line 104, column 1 - line 104, column 71): " + [ v.constructor.name, v1.constructor.name ]);
       };
   };
   var closedAt = function (i) {
@@ -22646,7 +22649,7 @@ var PS = {};
           if (v instanceof Quant) {
               return closedAt(i + 1 | 0)(v.value0.contents);
           };
-          throw new Error("Failed pattern match at WFF (line 248, column 1 - line 248, column 74): " + [ i.constructor.name, v.constructor.name ]);
+          throw new Error("Failed pattern match at WFF (line 253, column 1 - line 253, column 74): " + [ i.constructor.name, v.constructor.name ]);
       };
   };
 
@@ -22674,7 +22677,7 @@ var PS = {};
                                           if (v3 instanceof Data_Maybe.Nothing) {
                                               return Free.create(new Data_Either.Right(v2.value0));
                                           };
-                                          throw new Error("Failed pattern match at WFF (line 364, column 30 - line 366, column 38): " + [ v3.constructor.name ]);
+                                          throw new Error("Failed pattern match at WFF (line 381, column 30 - line 383, column 38): " + [ v3.constructor.name ]);
                                       };
                                       if (v2 instanceof Bound) {
                                           var v3 = Data_Array.elemIndex(eqVariable(Data_Either.eqEither(Data_Set.eqSet(dictOrd2.Eq0()))(dictOrd2.Eq0()))(Data_Eq.eqUnit))(new Bound(Data_Unit.unit, v2.value1))(m);
@@ -22684,9 +22687,9 @@ var PS = {};
                                           if (v3 instanceof Data_Maybe.Nothing) {
                                               return new Bound(Data_Unit.unit, v2.value1);
                                           };
-                                          throw new Error("Failed pattern match at WFF (line 367, column 33 - line 369, column 36): " + [ v3.constructor.name ]);
+                                          throw new Error("Failed pattern match at WFF (line 384, column 33 - line 386, column 36): " + [ v3.constructor.name ]);
                                       };
-                                      throw new Error("Failed pattern match at WFF (line 362, column 9 - line 363, column 57): " + [ m.constructor.name, v2.constructor.name ]);
+                                      throw new Error("Failed pattern match at WFF (line 379, column 9 - line 380, column 57): " + [ m.constructor.name, v2.constructor.name ]);
                                   };
                               };
                               var matchVar = function (v2) {
@@ -22706,7 +22709,7 @@ var PS = {};
                                   if (v2 instanceof Bound) {
                                       return [ new Bound(Data_Unit.unit, v2.value1) ];
                                   };
-                                  throw new Error("Failed pattern match at WFF (line 354, column 9 - line 354, column 78): " + [ v2.constructor.name ]);
+                                  throw new Error("Failed pattern match at WFF (line 371, column 9 - line 371, column 78): " + [ v2.constructor.name ]);
                               };
                               return Matches.create(Control_Bind.bind(Control_Bind.bindArray)(Data_Traversable.traverse(Data_Traversable.traversableArray)(Control_Applicative.applicativeArray)(getMapped)(v.value0.variables))(function (mapping) {
                                   var mappedW = mapVars(replace(mapping))(v1);
@@ -22736,24 +22739,32 @@ var PS = {};
           };
       };
   };
+  var andOp = "\u2227";
   var and = function (left) {
       return function (right) {
           return new Binary({
-              operator: "\u2227",
+              operator: andOp,
               left: left,
               right: right
           });
       };
   };
+  exports["Forall"] = Forall;
+  exports["Exists"] = Exists;
   exports["Unary"] = Unary;
   exports["Binary"] = Binary;
   exports["render"] = render;
+  exports["renderQ"] = renderQ;
   exports["renderUnaryOp"] = renderUnaryOp;
   exports["renderBinaryOp"] = renderBinaryOp;
   exports["traversePredicates"] = traversePredicates;
   exports["traverseFree"] = traverseFree;
   exports["traverseBound"] = traverseBound;
   exports["prop"] = prop;
+  exports["negOp"] = negOp;
+  exports["andOp"] = andOp;
+  exports["impliesOp"] = impliesOp;
+  exports["orOp"] = orOp;
   exports["neg"] = neg;
   exports["and"] = and;
   exports["or"] = or;
@@ -22918,27 +22929,32 @@ var PS = {};
   var Data_Void = $PS["Data.Void"];
   var Sequent = $PS["Sequent"];
   var WFF = $PS["WFF"];                
-
-  // Alias to other symbol
-  var UnaryAlias = (function () {
-      function UnaryAlias(value0) {
+  var QuantOperator = (function () {
+      function QuantOperator(value0) {
           this.value0 = value0;
       };
-      UnaryAlias.create = function (value0) {
-          return new UnaryAlias(value0);
+      QuantOperator.create = function (value0) {
+          return new QuantOperator(value0);
       };
-      return UnaryAlias;
+      return QuantOperator;
   })();
-
-  // Alias to other symbol
-  var BinaryAlias = (function () {
-      function BinaryAlias(value0) {
+  var UnaryOperator = (function () {
+      function UnaryOperator(value0) {
           this.value0 = value0;
       };
-      BinaryAlias.create = function (value0) {
-          return new BinaryAlias(value0);
+      UnaryOperator.create = function (value0) {
+          return new UnaryOperator(value0);
       };
-      return BinaryAlias;
+      return UnaryOperator;
+  })();
+  var BinaryOperator = (function () {
+      function BinaryOperator(value0) {
+          this.value0 = value0;
+      };
+      BinaryOperator.create = function (value0) {
+          return new BinaryOperator(value0);
+      };
+      return BinaryOperator;
   })();
 
   // Custom symbol defined in terms of a wff
@@ -22964,26 +22980,9 @@ var PS = {};
   })();
 
   // Builtin symbol
-  var UnaryBuiltin = (function () {
-      function UnaryBuiltin(value0) {
-          this.value0 = value0;
-      };
-      UnaryBuiltin.create = function (value0) {
-          return new UnaryBuiltin(value0);
-      };
-      return UnaryBuiltin;
-  })();
-
-  // Builtin symbol
-  var BinaryBuiltin = (function () {
-      function BinaryBuiltin(value0) {
-          this.value0 = value0;
-      };
-      BinaryBuiltin.create = function (value0) {
-          return new BinaryBuiltin(value0);
-      };
-      return BinaryBuiltin;
-  })();
+  var BuiltinSymbol = function (x) {
+      return x;
+  };
   var Custom = (function () {
       function Custom(value0) {
           this.value0 = value0;
@@ -23018,8 +23017,8 @@ var PS = {};
           return function (s) {
               return function (w) {
                   var rename = WFF.traversePredicates(Data_Maybe.applicativeMaybe)(function (q) {
-                      var $71 = Data_Eq.eq(dictEq)(p)(q);
-                      if ($71) {
+                      var $69 = Data_Eq.eq(dictEq)(p)(q);
+                      if ($69) {
                           return new Data_Maybe.Just(Data_Unit.unit);
                       };
                       return Data_Maybe.Nothing.value;
@@ -23039,9 +23038,9 @@ var PS = {};
                               definition: v.value0
                           }));
                       };
-                      throw new Error("Failed pattern match at Symbol (line 79, column 25 - line 84, column 14): " + [ v.constructor.name ]);
+                      throw new Error("Failed pattern match at Symbol (line 80, column 25 - line 85, column 14): " + [ v.constructor.name ]);
                   };
-                  throw new Error("Failed pattern match at Symbol (line 77, column 19 - line 84, column 14): " + [ removedVars.constructor.name ]);
+                  throw new Error("Failed pattern match at Symbol (line 78, column 19 - line 85, column 14): " + [ removedVars.constructor.name ]);
               };
           };
       };
@@ -23054,12 +23053,12 @@ var PS = {};
               return function (s) {
                   return function (w) {
                       var rename = WFF.traversePredicates(Data_Maybe.applicativeMaybe)(function (r) {
-                          var $76 = Data_Eq.eq(dictEq)(p)(r);
-                          if ($76) {
+                          var $74 = Data_Eq.eq(dictEq)(p)(r);
+                          if ($74) {
                               return new Data_Maybe.Just(true);
                           };
-                          var $77 = Data_Eq.eq(dictEq)(q)(r);
-                          if ($77) {
+                          var $75 = Data_Eq.eq(dictEq)(q)(r);
+                          if ($75) {
                               return new Data_Maybe.Just(false);
                           };
                           return Data_Maybe.Nothing.value;
@@ -23079,55 +23078,46 @@ var PS = {};
                                   definition: v.value0
                               }));
                           };
-                          throw new Error("Failed pattern match at Symbol (line 96, column 25 - line 101, column 14): " + [ v.constructor.name ]);
+                          throw new Error("Failed pattern match at Symbol (line 97, column 25 - line 102, column 14): " + [ v.constructor.name ]);
                       };
-                      throw new Error("Failed pattern match at Symbol (line 94, column 22 - line 101, column 14): " + [ removedVars.constructor.name ]);
+                      throw new Error("Failed pattern match at Symbol (line 95, column 22 - line 102, column 14): " + [ removedVars.constructor.name ]);
                   };
               };
           };
       };
   };
-  var getTyped = function (v) {
-      if (v instanceof Custom && v.value0 instanceof UnarySymbol) {
-          return WFF.renderUnaryOp(v.value0.value0.operator);
-      };
-      if (v instanceof Custom && v.value0 instanceof BinarySymbol) {
-          return WFF.renderBinaryOp(v.value0.value0.operator);
-      };
-      if (v instanceof Alias && v.value0 instanceof UnaryAlias) {
-          return v.value0.value0.name;
-      };
-      if (v instanceof Alias && v.value0 instanceof BinaryAlias) {
-          return v.value0.value0.name;
-      };
-      if (v instanceof Builtin && v.value0 instanceof UnaryBuiltin) {
-          return WFF.renderUnaryOp(v.value0.value0.operator);
-      };
-      if (v instanceof Builtin && v.value0 instanceof BinaryBuiltin) {
-          return WFF.renderBinaryOp(v.value0.value0.operator);
-      };
-      throw new Error("Failed pattern match at Symbol (line 156, column 1 - line 156, column 29): " + [ v.constructor.name ]);
-  };
   var getOperator = function (v) {
       if (v instanceof Custom && v.value0 instanceof UnarySymbol) {
-          return new Data_Either.Left(v.value0.value0.operator);
+          return new UnaryOperator(v.value0.value0.operator);
       };
       if (v instanceof Custom && v.value0 instanceof BinarySymbol) {
-          return new Data_Either.Right(v.value0.value0.operator);
+          return new BinaryOperator(v.value0.value0.operator);
       };
-      if (v instanceof Alias && v.value0 instanceof UnaryAlias) {
-          return new Data_Either.Left(v.value0.value0.operator);
+      if (v instanceof Alias) {
+          return v.value0.operator;
       };
-      if (v instanceof Alias && v.value0 instanceof BinaryAlias) {
-          return new Data_Either.Right(v.value0.value0.operator);
+      if (v instanceof Builtin) {
+          return v.value0;
       };
-      if (v instanceof Builtin && v.value0 instanceof UnaryBuiltin) {
-          return new Data_Either.Left(v.value0.value0.operator);
+      throw new Error("Failed pattern match at Symbol (line 149, column 1 - line 149, column 34): " + [ v.constructor.name ]);
+  };
+  var getDisplay = function (v) {
+      if (v instanceof UnaryOperator) {
+          return WFF.renderUnaryOp(v.value0);
       };
-      if (v instanceof Builtin && v.value0 instanceof BinaryBuiltin) {
-          return new Data_Either.Right(v.value0.value0.operator);
+      if (v instanceof BinaryOperator) {
+          return WFF.renderBinaryOp(v.value0);
       };
-      throw new Error("Failed pattern match at Symbol (line 164, column 1 - line 164, column 49): " + [ v.constructor.name ]);
+      if (v instanceof QuantOperator) {
+          return WFF.renderQ(v.value0);
+      };
+      throw new Error("Failed pattern match at Symbol (line 155, column 1 - line 155, column 33): " + [ v.constructor.name ]);
+  };
+  var getTyped = function (v) {
+      if (v instanceof Alias) {
+          return v.value0.name;
+      };
+      return getDisplay(getOperator(v));
   };
   var updateMap = function (m) {
       return function (s) {
@@ -23137,48 +23127,27 @@ var PS = {};
           if (Data_Boolean.otherwise) {
               return Data_Either.Right.create(Data_Map_Internal.insert(Data_Ord.ordString)(getTyped(s))(getOperator(s))(m));
           };
-          throw new Error("Failed pattern match at Symbol (line 196, column 1 - line 196, column 60): " + [ m.constructor.name, s.constructor.name ]);
+          throw new Error("Failed pattern match at Symbol (line 192, column 1 - line 192, column 60): " + [ m.constructor.name, s.constructor.name ]);
       };
-  };
-  var getDisplay = function (v) {
-      if (v instanceof Custom && v.value0 instanceof UnarySymbol) {
-          return WFF.renderUnaryOp(v.value0.value0.operator);
-      };
-      if (v instanceof Custom && v.value0 instanceof BinarySymbol) {
-          return WFF.renderBinaryOp(v.value0.value0.operator);
-      };
-      if (v instanceof Alias && v.value0 instanceof UnaryAlias) {
-          return WFF.renderUnaryOp(v.value0.value0.operator);
-      };
-      if (v instanceof Alias && v.value0 instanceof BinaryAlias) {
-          return WFF.renderBinaryOp(v.value0.value0.operator);
-      };
-      if (v instanceof Builtin && v.value0 instanceof UnaryBuiltin) {
-          return WFF.renderUnaryOp(v.value0.value0.operator);
-      };
-      if (v instanceof Builtin && v.value0 instanceof BinaryBuiltin) {
-          return WFF.renderBinaryOp(v.value0.value0.operator);
-      };
-      throw new Error("Failed pattern match at Symbol (line 148, column 1 - line 148, column 31): " + [ v.constructor.name ]);
   };
   var fromIdentity = function (v) {
       return v;
   };
   var renderableBinary = (function () {
-      var $194 = Control_Bind.composeKleisli(Data_Identity.bindIdentity)(WFF.traversePredicates(Data_Identity.applicativeIdentity)(function (v) {
+      var $161 = Control_Bind.composeKleisli(Data_Identity.bindIdentity)(WFF.traversePredicates(Data_Identity.applicativeIdentity)(function (v) {
           if (v) {
               return "A";
           };
           return "B";
       }))(Control_Bind.composeKleisli(Data_Identity.bindIdentity)(WFF.traverseFree(Data_Identity.applicativeIdentity)(Data_Void.absurd))(WFF.traverseBound(Data_Identity.applicativeIdentity)(Data_Void.absurd)));
-      return function ($195) {
-          return fromIdentity($194($195));
+      return function ($162) {
+          return fromIdentity($161($162));
       };
   })();
   var renderableUnary = (function () {
-      var $196 = Control_Bind.composeKleisli(Data_Identity.bindIdentity)(WFF.traversePredicates(Data_Identity.applicativeIdentity)(Data_Function["const"]("A")))(Control_Bind.composeKleisli(Data_Identity.bindIdentity)(WFF.traverseFree(Data_Identity.applicativeIdentity)(Data_Void.absurd))(WFF.traverseBound(Data_Identity.applicativeIdentity)(Data_Void.absurd)));
-      return function ($197) {
-          return fromIdentity($196($197));
+      var $163 = Control_Bind.composeKleisli(Data_Identity.bindIdentity)(WFF.traversePredicates(Data_Identity.applicativeIdentity)(Data_Function["const"]("A")))(Control_Bind.composeKleisli(Data_Identity.bindIdentity)(WFF.traverseFree(Data_Identity.applicativeIdentity)(Data_Void.absurd))(WFF.traverseBound(Data_Identity.applicativeIdentity)(Data_Void.absurd)));
+      return function ($164) {
+          return fromIdentity($163($164));
       };
   })();
   var toSequents = function (v) {
@@ -23211,7 +23180,7 @@ var PS = {};
               conse: withOp
           }) ];
       };
-      throw new Error("Failed pattern match at Symbol (line 128, column 1 - line 128, column 69): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Symbol (line 129, column 1 - line 129, column 69): " + [ v.constructor.name ]);
   }; 
 
   // true is left, false is right
@@ -23256,34 +23225,26 @@ var PS = {};
               };
               return Data_Ord.compare(WFF.ordBinaryOp)(x.value0.operator)(y.value0.operator);
           };
-          throw new Error("Failed pattern match at Symbol (line 48, column 1 - line 48, column 52): " + [ x.constructor.name, y.constructor.name ]);
+          throw new Error("Failed pattern match at Symbol (line 56, column 1 - line 56, column 52): " + [ x.constructor.name, y.constructor.name ]);
       };
   });
-  var defaultSymbols = [ Builtin.create(new UnaryBuiltin({
-      operator: "~"
-  })), Builtin.create(new BinaryBuiltin({
-      operator: "\u2228"
-  })), Builtin.create(new BinaryBuiltin({
-      operator: "\u2228"
-  })), Builtin.create(new BinaryBuiltin({
-      operator: "\u21d2"
-  })), Alias.create(new BinaryAlias({
+  var defaultSymbols = [ Builtin.create(BuiltinSymbol(new UnaryOperator(WFF.negOp))), Builtin.create(BuiltinSymbol(new BinaryOperator(WFF.andOp))), Builtin.create(BuiltinSymbol(new BinaryOperator(WFF.orOp))), Builtin.create(BuiltinSymbol(new BinaryOperator(WFF.impliesOp))), Builtin.create(BuiltinSymbol(new QuantOperator(WFF.Forall.value))), Builtin.create(BuiltinSymbol(new QuantOperator(WFF.Exists.value))), new Alias({
       name: "&",
-      operator: "\u2227"
-  })), Alias.create(new BinaryAlias({
+      operator: new BinaryOperator(WFF.andOp)
+  }), new Alias({
       name: "|",
-      operator: "\u2228"
-  })), Alias.create(new BinaryAlias({
+      operator: new BinaryOperator(WFF.orOp)
+  }), new Alias({
       name: "->",
-      operator: "\u21d2"
-  })) ];
-  var defaultMap = Data_Map_Internal.fromFoldable(Data_Ord.ordString)(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("~")(Data_Either.Left.create("~")), Data_Tuple.Tuple.create("\u2227")(Data_Either.Right.create("\u2227")), Data_Tuple.Tuple.create("\u2228")(Data_Either.Right.create("\u2228")), Data_Tuple.Tuple.create("\u21d2")(Data_Either.Right.create("\u21d2")), Data_Tuple.Tuple.create("&")(Data_Either.Right.create("\u2227")), Data_Tuple.Tuple.create("|")(Data_Either.Right.create("\u2228")), Data_Tuple.Tuple.create("->")(Data_Either.Right.create("\u21d2")) ]);
+      operator: new BinaryOperator(WFF.impliesOp)
+  }) ];
+  var defaultMap = Data_Map_Internal.fromFoldable(Data_Ord.ordString)(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("~")(new UnaryOperator(WFF.negOp)), Data_Tuple.Tuple.create("\u2227")(new BinaryOperator(WFF.andOp)), Data_Tuple.Tuple.create("\u2228")(new BinaryOperator(WFF.orOp)), Data_Tuple.Tuple.create("\u21d2")(new BinaryOperator(WFF.impliesOp)), Data_Tuple.Tuple.create("&")(new BinaryOperator(WFF.andOp)), Data_Tuple.Tuple.create("|")(new BinaryOperator(WFF.orOp)), Data_Tuple.Tuple.create("->")(new BinaryOperator(WFF.impliesOp)), Data_Tuple.Tuple.create("\u2200")(new QuantOperator(WFF.Forall.value)), Data_Tuple.Tuple.create("\u2203")(new QuantOperator(WFF.Exists.value)) ]);
+  exports["QuantOperator"] = QuantOperator;
+  exports["UnaryOperator"] = UnaryOperator;
+  exports["BinaryOperator"] = BinaryOperator;
   exports["UnarySymbol"] = UnarySymbol;
   exports["BinarySymbol"] = BinarySymbol;
-  exports["UnaryAlias"] = UnaryAlias;
-  exports["BinaryAlias"] = BinaryAlias;
-  exports["UnaryBuiltin"] = UnaryBuiltin;
-  exports["BinaryBuiltin"] = BinaryBuiltin;
+  exports["BuiltinSymbol"] = BuiltinSymbol;
   exports["Custom"] = Custom;
   exports["Alias"] = Alias;
   exports["Builtin"] = Builtin;
@@ -23294,6 +23255,7 @@ var PS = {};
   exports["toSequents"] = toSequents;
   exports["getDisplay"] = getDisplay;
   exports["getTyped"] = getTyped;
+  exports["getOperator"] = getOperator;
   exports["defaultSymbols"] = defaultSymbols;
   exports["defaultMap"] = defaultMap;
   exports["updateMap"] = updateMap;
@@ -23301,7 +23263,6 @@ var PS = {};
   exports["ordCustomSymbol"] = ordCustomSymbol;
 })(PS);
 (function($PS) {
-  // Generated by purs version 0.13.8
   "use strict";
   $PS["Deduction"] = $PS["Deduction"] || {};
   var exports = $PS["Deduction"];
@@ -23491,7 +23452,7 @@ var PS = {};
       if (v instanceof Introduction) {
           return [ v.value0 ];
       };
-      throw new Error("Failed pattern match at Deduction (line 61, column 1 - line 61, column 68): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Deduction (line 62, column 1 - line 62, column 68): " + [ v.constructor.name ]);
   };
   var renderRule = function (v) {
       if (v instanceof Assumption) {
@@ -23525,13 +23486,24 @@ var PS = {};
           return "RAA";
       };
       if (v instanceof Definition) {
-          return "Def (" + ($$Symbol.getDisplay(new $$Symbol.Custom(v.value0)) + ")");
+          return "Def (" + ($$Symbol.getDisplay($$Symbol.getOperator(new $$Symbol.Custom(v.value0))) + ")");
       };
       if (v instanceof Introduction) {
           return "SI (" + (Sequent.render(v.value0) + ")");
       };
       throw new Error("Failed pattern match at Deduction (line 47, column 1 - line 47, column 38): " + [ v.constructor.name ]);
   };
+
+  /**
+ * 
+ *     Check a deduction was correctly applied, given
+ *         - the list of referenced formulas, whether they were assumptions, and
+ *             what assumptions they rely on
+ *         - the conclusion
+ *         - the deduction rule
+ *     returns either an error or the assumptions the conclusion relies on,
+ *     using Nothing as a flag that this is a new assumption
+ */  
   var matchDeduction = function (a) {
       return function (conse) {
           return function (v) {
@@ -23556,7 +23528,7 @@ var PS = {};
                   if (v1 instanceof Data_Maybe.Just) {
                       return new Data_Either.Right(Data_Maybe.Nothing.value);
                   };
-                  throw new Error("Failed pattern match at Deduction (line 118, column 5 - line 123, column 32): " + [ v1.constructor.name ]);
+                  throw new Error("Failed pattern match at Deduction (line 119, column 5 - line 124, column 32): " + [ v1.constructor.name ]);
               };
               if (v instanceof ConditionalProof) {
                   var v1 = Data_Array.head(Control_Bind.bind(Control_Bind.bindArray)(toSequents(v))(function (s) {
@@ -28057,7 +28029,6 @@ var PS = {};
   exports["letter"] = letter;
 })(PS);
 (function($PS) {
-  // Generated by purs version 0.13.8
   "use strict";
   $PS["Parser"] = $PS["Parser"] || {};
   var exports = $PS["Parser"];
@@ -28080,6 +28051,7 @@ var PS = {};
   var Data_Show = $PS["Data.Show"];
   var Data_String_CodeUnits = $PS["Data.String.CodeUnits"];
   var Data_String_Common = $PS["Data.String.Common"];
+  var $$Symbol = $PS["Symbol"];
   var Text_Parsing_Parser = $PS["Text.Parsing.Parser"];
   var Text_Parsing_Parser_Combinators = $PS["Text.Parsing.Parser.Combinators"];
   var Text_Parsing_Parser_String = $PS["Text.Parsing.Parser.String"];
@@ -28094,14 +28066,14 @@ var PS = {};
       };
   };
   var removeSpaces = Data_String_Common.replaceAll(" ")("");
-  var proposition = Data_Functor.map(Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(function ($25) {
-      return WFF.prop(Data_String_CodeUnits.fromCharArray($25));
+  var proposition = Data_Functor.map(Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(function ($23) {
+      return WFF.prop(Data_String_CodeUnits.fromCharArray($23));
   })(Data_Array.some(Text_Parsing_Parser.alternativeParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser.lazyParserT)(Text_Parsing_Parser_Token.letter(Data_Identity.monadIdentity)));
   var parseSymbol = function (s) {
       return Data_Either.either((function () {
-          var $26 = showError(s);
-          return function ($27) {
-              return Data_Either.Left.create($26($27));
+          var $24 = showError(s);
+          return function ($25) {
+              return Data_Either.Left.create($24($25));
           };
       })())(Data_Either.Right.create)(Text_Parsing_Parser.runParser(s)(Control_Apply.applyFirst(Text_Parsing_Parser.applyParserT(Data_Identity.monadIdentity))(symbol)(Text_Parsing_Parser_String.eof(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity))));
   };
@@ -28124,16 +28096,13 @@ var PS = {};
           return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser.position(Data_Identity.monadIdentity))(function (p) {
               return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(definedSymbol(m))(function (o) {
                   return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(safeExpression(dictLazy)(m))(function (contents) {
-                      if (o instanceof Data_Either.Left) {
+                      if (o instanceof $$Symbol.UnaryOperator) {
                           return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))(new WFF.Unary({
                               operator: o.value0,
                               contents: contents
                           }));
                       };
-                      if (o instanceof Data_Either.Right) {
-                          return Text_Parsing_Parser.failWithPosition(Data_Identity.monadIdentity)("Expected Unary Symbol")(p);
-                      };
-                      throw new Error("Failed pattern match at Parser (line 57, column 5 - line 59, column 64): " + [ o.constructor.name ]);
+                      return Text_Parsing_Parser.failWithPosition(Data_Identity.monadIdentity)("Expected Unary Symbol")(p);
                   });
               });
           });
@@ -28144,16 +28113,13 @@ var PS = {};
           return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser.position(Data_Identity.monadIdentity))(function (p) {
               return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(definedSymbol(m))(function (o) {
                   return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(safeExpression(dictLazy)(m))(function (right) {
-                      if (o instanceof Data_Either.Right) {
+                      if (o instanceof $$Symbol.BinaryOperator) {
                           return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))({
                               operator: o.value0,
                               right: right
                           });
                       };
-                      if (o instanceof Data_Either.Left) {
-                          return Text_Parsing_Parser.failWithPosition(Data_Identity.monadIdentity)("Expected Binary Symbol")(p);
-                      };
-                      throw new Error("Failed pattern match at Parser (line 68, column 5 - line 70, column 64): " + [ o.constructor.name ]);
+                      return Text_Parsing_Parser.failWithPosition(Data_Identity.monadIdentity)("Expected Binary Symbol")(p);
                   });
               });
           });
@@ -28193,9 +28159,9 @@ var PS = {};
   var parse = function (m) {
       return function (s) {
           return Data_Either.either((function () {
-              var $28 = showError(removeSpaces(s));
-              return function ($29) {
-                  return Data_Either.Left.create($28($29));
+              var $26 = showError(removeSpaces(s));
+              return function ($27) {
+                  return Data_Either.Left.create($26($27));
               };
           })())(Data_Either.Right.create)(Text_Parsing_Parser.runParser(removeSpaces(s))(Control_Apply.applyFirst(Text_Parsing_Parser.applyParserT(Data_Identity.monadIdentity))(expression(Text_Parsing_Parser.lazyParserT)(m))(Text_Parsing_Parser_String.eof(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity))));
       };
@@ -28519,12 +28485,12 @@ var PS = {};
           return Data_Argonaut_Core.fromObject(Foreign_Object.fromFoldable(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("symbol")(Data_Argonaut_Core.fromString(WFF.renderBinaryOp(v.value0.value0.operator))), Data_Tuple.Tuple.create("propa")(Data_Argonaut_Core.fromString("A")), Data_Tuple.Tuple.create("propb")(Data_Argonaut_Core.fromString("B")), Data_Tuple.Tuple.create("definition")(Json_WFF.toJson($$Symbol.renderableBinary(v.value0.value0.definition))) ]));
       };
       if (v instanceof $$Symbol.Builtin) {
-          return Data_Argonaut_Core.fromObject(Foreign_Object.fromFoldable(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("symbol")(Data_Argonaut_Core.fromString($$Symbol.getDisplay(new $$Symbol.Builtin(v.value0)))), Data_Tuple.Tuple.create("builtin")(Data_Argonaut_Core.jsonNull) ]));
+          return Data_Argonaut_Core.fromObject(Foreign_Object.fromFoldable(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("symbol")(Data_Argonaut_Core.fromString($$Symbol.getDisplay($$Symbol.getOperator(new $$Symbol.Builtin(v.value0))))), Data_Tuple.Tuple.create("builtin")(Data_Argonaut_Core.jsonNull) ]));
       };
       if (v instanceof $$Symbol.Alias) {
-          return Data_Argonaut_Core.fromObject(Foreign_Object.fromFoldable(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("symbol")(Data_Argonaut_Core.fromString($$Symbol.getTyped(new $$Symbol.Alias(v.value0)))), Data_Tuple.Tuple.create("alias")(Data_Argonaut_Core.fromString($$Symbol.getDisplay(new $$Symbol.Alias(v.value0)))) ]));
+          return Data_Argonaut_Core.fromObject(Foreign_Object.fromFoldable(Data_Foldable.foldableArray)([ Data_Tuple.Tuple.create("symbol")(Data_Argonaut_Core.fromString($$Symbol.getTyped(new $$Symbol.Alias(v.value0)))), Data_Tuple.Tuple.create("alias")(Data_Argonaut_Core.fromString($$Symbol.getDisplay($$Symbol.getOperator(new $$Symbol.Alias(v.value0))))) ]));
       };
-      throw new Error("Failed pattern match at Json.Symbol (line 26, column 1 - line 26, column 25): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Json.Symbol (line 24, column 1 - line 24, column 25): " + [ v.constructor.name ]);
   };
   var fromObject = function (v) {
       return function (v1) {
@@ -28566,24 +28532,22 @@ var PS = {};
               return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Symbol is missing name")(Foreign_Object.lookup("symbol")(v1)))(function (symJson) {
                   return Control_Bind.bind(Data_Either.bindEither)(Data_Argonaut_Core.caseJsonString(new Data_Either.Left("Symbol name is not a string"))(Parser.parseSymbol)(symJson))(function (symbol) {
                       if (symbol === "~") {
-                          return Data_Either.Right.create($$Symbol.Builtin.create(new $$Symbol.UnaryBuiltin({
-                              operator: "~"
-                          })));
+                          return Data_Either.Right.create($$Symbol.Builtin.create($$Symbol.BuiltinSymbol(new $$Symbol.UnaryOperator(WFF.negOp))));
                       };
                       if (symbol === "\u2227") {
-                          return Data_Either.Right.create($$Symbol.Builtin.create(new $$Symbol.BinaryBuiltin({
-                              operator: "\u2227"
-                          })));
+                          return Data_Either.Right.create($$Symbol.Builtin.create($$Symbol.BuiltinSymbol(new $$Symbol.BinaryOperator(WFF.andOp))));
                       };
                       if (symbol === "\u2228") {
-                          return Data_Either.Right.create($$Symbol.Builtin.create(new $$Symbol.BinaryBuiltin({
-                              operator: "\u2228"
-                          })));
+                          return Data_Either.Right.create($$Symbol.Builtin.create($$Symbol.BuiltinSymbol(new $$Symbol.BinaryOperator(WFF.orOp))));
                       };
                       if (symbol === "\u21d2") {
-                          return Data_Either.Right.create($$Symbol.Builtin.create(new $$Symbol.BinaryBuiltin({
-                              operator: "\u21d2"
-                          })));
+                          return Data_Either.Right.create($$Symbol.Builtin.create($$Symbol.BuiltinSymbol(new $$Symbol.BinaryOperator(WFF.impliesOp))));
+                      };
+                      if (symbol === "\u2200") {
+                          return Data_Either.Right.create($$Symbol.Builtin.create($$Symbol.BuiltinSymbol(new $$Symbol.QuantOperator(WFF.Forall.value))));
+                      };
+                      if (symbol === "\u2203") {
+                          return Data_Either.Right.create($$Symbol.Builtin.create($$Symbol.BuiltinSymbol(new $$Symbol.QuantOperator(WFF.Exists.value))));
                       };
                       return Data_Either.Left.create("Unrecognised builtin symbol: " + symbol);
                   });
@@ -28598,19 +28562,13 @@ var PS = {};
                               if (v2 instanceof Data_Maybe.Nothing) {
                                   return new Data_Either.Left("Symbol alias not found");
                               };
-                              if (v2 instanceof Data_Maybe.Just && v2.value0 instanceof Data_Either.Left) {
-                                  return Data_Either.Right.create($$Symbol.Alias.create(new $$Symbol.UnaryAlias({
+                              if (v2 instanceof Data_Maybe.Just) {
+                                  return Data_Either.Right.create(new $$Symbol.Alias({
                                       name: symbol,
-                                      operator: v2.value0.value0
-                                  })));
+                                      operator: v2.value0
+                                  }));
                               };
-                              if (v2 instanceof Data_Maybe.Just && v2.value0 instanceof Data_Either.Right) {
-                                  return Data_Either.Right.create($$Symbol.Alias.create(new $$Symbol.BinaryAlias({
-                                      name: symbol,
-                                      operator: v2.value0.value0
-                                  })));
-                              };
-                              throw new Error("Failed pattern match at Json.Symbol (line 88, column 5 - line 93, column 58): " + [ v2.constructor.name ]);
+                              throw new Error("Failed pattern match at Json.Symbol (line 88, column 5 - line 90, column 67): " + [ v2.constructor.name ]);
                           });
                       });
                   });
@@ -30018,7 +29976,6 @@ var PS = {};
   exports["select"] = select;
 })(PS);
 (function($PS) {
-  // Generated by purs version 0.13.8
   "use strict";
   $PS["UI.Proof"] = $PS["UI.Proof"] || {};
   var exports = $PS["UI.Proof"];
@@ -30284,14 +30241,14 @@ var PS = {};
               return UI_HTMLHelp.select(ordPartialDeduction)("symbol-dropdown")(function ($129) {
                   return Data_Maybe.Just.create(Reason.create($129));
               })(Data_Function["const"](false))(PartSymbol.value)(Data_Functor.map(Data_Functor.functorArray)(function (v) {
-                  return Data_Tuple.Tuple.create($$Symbol.getDisplay(new $$Symbol.Custom(v.value1)))(Full.create(new Deduction.Definition(v.value1, v.value0)));
+                  return Data_Tuple.Tuple.create($$Symbol.getDisplay($$Symbol.getOperator(new $$Symbol.Custom(v.value1))))(Full.create(new Deduction.Definition(v.value1, v.value0)));
               })(state.symbols));
           };
           if (state.reason instanceof Full && state.reason.value0 instanceof Deduction.Definition) {
               return UI_HTMLHelp.select(ordPartialDeduction)("symbol-dropdown")(function ($130) {
                   return Data_Maybe.Just.create(Reason.create($130));
               })(Data_Function["const"](false))(new Full(state.reason.value0))(Data_Functor.map(Data_Functor.functorArray)(function (v) {
-                  return Data_Tuple.Tuple.create($$Symbol.getDisplay(new $$Symbol.Custom(v.value1)))(Full.create(new Deduction.Definition(v.value1, v.value0)));
+                  return Data_Tuple.Tuple.create($$Symbol.getDisplay($$Symbol.getOperator(new $$Symbol.Custom(v.value1))))(Full.create(new Deduction.Definition(v.value1, v.value0)));
               })(state.symbols));
           };
           if (state.reason instanceof PartSequent) {
@@ -30434,14 +30391,14 @@ var PS = {};
                                       }));
                                   });
                               };
-                              throw new Error("Failed pattern match at UI.Proof (line 266, column 5 - line 285, column 18): " + [ v1.constructor.name ]);
+                              throw new Error("Failed pattern match at UI.Proof (line 268, column 5 - line 287, column 18): " + [ v1.constructor.name ]);
                           });
                       });
                   };
                   if (v instanceof NoAction) {
                       return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(Data_Unit.unit);
                   };
-                  throw new Error("Failed pattern match at UI.Proof (line 254, column 1 - line 258, column 56): " + [ v.constructor.name ]);
+                  throw new Error("Failed pattern match at UI.Proof (line 256, column 1 - line 260, column 56): " + [ v.constructor.name ]);
               };
           };
       };
@@ -30826,7 +30783,7 @@ var PS = {};
           return Halogen_HTML_Elements.tr([  ])([ Halogen_HTML_Elements.td([  ])([  ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("symbol-name") ])([ Halogen_HTML_Core.text("A" + (WFF.renderBinaryOp(v.value0.value0.operator) + "B")) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("equiv-symbol") ])([ Halogen_HTML_Core.text(" \u2261 ") ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("symbol-def") ])([ Halogen_HTML_Core.text(WFF.render($$Symbol.renderableBinary(v.value0.value0.definition))) ]) ]);
       };
       if (v instanceof $$Symbol.Alias) {
-          return Halogen_HTML_Elements.tr([  ])([ Halogen_HTML_Elements.td([  ])([  ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("symbol-name") ])([ Halogen_HTML_Core.text($$Symbol.getTyped(new $$Symbol.Alias(v.value0))) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("equiv-symbol") ])([ Halogen_HTML_Core.text(" \u21a6 ") ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("symbol-def") ])([ Halogen_HTML_Core.text($$Symbol.getDisplay(new $$Symbol.Alias(v.value0))) ]) ]);
+          return Halogen_HTML_Elements.tr([  ])([ Halogen_HTML_Elements.td([  ])([  ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("symbol-name") ])([ Halogen_HTML_Core.text($$Symbol.getTyped(new $$Symbol.Alias(v.value0))) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("equiv-symbol") ])([ Halogen_HTML_Core.text(" \u21a6 ") ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("symbol-def") ])([ Halogen_HTML_Core.text($$Symbol.getDisplay($$Symbol.getOperator(new $$Symbol.Alias(v.value0)))) ]) ]);
       };
       if (v instanceof $$Symbol.Builtin) {
           return Halogen_HTML_Elements.tr([  ])([ Halogen_HTML_Elements.td([  ])([  ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("symbol-name") ])([ Halogen_HTML_Core.text($$Symbol.getTyped(new $$Symbol.Builtin(v.value0))) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("equiv-symbol") ])([  ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("symbol-def") ])([ Halogen_HTML_Core.text("builtin symbol") ]) ]);
@@ -30853,15 +30810,15 @@ var PS = {};
               return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.getSymbols(UI_Capabilities.readSymbolsHalogenM(dictReadSymbols)))(function (symbols) {
                   return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.isSymbolWindow(UI_Capabilities.readNavHalogenM(dictReadNav)))(function (open) {
                       return Control_Bind.discard(Control_Bind.discardUnit)(Halogen_Query_HalogenM.bindHalogenM)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                          var $43 = {};
-                          for (var $44 in v1) {
-                              if ({}.hasOwnProperty.call(v1, $44)) {
-                                  $43[$44] = v1[$44];
+                          var $42 = {};
+                          for (var $43 in v1) {
+                              if ({}.hasOwnProperty.call(v1, $43)) {
+                                  $42[$43] = v1[$43];
                               };
                           };
-                          $43.symbols = symbols;
-                          $43.open = open;
-                          return $43;
+                          $42.symbols = symbols;
+                          $42.open = open;
+                          return $42;
                       }))(function () {
                           return Control_Applicative.pure(Halogen_Query_HalogenM.applicativeHalogenM)(new Data_Maybe.Just(v.value0));
                       });
@@ -30877,50 +30834,50 @@ var PS = {};
                   return function (v) {
                       if (v instanceof Name) {
                           return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                              var $48 = {};
-                              for (var $49 in v1) {
-                                  if ({}.hasOwnProperty.call(v1, $49)) {
-                                      $48[$49] = v1[$49];
+                              var $47 = {};
+                              for (var $48 in v1) {
+                                  if ({}.hasOwnProperty.call(v1, $48)) {
+                                      $47[$48] = v1[$48];
                                   };
                               };
-                              $48.name = v.value0;
-                              return $48;
+                              $47.name = v.value0;
+                              return $47;
                           });
                       };
                       if (v instanceof Def) {
                           return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                              var $52 = {};
-                              for (var $53 in v1) {
-                                  if ({}.hasOwnProperty.call(v1, $53)) {
-                                      $52[$53] = v1[$53];
+                              var $51 = {};
+                              for (var $52 in v1) {
+                                  if ({}.hasOwnProperty.call(v1, $52)) {
+                                      $51[$52] = v1[$52];
                                   };
                               };
-                              $52.definition = v.value0;
-                              return $52;
+                              $51.definition = v.value0;
+                              return $51;
                           });
                       };
                       if (v instanceof Type) {
                           return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                              var $56 = {};
-                              for (var $57 in v1) {
-                                  if ({}.hasOwnProperty.call(v1, $57)) {
-                                      $56[$57] = v1[$57];
+                              var $55 = {};
+                              for (var $56 in v1) {
+                                  if ({}.hasOwnProperty.call(v1, $56)) {
+                                      $55[$56] = v1[$56];
                                   };
                               };
-                              $56.input = v.value0;
-                              return $56;
+                              $55.input = v.value0;
+                              return $55;
                           });
                       };
                       if (v instanceof SetAlias) {
                           return Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v1) {
-                              var $60 = {};
-                              for (var $61 in v1) {
-                                  if ({}.hasOwnProperty.call(v1, $61)) {
-                                      $60[$61] = v1[$61];
+                              var $59 = {};
+                              for (var $60 in v1) {
+                                  if ({}.hasOwnProperty.call(v1, $60)) {
+                                      $59[$60] = v1[$60];
                                   };
                               };
-                              $60.alias = v.value0;
-                              return $60;
+                              $59.alias = v.value0;
+                              return $59;
                           });
                       };
                       if (v instanceof Add) {
@@ -30938,17 +30895,17 @@ var PS = {};
                                       if (v1 instanceof Data_Either.Right) {
                                           return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.addSymbol(UI_Capabilities.writeSymbolsHalogenM(dictWriteSymbols))(new $$Symbol.Custom(v1.value0)))(function (success) {
                                               return Control_Applicative.when(Halogen_Query_HalogenM.applicativeHalogenM)(success)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v2) {
-                                                  var $67 = {};
-                                                  for (var $68 in v2) {
-                                                      if ({}.hasOwnProperty.call(v2, $68)) {
-                                                          $67[$68] = v2[$68];
+                                                  var $66 = {};
+                                                  for (var $67 in v2) {
+                                                      if ({}.hasOwnProperty.call(v2, $67)) {
+                                                          $66[$67] = v2[$67];
                                                       };
                                                   };
-                                                  $67.name = "";
-                                                  $67.definition = "";
-                                                  $67.input = BinaryIn.value;
-                                                  $67.alias = "";
-                                                  return $67;
+                                                  $66.name = "";
+                                                  $66.definition = "";
+                                                  $66.input = BinaryIn.value;
+                                                  $66.alias = "";
+                                                  return $66;
                                               }));
                                           });
                                       };
@@ -30968,17 +30925,17 @@ var PS = {};
                                       if (v1 instanceof Data_Either.Right) {
                                           return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.addSymbol(UI_Capabilities.writeSymbolsHalogenM(dictWriteSymbols))(new $$Symbol.Custom(v1.value0)))(function (success) {
                                               return Control_Applicative.when(Halogen_Query_HalogenM.applicativeHalogenM)(success)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v2) {
-                                                  var $73 = {};
-                                                  for (var $74 in v2) {
-                                                      if ({}.hasOwnProperty.call(v2, $74)) {
-                                                          $73[$74] = v2[$74];
+                                                  var $72 = {};
+                                                  for (var $73 in v2) {
+                                                      if ({}.hasOwnProperty.call(v2, $73)) {
+                                                          $72[$73] = v2[$73];
                                                       };
                                                   };
-                                                  $73.name = "";
-                                                  $73.definition = "";
-                                                  $73.input = BinaryIn.value;
-                                                  $73.alias = "";
-                                                  return $73;
+                                                  $72.name = "";
+                                                  $72.definition = "";
+                                                  $72.input = BinaryIn.value;
+                                                  $72.alias = "";
+                                                  return $72;
                                               }));
                                           });
                                       };
@@ -30996,52 +30953,32 @@ var PS = {};
                                           if (v2 instanceof Data_Maybe.Nothing) {
                                               return UI_Capabilities.error(UI_Capabilities.errorHalogenM(dictError))("Select a symbol to alias");
                                           };
-                                          if (v2 instanceof Data_Maybe.Just && v2.value0 instanceof Data_Either.Left) {
-                                              return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.addSymbol(UI_Capabilities.writeSymbolsHalogenM(dictWriteSymbols))($$Symbol.Alias.create(new $$Symbol.UnaryAlias({
+                                          if (v2 instanceof Data_Maybe.Just) {
+                                              return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.addSymbol(UI_Capabilities.writeSymbolsHalogenM(dictWriteSymbols))(new $$Symbol.Alias({
                                                   name: v1.value0,
-                                                  operator: v2.value0.value0
-                                              }))))(function (success) {
+                                                  operator: v2.value0
+                                              })))(function (success) {
                                                   return Control_Applicative.when(Halogen_Query_HalogenM.applicativeHalogenM)(success)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v3) {
-                                                      var $80 = {};
-                                                      for (var $81 in v3) {
-                                                          if ({}.hasOwnProperty.call(v3, $81)) {
-                                                              $80[$81] = v3[$81];
+                                                      var $79 = {};
+                                                      for (var $80 in v3) {
+                                                          if ({}.hasOwnProperty.call(v3, $80)) {
+                                                              $79[$80] = v3[$80];
                                                           };
                                                       };
-                                                      $80.name = "";
-                                                      $80.definition = "";
-                                                      $80.input = BinaryIn.value;
-                                                      $80.alias = "";
-                                                      return $80;
+                                                      $79.name = "";
+                                                      $79.definition = "";
+                                                      $79.input = BinaryIn.value;
+                                                      $79.alias = "";
+                                                      return $79;
                                                   }));
                                               });
                                           };
-                                          if (v2 instanceof Data_Maybe.Just && v2.value0 instanceof Data_Either.Right) {
-                                              return Control_Bind.bind(Halogen_Query_HalogenM.bindHalogenM)(UI_Capabilities.addSymbol(UI_Capabilities.writeSymbolsHalogenM(dictWriteSymbols))($$Symbol.Alias.create(new $$Symbol.BinaryAlias({
-                                                  name: v1.value0,
-                                                  operator: v2.value0.value0
-                                              }))))(function (success) {
-                                                  return Control_Applicative.when(Halogen_Query_HalogenM.applicativeHalogenM)(success)(Control_Monad_State_Class.modify_(Halogen_Query_HalogenM.monadStateHalogenM)(function (v3) {
-                                                      var $85 = {};
-                                                      for (var $86 in v3) {
-                                                          if ({}.hasOwnProperty.call(v3, $86)) {
-                                                              $85[$86] = v3[$86];
-                                                          };
-                                                      };
-                                                      $85.name = "";
-                                                      $85.definition = "";
-                                                      $85.input = BinaryIn.value;
-                                                      $85.alias = "";
-                                                      return $85;
-                                                  }));
-                                              });
-                                          };
-                                          throw new Error("Failed pattern match at UI.Symbol (line 278, column 27 - line 295, column 26): " + [ v2.constructor.name ]);
+                                          throw new Error("Failed pattern match at UI.Symbol (line 278, column 27 - line 287, column 26): " + [ v2.constructor.name ]);
                                       };
-                                      throw new Error("Failed pattern match at UI.Symbol (line 276, column 9 - line 295, column 26): " + [ v1.constructor.name ]);
+                                      throw new Error("Failed pattern match at UI.Symbol (line 276, column 9 - line 287, column 26): " + [ v1.constructor.name ]);
                                   });
                               };
-                              throw new Error("Failed pattern match at UI.Symbol (line 252, column 40 - line 295, column 26): " + [ state.input.constructor.name ]);
+                              throw new Error("Failed pattern match at UI.Symbol (line 252, column 40 - line 287, column 26): " + [ state.input.constructor.name ]);
                           });
                       };
                       if (v instanceof Close) {
@@ -31099,22 +31036,22 @@ var PS = {};
       };
   });
   var newSymbolRow = function (state) {
-      return Halogen_HTML_Elements.tr([ Halogen_HTML_Properties.id_("new-symbol") ])([ Halogen_HTML_Elements.td([  ])([ UI_HTMLHelp.select(ordSymbolInput)("operator-select")(function ($99) {
-          return Data_Maybe.Just.create(Type.create($99));
+      return Halogen_HTML_Elements.tr([ Halogen_HTML_Properties.id_("new-symbol") ])([ Halogen_HTML_Elements.td([  ])([ UI_HTMLHelp.select(ordSymbolInput)("operator-select")(function ($92) {
+          return Data_Maybe.Just.create(Type.create($92));
       })(Data_Function["const"](false))(state.input)([ new Data_Tuple.Tuple("Binary", BinaryIn.value), new Data_Tuple.Tuple("Unary", UnaryIn.value), new Data_Tuple.Tuple("Alias", AliasIn.value) ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("symbol-name") ])((function () {
           if (state.input instanceof BinaryIn) {
-              return [ Halogen_HTML_Core.text("A"), Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($100) {
-                  return Data_Maybe.Just.create(Name.create($100));
+              return [ Halogen_HTML_Core.text("A"), Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($93) {
+                  return Data_Maybe.Just.create(Name.create($93));
               }), Halogen_HTML_Properties.value(state.name), Halogen_HTML_Properties.id_("choose-name") ]), Halogen_HTML_Core.text("B") ];
           };
           if (state.input instanceof UnaryIn) {
-              return [ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($101) {
-                  return Data_Maybe.Just.create(Name.create($101));
+              return [ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($94) {
+                  return Data_Maybe.Just.create(Name.create($94));
               }), Halogen_HTML_Properties.value(state.name), Halogen_HTML_Properties.id_("choose-name") ]), Halogen_HTML_Core.text("A") ];
           };
           if (state.input instanceof AliasIn) {
-              return [ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($102) {
-                  return Data_Maybe.Just.create(Name.create($102));
+              return [ Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($95) {
+                  return Data_Maybe.Just.create(Name.create($95));
               }), Halogen_HTML_Properties.value(state.name), Halogen_HTML_Properties.id_("choose-name") ]) ];
           };
           throw new Error("Failed pattern match at UI.Symbol (line 172, column 11 - line 196, column 18): " + [ state.input.constructor.name ]);
@@ -31125,16 +31062,16 @@ var PS = {};
           return " \u2261 ";
       })()) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("symbol-def") ])([ (function () {
           if (state.input instanceof AliasIn) {
-              return UI_HTMLHelp.select(Data_Ord.ordString)("alias-select")(function ($103) {
-                  return Data_Maybe.Just.create(SetAlias.create($103));
-              })(Data_Function["const"](false))(state.alias)(Data_Functor.map(Data_Functor.functorArray)(function ($104) {
+              return UI_HTMLHelp.select(Data_Ord.ordString)("alias-select")(function ($96) {
+                  return Data_Maybe.Just.create(SetAlias.create($96));
+              })(Data_Function["const"](false))(state.alias)(Data_Functor.map(Data_Functor.functorArray)(function ($97) {
                   return (function (x) {
                       return new Data_Tuple.Tuple(x, x);
-                  })($$Symbol.getDisplay($104));
+                  })($$Symbol.getDisplay($$Symbol.getOperator($97)));
               })(Data_Array.filter(notAlias)(state.symbols)));
           };
-          return Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($105) {
-              return Data_Maybe.Just.create(Def.create($105));
+          return Halogen_HTML_Elements.input([ Halogen_HTML_Events.onValueChange(function ($98) {
+              return Data_Maybe.Just.create(Def.create($98));
           }), Halogen_HTML_Properties.value(state.definition), Halogen_HTML_Properties.id_("set-def") ]);
       })() ]) ]);
   };

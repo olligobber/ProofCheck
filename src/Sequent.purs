@@ -9,7 +9,7 @@ import Prelude
     , (<>), (<$>), ($), (==)
     , bind, pure, otherwise)
 import Data.Array as A
-import Data.Foldable (foldMap, fold)
+import Data.Foldable (fold)
 import Data.String.Common (joinWith)
 import Data.Tuple (Tuple(..))
 

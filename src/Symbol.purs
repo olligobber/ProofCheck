@@ -1,5 +1,6 @@
 module Symbol
-    ( CustomSymbol(..)
+    ( Operator(..)
+    , CustomSymbol(..)
     , SymbolAlias(..)
     , BuiltinSymbol(..)
     , Symbol(..)
@@ -34,9 +35,16 @@ import Data.Void (Void, absurd)
 import Data.Identity (Identity(..))
 
 import Sequent (Sequent(..))
-import WFF (WFF(..), UnaryOp, BinaryOp)
+import WFF (WFF(..), UnaryOp, BinaryOp, Quantifier)
 import WFF as WFF
 
+data Operator
+    = QuantOperator Quantifier
+    | UnaryOperator UnaryOp
+    | BinaryOperator BinaryOp
+
+derive instance eqOperator :: Eq Operator
+derive instance ordOperator :: Ord Operator
 
 -- Custom symbol defined in terms of a wff
 data CustomSymbol
@@ -48,17 +56,10 @@ derive instance eqCustomSymbol :: Eq CustomSymbol
 derive instance ordCustomSymbol :: Ord CustomSymbol
 
 -- Alias to other symbol
-data SymbolAlias
-    = UnaryAlias { name :: String, operator :: UnaryOp }
-    | BinaryAlias { name :: String, operator :: BinaryOp }
-
-derive instance eqSymbolAlias :: Eq SymbolAlias
-derive instance ordSymbolAlias :: Ord SymbolAlias
+type SymbolAlias = { name :: String, operator :: Operator }
 
 -- Builtin symbol
-data BuiltinSymbol
-    = UnaryBuiltin { operator :: UnaryOp }
-    | BinaryBuiltin { operator :: BinaryOp }
+newtype BuiltinSymbol = BuiltinSymbol Operator
 
 derive instance eqBuiltinSymbol :: Eq BuiltinSymbol
 derive instance ordBuiltinSymbol :: Ord BuiltinSymbol
@@ -145,52 +146,47 @@ toSequents (BinarySymbol s) =
             }
         noOp = renderableBinary s.definition
 
-getDisplay :: Symbol -> String
-getDisplay (Custom (UnarySymbol u)) = WFF.renderUnaryOp u.operator
-getDisplay (Custom (BinarySymbol b)) = WFF.renderBinaryOp b.operator
-getDisplay (Alias (UnaryAlias u)) = WFF.renderUnaryOp u.operator
-getDisplay (Alias (BinaryAlias b)) = WFF.renderBinaryOp b.operator
-getDisplay (Builtin (UnaryBuiltin u)) = WFF.renderUnaryOp u.operator
-getDisplay (Builtin (BinaryBuiltin b)) = WFF.renderBinaryOp b.operator
+getOperator :: Symbol -> Operator
+getOperator (Custom (UnarySymbol u)) = UnaryOperator u.operator
+getOperator (Custom (BinarySymbol b)) = BinaryOperator b.operator
+getOperator (Alias a) = a.operator
+getOperator (Builtin (BuiltinSymbol o)) = o
+
+getDisplay :: Operator -> String
+getDisplay (UnaryOperator u) = WFF.renderUnaryOp u
+getDisplay (BinaryOperator b) = WFF.renderBinaryOp b
+getDisplay (QuantOperator q) = WFF.renderQ q
 
 getTyped :: Symbol -> String
-getTyped (Custom (UnarySymbol u)) = WFF.renderUnaryOp u.operator
-getTyped (Custom (BinarySymbol b)) = WFF.renderBinaryOp b.operator
-getTyped (Alias (UnaryAlias u)) = u.name
-getTyped (Alias (BinaryAlias b)) = b.name
-getTyped (Builtin (UnaryBuiltin u)) = WFF.renderUnaryOp u.operator
-getTyped (Builtin (BinaryBuiltin b)) = WFF.renderBinaryOp b.operator
-
-getOperator :: Symbol -> Either UnaryOp BinaryOp
-getOperator (Custom (UnarySymbol u)) = Left u.operator
-getOperator (Custom (BinarySymbol b)) = Right b.operator
-getOperator (Alias (UnaryAlias u)) = Left u.operator
-getOperator (Alias (BinaryAlias b)) = Right b.operator
-getOperator (Builtin (UnaryBuiltin u)) = Left u.operator
-getOperator (Builtin (BinaryBuiltin b)) = Right b.operator
+getTyped (Alias a) = a.name
+getTyped s = getDisplay $ getOperator s
 
 defaultSymbols :: Array Symbol
 defaultSymbols =
-    [ Builtin $ UnaryBuiltin { operator : WFF.UnaryOp "~" }
-    , Builtin $ BinaryBuiltin { operator : WFF.BinaryOp "∨" }
-    , Builtin $ BinaryBuiltin { operator : WFF.BinaryOp "∨" }
-    , Builtin $ BinaryBuiltin { operator : WFF.BinaryOp "⇒" }
-    , Alias $ BinaryAlias { name : "&", operator : WFF.BinaryOp "∧" }
-    , Alias $ BinaryAlias { name : "|", operator : WFF.BinaryOp "∨" }
-    , Alias $ BinaryAlias { name : "->", operator : WFF.BinaryOp "⇒" }
+    [ Builtin $ BuiltinSymbol $ UnaryOperator WFF.negOp
+    , Builtin $ BuiltinSymbol $ BinaryOperator WFF.andOp
+    , Builtin $ BuiltinSymbol $ BinaryOperator WFF.orOp
+    , Builtin $ BuiltinSymbol $ BinaryOperator WFF.impliesOp
+    , Builtin $ BuiltinSymbol $ QuantOperator WFF.Forall
+    , Builtin $ BuiltinSymbol $ QuantOperator WFF.Exists
+    , Alias { name : "&", operator : BinaryOperator WFF.andOp }
+    , Alias { name : "|", operator : BinaryOperator WFF.orOp }
+    , Alias { name : "->", operator : BinaryOperator WFF.impliesOp }
     ]
 
-type SymbolMap = Map String (Either UnaryOp BinaryOp)
+type SymbolMap = Map String Operator
 
 defaultMap :: SymbolMap
 defaultMap = M.fromFoldable
-    [ Tuple "~" $ Left $ WFF.UnaryOp "~"
-    , Tuple "∧" $ Right $ WFF.BinaryOp "∧"
-    , Tuple "∨" $ Right $ WFF.BinaryOp "∨"
-    , Tuple "⇒" $ Right $ WFF.BinaryOp "⇒"
-    , Tuple "&" $ Right $ WFF.BinaryOp "∧"
-    , Tuple "|" $ Right $ WFF.BinaryOp "∨"
-    , Tuple "->" $ Right $ WFF.BinaryOp "⇒"
+    [ Tuple "~" $ UnaryOperator WFF.negOp
+    , Tuple "∧" $ BinaryOperator WFF.andOp
+    , Tuple "∨" $ BinaryOperator WFF.orOp
+    , Tuple "⇒" $ BinaryOperator WFF.impliesOp
+    , Tuple "&" $ BinaryOperator WFF.andOp
+    , Tuple "|" $ BinaryOperator WFF.orOp
+    , Tuple "->" $ BinaryOperator WFF.impliesOp
+    , Tuple "∀" $ QuantOperator WFF.Forall
+    , Tuple "∃" $ QuantOperator WFF.Exists
     ]
 
 updateMap :: SymbolMap -> Symbol -> Either String SymbolMap

@@ -5,12 +5,17 @@ module WFF
     , Variable(..)
     , WFF(..)
     , render
+    , renderQ
     , renderUnaryOp
     , renderBinaryOp
     , traversePredicates
     , traverseFree
     , traverseBound
     , prop
+    , negOp
+    , andOp
+    , impliesOp
+    , orOp
     , neg
     , and
     , or
@@ -252,21 +257,33 @@ closedAt i (Binary b) = closedAt i b.left && closedAt i b.right
 closedAt i (Quant q) = closedAt (i+1) q.contents
 
 -- Builtin operators
+negOp :: UnaryOp
+negOp = UnaryOp "~"
+
+andOp :: BinaryOp
+andOp = BinaryOp "∧"
+
+orOp :: BinaryOp
+orOp = BinaryOp "∨"
+
+impliesOp :: BinaryOp
+impliesOp = BinaryOp "⇒"
+
 neg :: forall pred free bound.
     WFF pred free bound -> WFF pred free bound
-neg contents = Unary { operator : UnaryOp "~", contents }
+neg contents = Unary { operator : negOp, contents }
 
 and :: forall pred free bound.
     WFF pred free bound -> WFF pred free bound -> WFF pred free bound
-and left right = Binary { operator : BinaryOp "∧", left, right }
+and left right = Binary { operator : andOp, left, right }
 
 or :: forall pred free bound.
     WFF pred free bound -> WFF pred free bound -> WFF pred free bound
-or left right = Binary { operator : BinaryOp "∨", left, right }
+or left right = Binary { operator : orOp, left, right }
 
 implies :: forall pred free bound.
     WFF pred free bound -> WFF pred free bound -> WFF pred free bound
-implies left right = Binary { operator : BinaryOp "⇒", left, right }
+implies left right = Binary { operator : impliesOp, left, right }
 
 foralv :: forall pred var. Eq var =>
     var -> WFF pred var var -> WFF pred var var

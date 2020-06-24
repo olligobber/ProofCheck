@@ -30,8 +30,8 @@ import WFF as WFF
 import UI.HTMLHelp (select)
 import Parser (parseSymbol)
 import Symbol
-    ( Symbol(..), CustomSymbol(..), SymbolAlias(..)
-    , makeUnary, makeBinary, getTyped, getDisplay, renderableUnary
+    ( Symbol(..), CustomSymbol(..)
+    , makeUnary, makeBinary, getTyped, getDisplay, getOperator, renderableUnary
     , renderableBinary
     )
 import UI.Capabilities
@@ -136,7 +136,7 @@ symbolRow (Alias s) = HH.tr
         [ HH.text " ↦ " ]
     , HH.td
         [ HP.class_ $ HH.ClassName "symbol-def" ]
-        [ HH.text $ getDisplay $ Alias s ]
+        [ HH.text $ getDisplay $ getOperator $ Alias s ]
     ]
 symbolRow (Builtin s) = HH.tr
     []
@@ -205,7 +205,7 @@ newSymbolRow state = HH.tr
         [ case state.input of
             AliasIn -> select "alias-select" (Just <<< SetAlias) (const false)
                 state.alias $
-                    (\x -> Tuple x x) <<< getDisplay <$>
+                    (\x -> Tuple x x) <<< getDisplay <<< getOperator <$>
                     A.filter notAlias state.symbols
             _ -> HH.input
                 [ HE.onValueChange $ Just <<< Def
@@ -277,16 +277,8 @@ handleAction Add = H.get >>= \state -> case state.input of
             Left e -> error e
             Right name -> case M.lookup state.alias m of
                 Nothing -> error "Select a symbol to alias"
-                Just (Left operator) -> do
-                    success <- addSymbol $ Alias $ UnaryAlias { name, operator }
-                    when success $ H.modify_ $ _
-                        { name = ""
-                        , definition = ""
-                        , input = BinaryIn
-                        , alias = ""
-                        }
-                Just (Right operator) -> do
-                    success <- addSymbol $ Alias $ BinaryAlias { name, operator }
+                Just operator -> do
+                    success <- addSymbol $ Alias { name, operator }
                     when success $ H.modify_ $ _
                         { name = ""
                         , definition = ""
