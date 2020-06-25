@@ -1,4 +1,8 @@
-module Parser (parseSymbol, parse) where
+module Parser
+    ( parseSymbol
+    , parse
+    , parseMany
+    ) where
 
 import Prelude
     (($), (||), (&&), (<$>), (<>), (<<<), (>>>), (<*), (<$), bind, pure, show)
@@ -116,6 +120,12 @@ expression m = do
         Left _ -> P.failWithPosition "Unexpected quantifier" p
         Right y -> pure y
 
+manyExpression :: Lazy (Parser String (Array (WFF String String String))) =>
+    SymbolMap -> Parser String (Array (WFF String String String))
+manyExpression m = PC.chainl1
+    (A.singleton <$> expression m)
+    ((<>) <$ PS.char ',')
+
 showError :: String -> P.ParseError -> String
 showError s (P.ParseError e (PP.Position p)) =
     "Parsing Error: " <>
@@ -137,3 +147,9 @@ parse :: SymbolMap -> String -> Either String (WFF String String String)
 parse m s = E.either (showError (removeSpaces s) >>> Left) Right $
     P.runParser (removeSpaces s) $
     expression m <* PS.eof
+
+parseMany :: SymbolMap -> String ->
+    Either String (Array (WFF String String String))
+parseMany m s = E.either (showError (removeSpaces s) >>> Left) Right $
+    P.runParser (removeSpaces s) $
+    manyExpression m <* PS.eof

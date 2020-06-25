@@ -4,6 +4,7 @@ module UI.Capabilities
     , getSymbols
     , getSymbolMap
     , parse
+    , parseMany
     , class WriteSymbols
     , addSymbol
     , class ReadSequents
@@ -72,6 +73,10 @@ class Monad m <= ReadSymbols m where
 parse :: forall m. ReadSymbols m => String ->
     m (Either String (WFF String String String))
 parse s = getSymbolMap >>= \m -> pure $ P.parse m s
+
+parseMany :: forall m. ReadSymbols m => String ->
+    m (Either String (Array (WFF String String String)))
+parseMany s = getSymbolMap >>= \m -> pure $ P.parseMany m s
 
 class Monad m <= WriteSymbols m where
     addSymbol :: Symbol -> m Boolean

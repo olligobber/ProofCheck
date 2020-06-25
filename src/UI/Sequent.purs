@@ -29,7 +29,7 @@ import Sequent (Sequent(..))
 import UI.Capabilities
     ( class ReadSymbols, class ReadSequents, class WriteSequents, class Nav
     , class Error, class ReadNav
-    , parse, error, addSequent, isSequentWindow, getSequents, close
+    , parse, parseMany, error, addSequent, isSequentWindow, getSequents, close
     )
 
 type Slot = H.Slot Query Message
@@ -140,9 +140,6 @@ render state
         ]
     | otherwise = HH.div [] []
 
-splitCommas :: String -> Array String
-splitCommas = S.split (S.Pattern ",")
-
 handleAction :: forall m.
     ReadSymbols m =>
     WriteSequents m =>
@@ -153,10 +150,10 @@ handleAction (Ante s) = H.modify_ $ _ { ante = s }
 handleAction (Conse s) = H.modify_ $ _ { conse = s }
 handleAction Add = do
     state <- H.get
-    antesp <- traverse parse $ A.filter (_ /= "") $ splitCommas state.ante
+    antesp <- parseMany state.ante
     consep <- parse state.conse
     case do
-        ante <- sequence antesp
+        ante <- antesp
         conse <- consep
         pure $ Sequent { ante, conse }
     of
