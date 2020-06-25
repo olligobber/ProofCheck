@@ -22273,7 +22273,7 @@ var PS = {};
                               return Free.create(f(v1.value0));
                           };
                           if (v1 instanceof Bound) {
-                              var v2 = g(v1.value1 + l | 0)(v1.value0);
+                              var v2 = g(v1.value1 - l | 0)(v1.value0);
                               if (v2 instanceof Data_Maybe.Nothing) {
                                   return new Bound(Data_Unit.unit, v1.value1);
                               };

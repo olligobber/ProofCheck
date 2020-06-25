@@ -36,7 +36,7 @@ import Prelude
     , class Monoid
     , Unit
     , show, identity, otherwise, unit, bind, pure, not
-    , (<>), ($), (<$>), (<<<), (==), (&&), (+), (<), (<*>)
+    , (<>), ($), (<$>), (<<<), (==), (&&), (+), (<), (<*>), (-)
     )
 import Data.String (joinWith)
 import Data.Array as A
@@ -349,7 +349,7 @@ mapVarsLevel :: forall pred a b x. Int -> (a -> x) -> (Int -> b -> Maybe x) ->
 mapVarsLevel l f g (Pred p) = Pred $ p { variables = theMap <$> p.variables }
     where
         theMap (Free x) = Free $ f x
-        theMap (Bound x i) = case g (i+l) x of
+        theMap (Bound x i) = case g (i-l) x of
             Nothing -> Bound unit i
             Just y -> Free y
 mapVarsLevel l f g (Unary u) =
