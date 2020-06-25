@@ -22016,23 +22016,23 @@ var PS = {};
       return function (f) {
           return function (v) {
               if (v instanceof Pred) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($373) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($371) {
                       return Pred.create((function (v1) {
                           return {
                               predicate: v1,
                               variables: v.value0.variables
                           };
-                      })($373));
+                      })($371));
                   })(f(v.value0.predicate));
               };
               if (v instanceof Unary) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($374) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($372) {
                       return Unary.create((function (v1) {
                           return {
                               operator: v.value0.operator,
                               contents: v1
                           };
-                      })($374));
+                      })($372));
                   })(traversePredicates(dictApplicative)(f)(v.value0.contents));
               };
               if (v instanceof Binary) {
@@ -22047,14 +22047,14 @@ var PS = {};
                   })(traversePredicates(dictApplicative)(f)(v.value0.left)))(traversePredicates(dictApplicative)(f)(v.value0.right));
               };
               if (v instanceof Quant) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($375) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($373) {
                       return Quant.create((function (v1) {
                           return {
                               operator: v.value0.operator,
                               variable: v.value0.variable,
                               contents: v1
                           };
-                      })($375));
+                      })($373));
                   })(traversePredicates(dictApplicative)(f)(v.value0.contents));
               };
               throw new Error("Failed pattern match at WFF (line 138, column 1 - line 139, column 59): " + [ f.constructor.name, v.constructor.name ]);
@@ -22065,13 +22065,13 @@ var PS = {};
       return function (f) {
           return function (v) {
               if (v instanceof Pred) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($376) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($374) {
                       return Pred.create((function (v1) {
                           return {
                               predicate: v.value0.predicate,
                               variables: v1
                           };
-                      })($376));
+                      })($374));
                   })(Data_Traversable.traverse(Data_Traversable.traversableArray)(dictApplicative)(function (x) {
                       if (x instanceof Free) {
                           return Data_Functor.map((dictApplicative.Apply0()).Functor0())(Free.create)(f(x.value0));
@@ -22083,13 +22083,13 @@ var PS = {};
                   })(v.value0.variables));
               };
               if (v instanceof Unary) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($377) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($375) {
                       return Unary.create((function (v1) {
                           return {
                               operator: v.value0.operator,
                               contents: v1
                           };
-                      })($377));
+                      })($375));
                   })(traverseFree(dictApplicative)(f)(v.value0.contents));
               };
               if (v instanceof Binary) {
@@ -22104,14 +22104,14 @@ var PS = {};
                   })(traverseFree(dictApplicative)(f)(v.value0.left)))(traverseFree(dictApplicative)(f)(v.value0.right));
               };
               if (v instanceof Quant) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($378) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($376) {
                       return Quant.create((function (v1) {
                           return {
                               operator: v.value0.operator,
                               variable: v.value0.variable,
                               contents: v1
                           };
-                      })($378));
+                      })($376));
                   })(traverseFree(dictApplicative)(f)(v.value0.contents));
               };
               throw new Error("Failed pattern match at WFF (line 152, column 1 - line 153, column 59): " + [ f.constructor.name, v.constructor.name ]);
@@ -22122,13 +22122,13 @@ var PS = {};
       return function (f) {
           return function (v) {
               if (v instanceof Pred) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($379) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($377) {
                       return Pred.create((function (v1) {
                           return {
                               predicate: v.value0.predicate,
                               variables: v1
                           };
-                      })($379));
+                      })($377));
                   })(Data_Traversable.traverse(Data_Traversable.traversableArray)(dictApplicative)(function (x) {
                       if (x instanceof Free) {
                           return Control_Applicative.pure(dictApplicative)(new Free(x.value0));
@@ -22140,13 +22140,13 @@ var PS = {};
                   })(v.value0.variables));
               };
               if (v instanceof Unary) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($380) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($378) {
                       return Unary.create((function (v1) {
                           return {
                               operator: v.value0.operator,
                               contents: v1
                           };
-                      })($380));
+                      })($378));
                   })(traverseBound(dictApplicative)(f)(v.value0.contents));
               };
               if (v instanceof Binary) {
@@ -22205,6 +22205,9 @@ var PS = {};
       if (v instanceof Pred) {
           return render(new Pred(v.value0));
       };
+      if (v instanceof Quant) {
+          return render(new Quant(v.value0));
+      };
       return "(" + (render(v) + ")");
   };
 
@@ -22223,17 +22226,9 @@ var PS = {};
           return safeRender(v.value0.left) + (renderBinaryOp(v.value0.operator) + safeRender(v.value0.right));
       };
       if (v instanceof Quant) {
-          return "(" + (renderQ(v.value0.operator) + (v.value0.variable + (")" + quantRender(v.value0.contents))));
+          return "(" + (renderQ(v.value0.operator) + (v.value0.variable + (")" + safeRender(v.value0.contents))));
       };
       throw new Error("Failed pattern match at WFF (line 197, column 1 - line 197, column 45): " + [ v.constructor.name ]);
-  };
-
-  // Renders a WFF to be contained in a quantified WFF
-  var quantRender = function (v) {
-      if (v instanceof Quant) {
-          return render(new Quant(v.value0));
-      };
-      return safeRender(v);
   };
   var prop = function (x) {
       return new Pred({
@@ -22277,9 +22272,9 @@ var PS = {};
                               if (v2 instanceof Data_Maybe.Just) {
                                   return new Free(v2.value0);
                               };
-                              throw new Error("Failed pattern match at WFF (line 352, column 30 - line 354, column 29): " + [ v2.constructor.name ]);
+                              throw new Error("Failed pattern match at WFF (line 348, column 30 - line 350, column 29): " + [ v2.constructor.name ]);
                           };
-                          throw new Error("Failed pattern match at WFF (line 351, column 9 - line 351, column 37): " + [ v1.constructor.name ]);
+                          throw new Error("Failed pattern match at WFF (line 347, column 9 - line 347, column 37): " + [ v1.constructor.name ]);
                       };
                       return Pred.create({
                           predicate: v.value0.predicate,
@@ -22306,7 +22301,7 @@ var PS = {};
                           contents: mapVarsLevel(l + 1 | 0)(f)(g)(v.value0.contents)
                       });
                   };
-                  throw new Error("Failed pattern match at WFF (line 347, column 1 - line 348, column 36): " + [ l.constructor.name, f.constructor.name, g.constructor.name, v.constructor.name ]);
+                  throw new Error("Failed pattern match at WFF (line 343, column 1 - line 344, column 36): " + [ l.constructor.name, f.constructor.name, g.constructor.name, v.constructor.name ]);
               };
           };
       };
@@ -22570,7 +22565,7 @@ var PS = {};
               if (v instanceof Data_Either.Right && v1 instanceof Data_Either.Right) {
                   return Data_Eq.eq(dictOrd.Eq0())(v.value0)(v1.value0);
               };
-              throw new Error("Failed pattern match at WFF (line 300, column 1 - line 301, column 52): " + [ v.constructor.name, v1.constructor.name ]);
+              throw new Error("Failed pattern match at WFF (line 296, column 1 - line 297, column 52): " + [ v.constructor.name, v1.constructor.name ]);
           };
       };
   };
@@ -22586,7 +22581,7 @@ var PS = {};
               if (v1 instanceof Data_Either.Right) {
                   return new Data_Either.Right(v1.value0);
               };
-              throw new Error("Failed pattern match at WFF (line 307, column 1 - line 308, column 61): " + [ v.constructor.name, v1.constructor.name ]);
+              throw new Error("Failed pattern match at WFF (line 303, column 1 - line 304, column 61): " + [ v.constructor.name, v1.constructor.name ]);
           };
       };
   };
@@ -22605,7 +22600,7 @@ var PS = {};
                           if (Data_Boolean.otherwise) {
                               return Data_Maybe.Nothing.value;
                           };
-                          throw new Error("Failed pattern match at WFF (line 319, column 1 - line 320, column 60): " + [ m.constructor.name, n.constructor.name ]);
+                          throw new Error("Failed pattern match at WFF (line 315, column 1 - line 316, column 60): " + [ m.constructor.name, n.constructor.name ]);
                       };
                   };
               };
@@ -22668,7 +22663,7 @@ var PS = {};
           if (v instanceof Quant) {
               return closedAt(i + 1 | 0)(v.value0.contents);
           };
-          throw new Error("Failed pattern match at WFF (line 240, column 1 - line 240, column 74): " + [ i.constructor.name, v.constructor.name ]);
+          throw new Error("Failed pattern match at WFF (line 236, column 1 - line 236, column 74): " + [ i.constructor.name, v.constructor.name ]);
       };
   };
 
@@ -22695,7 +22690,7 @@ var PS = {};
                                       if (v2 instanceof Data_Maybe.Nothing) {
                                           return new Data_Either.Right(x);
                                       };
-                                      throw new Error("Failed pattern match at WFF (line 395, column 27 - line 397, column 31): " + [ v2.constructor.name ]);
+                                      throw new Error("Failed pattern match at WFF (line 391, column 27 - line 393, column 31): " + [ v2.constructor.name ]);
                                   };
                               };
                               var replaceBound = function (m) {
@@ -22715,19 +22710,19 @@ var PS = {};
                               };
                               var getMapped = function (v2) {
                                   if (v2 instanceof Free) {
-                                      return Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Free.create(new Data_Either.Left(vars)) ])(Data_Functor.map(Data_Functor.functorArray)(function ($381) {
-                                          return Free.create(Data_Either.Right.create($381));
+                                      return Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Free.create(new Data_Either.Left(vars)) ])(Data_Functor.map(Data_Functor.functorArray)(function ($379) {
+                                          return Free.create(Data_Either.Right.create($379));
                                       })(Data_Set.toUnfoldable(Data_Unfoldable.unfoldableArray)(vars)));
                                   };
                                   if (v2 instanceof Bound) {
                                       return [ new Bound(Data_Unit.unit, v2.value1) ];
                                   };
-                                  throw new Error("Failed pattern match at WFF (line 385, column 9 - line 385, column 78): " + [ v2.constructor.name ]);
+                                  throw new Error("Failed pattern match at WFF (line 381, column 9 - line 381, column 78): " + [ v2.constructor.name ]);
                               };
                               return Matches.create(Control_Bind.bind(Control_Bind.bindArray)(Data_Traversable.traverse(Data_Traversable.traversableArray)(Control_Applicative.applicativeArray)(getMapped)(v.value0.variables))(function (mapping) {
                                   var mappedW = mapVars(replaceFree(mapping))(replaceBound(mapping))(v1);
-                                  var $357 = closed(mappedW);
-                                  if ($357) {
+                                  var $355 = closed(mappedW);
+                                  if ($355) {
                                       return Control_Applicative.pure(Control_Applicative.applicativeArray)({
                                           predMatch: Data_Map_Internal.singleton(v.value0.predicate)(mappedW),
                                           freeMatch: Data_Foldable.foldMap(Data_Foldable.foldableArray)(Data_Map_Internal.monoidMap(dictOrd1))(Control_Category.identity(Control_Category.categoryFn))(Data_Array.zipWith(matchVar)(v.value0.variables)(mapping))
@@ -22760,8 +22755,8 @@ var PS = {};
                       return Pred.create({
                           predicate: v.value0.predicate,
                           variables: Data_Functor.map(Data_Functor.functorArray)(function (v2) {
-                              var $368 = Data_Eq.eq(eqVariable(dictEq)(dictEq))(v2)(new Free(e));
-                              if ($368) {
+                              var $366 = Data_Eq.eq(eqVariable(dictEq)(dictEq))(v2)(new Free(e));
+                              if ($366) {
                                   return new Bound(e, l);
                               };
                               return v2;
@@ -22788,7 +22783,7 @@ var PS = {};
                           contents: bindAt(dictEq)(l + 1 | 0)(e)(v.value0.contents)
                       });
                   };
-                  throw new Error("Failed pattern match at WFF (line 226, column 1 - line 227, column 55): " + [ l.constructor.name, e.constructor.name, v.constructor.name ]);
+                  throw new Error("Failed pattern match at WFF (line 222, column 1 - line 223, column 55): " + [ l.constructor.name, e.constructor.name, v.constructor.name ]);
               };
           };
       };
@@ -28131,6 +28126,7 @@ var PS = {};
   exports["letter"] = letter;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["Parser"] = $PS["Parser"] || {};
   var exports = $PS["Parser"];
@@ -29204,6 +29200,7 @@ var PS = {};
   exports["fromJson"] = fromJson;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["UI.Capabilities"] = $PS["UI.Capabilities"] || {};
   var exports = $PS["UI.Capabilities"];
@@ -30614,6 +30611,7 @@ var PS = {};
   exports["component"] = component;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["UI.Sequent"] = $PS["UI.Sequent"] || {};
   var exports = $PS["UI.Sequent"];

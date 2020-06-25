@@ -206,17 +206,13 @@ render (Unary u) = renderUnaryOp u.operator <> safeRender u.contents
 render (Binary b) =
     safeRender b.left <> renderBinaryOp b.operator <> safeRender b.right
 render (Quant q) =
-    "(" <> renderQ q.operator <> q.variable <> ")" <> quantRender q.contents
+    "(" <> renderQ q.operator <> q.variable <> ")" <> safeRender q.contents
 
 -- Renders a WFF to be contained in another WFF
 safeRender :: WFF String String String -> String
 safeRender (Pred p) = render $ Pred p
+safeRender (Quant q) = render $ Quant q
 safeRender w = "(" <> render w <> ")"
-
--- Renders a WFF to be contained in a quantified WFF
-quantRender :: WFF String String String -> String
-quantRender (Quant q) = render $ Quant q
-quantRender w = safeRender w
 
 -- Binds all instances of a variable
 bindv :: forall pred var. Eq var =>

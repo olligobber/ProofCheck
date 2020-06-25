@@ -10,7 +10,7 @@ module UI.Sequent
 
 import Prelude
     ( Unit
-    , ($), (<$>), (<>), (<<<), (/=)
+    , ($), (<$>), (<>), (<<<)
     , bind, pure, otherwise, discard, unit, const
     )
 import Halogen as H
@@ -19,9 +19,7 @@ import Halogen.HTML.Properties as HP
 import Halogen.HTML.Events as HE
 import Data.String as S
 import Data.Maybe (Maybe(..))
-import Data.Traversable (traverse, sequence)
 import Data.Either (Either(..))
-import Data.Array as A
 import Control.Applicative (when)
 
 import WFF as WFF
