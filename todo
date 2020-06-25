@@ -1,6 +1,7 @@
 tests
 pick better font
 first order logic
+	fix bug when matching bound variables
 	verify types of WFF contents (predicate arity, free, bound, all disjoint)
 	make parser for comma seperated WFFs
 	update deduction rules

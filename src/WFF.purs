@@ -193,19 +193,6 @@ freeVars (Unary u) = freeVars u.contents
 freeVars (Binary b) = freeVars b.left <> freeVars b.right
 freeVars (Quant q) = freeVars q.contents
 
-mapVars :: forall pred a b x.
-    (Variable a b -> Variable x Unit) -> WFF pred a b -> WFF pred x Unit
-mapVars f (Pred p) = Pred $ p { variables = f <$> p.variables }
-mapVars f (Unary u) = Unary $ u { contents = mapVars f u.contents }
-mapVars f (Binary b) = Binary $ b
-    { left = mapVars f b.left
-    , right = mapVars f b.right
-    }
-mapVars f (Quant q) = Quant $ q
-    { variable = unit
-    , contents = mapVars f q.contents
-    }
-
 -- Render a WFF to show to the user
 render :: WFF String String String -> String
 render (Pred p) = case p.variables of
@@ -325,6 +312,10 @@ combineFree _ (Right v) = Right v
 
 data Matches a b x y = Matches (Array (Match a b x y))
 
+instance showMatches :: (Show a, Show b, Show x, Show y) =>
+    Show (Matches a b x y) where
+        show (Matches m) = "Matches " <> show m
+
 joinMatch :: forall a b x y. Ord a => Ord b => Eq x => Ord y =>
     Match a b x y -> Match a b x y -> Maybe (Match a b x y)
 joinMatch m n
@@ -349,6 +340,29 @@ instance monoidMatching :: (Ord a, Ord b, Eq x, Ord y) =>
     Monoid (Matches a b x y) where
         mempty = Matches [ { predMatch : M.empty, freeMatch : M.empty } ]
 
+mapVars :: forall pred a b x. (a -> x) -> (Int -> b -> Maybe x) ->
+    WFF pred a b -> WFF pred x Unit
+mapVars = mapVarsLevel 0
+
+mapVarsLevel :: forall pred a b x. Int -> (a -> x) -> (Int -> b -> Maybe x) ->
+    WFF pred a b -> WFF pred x Unit
+mapVarsLevel l f g (Pred p) = Pred $ p { variables = theMap <$> p.variables }
+    where
+        theMap (Free x) = Free $ f x
+        theMap (Bound x i) = case g (i+l) x of
+            Nothing -> Bound unit i
+            Just y -> Free y
+mapVarsLevel l f g (Unary u) =
+    Unary $ u { contents = mapVarsLevel l f g u.contents }
+mapVarsLevel l f g (Binary b) = Binary $ b
+    { left = mapVarsLevel l f g b.left
+    , right = mapVarsLevel l f g b.right
+    }
+mapVarsLevel l f g (Quant q) = Quant $ q
+    { variable = unit
+    , contents = mapVarsLevel (l+1) f g q.contents
+    }
+
 -- Match a WFF to one after substitutions were applied,
 -- given a list of all free variables,
 -- returning the relevant substitutions
@@ -356,7 +370,7 @@ match :: forall a b c x y z. Ord a => Ord b => Eq x => Ord y =>
     WFF a b c -> WFF x y z -> Matches a b x y
 match (Pred p) w = Matches $ do
     mapping <- traverse getMapped p.variables
-    let mappedW = mapVars (replace mapping) w
+    let mappedW = mapVars (replaceFree mapping) (replaceBound mapping) w
     if closed mappedW then
         pure
             { predMatch : M.singleton p.predicate mappedW
@@ -376,14 +390,14 @@ match (Pred p) w = Matches $ do
             Map b (Either (Set y) y)
         matchVar (Free x) (Free y) = M.singleton x y
         matchVar _ _ = M.empty
-        replace :: Array (Variable (Either (Set y) y) Unit) ->
-            Variable y z -> Variable (Either Int y) Unit
-        replace m (Free x) = case A.elemIndex (Free $ Right x) m of
-            Just i -> Free $ Left i
-            Nothing -> Free $ Right x
-        replace m (Bound _ i) = case A.elemIndex (Bound unit i) m of
-            Just j -> Free $ Left j
-            Nothing -> Bound unit i
+        replaceFree :: Array (Variable (Either (Set y) y) Unit) -> y ->
+            Either Int y
+        replaceFree m x = case A.elemIndex (Free $ Right x) m of
+            Just i -> Left i
+            Nothing -> Right x
+        replaceBound :: Array (Variable (Either (Set y) y) Unit) -> Int -> z ->
+            Maybe (Either Int y)
+        replaceBound m i _ = Left <$> A.elemIndex (Bound unit i) m
 match (Unary u) (Unary v)
     | u.operator == v.operator = match u.contents v.contents
 match (Binary b) (Binary c)
