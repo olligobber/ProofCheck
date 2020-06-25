@@ -1,7 +1,7 @@
 module Parser (parseSymbol, parse) where
 
 import Prelude
-    (($), (||), (&&), (<$>), (<>), (<<<), (>>>), (<*), bind, pure, show)
+    (($), (||), (&&), (<$>), (<>), (<<<), (>>>), (<*), (<$), bind, pure, show)
 import Control.Alt ((<|>))
 import Control.Lazy (class Lazy, defer)
 import Data.Array as A
@@ -20,9 +20,15 @@ import Text.Parsing.Parser.Token as PT
 import Text.Parsing.Parser.Pos as PP
 import Data.String as S
 
-import WFF (BinaryOp, WFF)
+import WFF (BinaryOp, WFF, Quantifier)
 import WFF as WFF
 import Symbol (SymbolMap, Operator(..))
+
+type StringWFFParser = Parser String (WFF String String String)
+type StringWFFQuantParser = Parser String (Either
+    { operator :: Quantifier, variable :: String }
+    (WFF String String String)
+    )
 
 symbol :: Parser String String
 symbol = fromCharArray <$> A.some
@@ -40,26 +46,48 @@ definedSymbol m = do
         Just o -> pure o
         Nothing -> P.failWithPosition ("Unrecognised symbol: " <> s) p
 
-proposition :: Parser String (WFF String String String)
-proposition = WFF.prop <<< fromCharArray <$> A.some PT.letter
+variables :: Parser String (Array String)
+variables = PC.chainl1
+    (pure <<< fromCharArray <$> A.some PT.letter)
+    ((<>) <$ PS.char ',')
 
-safeExpression :: Lazy (Parser String (WFF String String String)) =>
-    SymbolMap -> Parser String (WFF String String String)
-safeExpression m = proposition
-    <|> PC.between (PS.char '(') (PS.char ')') (defer \_ -> expression m)
+predicate :: StringWFFParser
+predicate = do
+    name <- fromCharArray <$> A.some PT.letter
+    vars <- PC.option [] $ PC.between  (PS.char '(') (PS.char ')') variables
+    pure $ WFF.Pred { predicate : name, variables : WFF.Free <$> vars }
 
-unaryExpression :: Lazy (Parser String (WFF String String String)) =>
-    SymbolMap -> Parser String (WFF String String String)
-unaryExpression m = do
-    p <- P.position
+bracketedOrQuantified :: Lazy StringWFFParser => SymbolMap -> StringWFFParser
+bracketedOrQuantified m = do
+    bracketed <- PC.between (PS.char '(') (PS.char ')')
+        (defer \_ -> expressionOrQ m)
+    case bracketed of
+        Left { operator : WFF.Forall, variable } ->
+            defer \_ -> WFF.foralv variable <$> safeExpression m
+        Left { operator : WFF.Exists, variable } ->
+            defer \_ -> WFF.exists variable <$> safeExpression m
+        Right w -> pure w
+
+safeExpression :: Lazy StringWFFParser => SymbolMap -> StringWFFParser
+safeExpression m = predicate <|> bracketedOrQuantified m
+
+unaryOrQExpression :: Lazy StringWFFQuantParser =>
+    SymbolMap -> StringWFFQuantParser
+unaryOrQExpression m = do
+    symbolPos <- P.position
     o <- definedSymbol m
+    contentPos <- P.position
     contents <- safeExpression m
     case o of
-        UnaryOperator operator -> pure $ WFF.Unary { operator, contents }
-        _ -> P.failWithPosition "Expected Unary Symbol" p
+        UnaryOperator operator ->
+            pure $ Right $ WFF.Unary { operator, contents }
+        QuantOperator operator -> case contents of
+            WFF.Pred { predicate : variable, variables : [] } ->
+                pure $ Left $ { operator, variable }
+            _ -> P.failWithPosition "Expected variable" contentPos
+        _ -> P.failWithPosition "Expected Unary Symbol" symbolPos
 
-tailBinaryExpression :: Lazy (Parser String (WFF String String String)) =>
-    SymbolMap ->
+tailBinaryExpression :: Lazy StringWFFParser => SymbolMap ->
     Parser String { operator :: BinaryOp, right :: WFF String String String }
 tailBinaryExpression m = do
     p <- P.position
@@ -69,18 +97,24 @@ tailBinaryExpression m = do
         BinaryOperator operator -> pure { operator, right }
         _ -> P.failWithPosition "Expected Binary Symbol" p
 
-maybeBinaryExpression :: Lazy (Parser String (WFF String String String)) =>
-    SymbolMap -> Parser String (WFF String String String)
+maybeBinaryExpression :: Lazy StringWFFParser => SymbolMap -> StringWFFParser
 maybeBinaryExpression m = do
     left <- safeExpression m
-    rest <- PC.option Nothing $ Just <$> tailBinaryExpression m
+    rest <- PC.optionMaybe $ tailBinaryExpression m
     case rest of
         Nothing -> pure left
         Just {right, operator} -> pure $ WFF.Binary $ {left, operator, right}
 
-expression :: Lazy (Parser String (WFF String String String)) =>
-    SymbolMap -> Parser String (WFF String String String)
-expression m = maybeBinaryExpression m <|> unaryExpression m
+expressionOrQ :: Lazy StringWFFQuantParser => SymbolMap -> StringWFFQuantParser
+expressionOrQ m = (Right <$> maybeBinaryExpression m) <|> unaryOrQExpression m
+
+expression :: Lazy StringWFFParser => SymbolMap -> StringWFFParser
+expression m = do
+    p <- P.position
+    x <- expressionOrQ m
+    case x of
+        Left _ -> P.failWithPosition "Unexpected quantifier" p
+        Right y -> pure y
 
 showError :: String -> P.ParseError -> String
 showError s (P.ParseError e (PP.Position p)) =

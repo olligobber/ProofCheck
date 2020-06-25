@@ -22740,6 +22740,74 @@ var PS = {};
           };
       };
   };
+  var bindAt = function (dictEq) {
+      return function (l) {
+          return function (e) {
+              return function (v) {
+                  if (v instanceof Pred) {
+                      return Pred.create({
+                          predicate: v.value0.predicate,
+                          variables: Data_Functor.map(Data_Functor.functorArray)(function (v2) {
+                              var $359 = Data_Eq.eq(eqVariable(dictEq)(dictEq))(v2)(new Free(e));
+                              if ($359) {
+                                  return new Bound(e, l);
+                              };
+                              return v2;
+                          })(v.value0.variables)
+                      });
+                  };
+                  if (v instanceof Unary) {
+                      return Unary.create({
+                          operator: v.value0.operator,
+                          contents: bindAt(dictEq)(l)(e)(v.value0.contents)
+                      });
+                  };
+                  if (v instanceof Binary) {
+                      return Binary.create({
+                          operator: v.value0.operator,
+                          left: bindAt(dictEq)(l)(e)(v.value0.left),
+                          right: bindAt(dictEq)(l)(e)(v.value0.right)
+                      });
+                  };
+                  if (v instanceof Quant) {
+                      return Quant.create({
+                          operator: v.value0.operator,
+                          variable: v.value0.variable,
+                          contents: bindAt(dictEq)(l + 1 | 0)(e)(v.value0.contents)
+                      });
+                  };
+                  throw new Error("Failed pattern match at WFF (line 239, column 1 - line 240, column 55): " + [ l.constructor.name, e.constructor.name, v.constructor.name ]);
+              };
+          };
+      };
+  };
+
+  // Binds all instances of a variable
+  var bindv = function (dictEq) {
+      return bindAt(dictEq)(0);
+  };
+  var exists = function (dictEq) {
+      return function (variable) {
+          return function (contents) {
+              return new Quant({
+                  operator: Exists.value,
+                  variable: variable,
+                  contents: bindv(dictEq)(variable)(contents)
+              });
+          };
+      };
+  };
+  var foralv = function (dictEq) {
+      return function (variable) {
+          return function (contents) {
+              return new Quant({
+                  operator: Forall.value,
+                  variable: variable,
+                  contents: bindv(dictEq)(variable)(contents)
+              });
+          };
+      };
+  };
   var andOp = "\u2227";
   var and = function (left) {
       return function (right) {
@@ -22752,6 +22820,8 @@ var PS = {};
   };
   exports["Forall"] = Forall;
   exports["Exists"] = Exists;
+  exports["Free"] = Free;
+  exports["Pred"] = Pred;
   exports["Unary"] = Unary;
   exports["Binary"] = Binary;
   exports["render"] = render;
@@ -22769,6 +22839,8 @@ var PS = {};
   exports["neg"] = neg;
   exports["and"] = and;
   exports["or"] = or;
+  exports["foralv"] = foralv;
+  exports["exists"] = exists;
   exports["implies"] = implies;
   exports["match"] = match;
   exports["eqUnaryOp"] = eqUnaryOp;
@@ -27883,6 +27955,8 @@ var PS = {};
   var Control_Monad_Except_Trans = $PS["Control.Monad.Except.Trans"];
   var Control_Monad_State_Trans = $PS["Control.Monad.State.Trans"];
   var Data_Either = $PS["Data.Either"];
+  var Data_Functor = $PS["Data.Functor"];
+  var Data_Maybe = $PS["Data.Maybe"];
   var Data_Newtype = $PS["Data.Newtype"];
   var Data_Tuple = $PS["Data.Tuple"];
   var Text_Parsing_Parser = $PS["Text.Parsing.Parser"];                
@@ -27912,6 +27986,33 @@ var PS = {};
           };
       };
   };
+  var optionMaybe = function (dictMonad) {
+      return function (p) {
+          return option(dictMonad)(Data_Maybe.Nothing.value)(Data_Functor.map(Text_Parsing_Parser.functorParserT(((dictMonad.Bind1()).Apply0()).Functor0()))(Data_Maybe.Just.create)(p));
+      };
+  };
+  var chainl1$prime = function (dictMonad) {
+      return function (p) {
+          return function (f) {
+              return function (a) {
+                  return Control_Alt.alt(Text_Parsing_Parser.altParserT(dictMonad))(Control_Bind.bind(Text_Parsing_Parser.bindParserT(dictMonad))(f)(function (f$prime) {
+                      return Control_Bind.bind(Text_Parsing_Parser.bindParserT(dictMonad))(p)(function (a$prime) {
+                          return chainl1$prime(dictMonad)(p)(f)(f$prime(a)(a$prime));
+                      });
+                  }))(Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(dictMonad))(a));
+              };
+          };
+      };
+  };
+  var chainl1 = function (dictMonad) {
+      return function (p) {
+          return function (f) {
+              return Control_Bind.bind(Text_Parsing_Parser.bindParserT(dictMonad))(p)(function (a) {
+                  return chainl1$prime(dictMonad)(p)(f)(a);
+              });
+          };
+      };
+  };
   var between = function (dictMonad) {
       return function (open) {
           return function (close) {
@@ -27924,7 +28025,9 @@ var PS = {};
   exports["withErrorMessage"] = withErrorMessage;
   exports["between"] = between;
   exports["option"] = option;
+  exports["optionMaybe"] = optionMaybe;
   exports["tryRethrow"] = tryRethrow;
+  exports["chainl1"] = chainl1;
 })(PS);
 (function($PS) {
   // Generated by purs version 0.13.8
@@ -28050,6 +28153,7 @@ var PS = {};
   var Data_Map_Internal = $PS["Data.Map.Internal"];
   var Data_Maybe = $PS["Data.Maybe"];
   var Data_Ord = $PS["Data.Ord"];
+  var Data_Semigroup = $PS["Data.Semigroup"];
   var Data_Show = $PS["Data.Show"];
   var Data_String_CodeUnits = $PS["Data.String.CodeUnits"];
   var Data_String_Common = $PS["Data.String.Common"];
@@ -28059,6 +28163,12 @@ var PS = {};
   var Text_Parsing_Parser_String = $PS["Text.Parsing.Parser.String"];
   var Text_Parsing_Parser_Token = $PS["Text.Parsing.Parser.Token"];
   var WFF = $PS["WFF"];                
+  var variables = Text_Parsing_Parser_Combinators.chainl1(Data_Identity.monadIdentity)(Data_Functor.map(Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))((function () {
+      var $43 = Control_Applicative.pure(Control_Applicative.applicativeArray);
+      return function ($44) {
+          return $43(Data_String_CodeUnits.fromCharArray($44));
+      };
+  })())(Data_Array.some(Text_Parsing_Parser.alternativeParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser.lazyParserT)(Text_Parsing_Parser_Token.letter(Data_Identity.monadIdentity))))(Data_Functor.voidRight(Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(Data_Semigroup.append(Data_Semigroup.semigroupArray))(Text_Parsing_Parser_String["char"](Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)(",")));
   var symbol = Data_Functor.map(Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(Data_String_CodeUnits.fromCharArray)(Data_Array.some(Text_Parsing_Parser.alternativeParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser.lazyParserT)(Text_Parsing_Parser_Combinators.withErrorMessage(Data_Identity.monadIdentity)(Text_Parsing_Parser_String.satisfy(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)(Data_HeytingAlgebra.conj(Data_HeytingAlgebra.heytingAlgebraFunction(Data_HeytingAlgebra.heytingAlgebraBoolean))(Data_HeytingAlgebra.disj(Data_HeytingAlgebra.heytingAlgebraFunction(Data_HeytingAlgebra.heytingAlgebraBoolean))(Data_Char_Unicode.isPunctuation)(Data_Char_Unicode.isSymbol))(function (v) {
       return Data_Foldable.notElem(Data_Foldable.foldableArray)(Data_Eq.eqChar)(v)([ ",", "(", ")" ]);
   })))("Symbol or Punctuation")));
@@ -28068,14 +28178,19 @@ var PS = {};
       };
   };
   var removeSpaces = Data_String_Common.replaceAll(" ")("");
-  var proposition = Data_Functor.map(Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(function ($23) {
-      return WFF.prop(Data_String_CodeUnits.fromCharArray($23));
-  })(Data_Array.some(Text_Parsing_Parser.alternativeParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser.lazyParserT)(Text_Parsing_Parser_Token.letter(Data_Identity.monadIdentity)));
+  var predicate = Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Data_Functor.map(Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(Data_String_CodeUnits.fromCharArray)(Data_Array.some(Text_Parsing_Parser.alternativeParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser.lazyParserT)(Text_Parsing_Parser_Token.letter(Data_Identity.monadIdentity))))(function (name) {
+      return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_Combinators.option(Data_Identity.monadIdentity)([  ])(Text_Parsing_Parser_Combinators.between(Data_Identity.monadIdentity)(Text_Parsing_Parser_String["char"](Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("("))(Text_Parsing_Parser_String["char"](Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)(")"))(variables)))(function (vars) {
+          return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))(new WFF.Pred({
+              predicate: name,
+              variables: Data_Functor.map(Data_Functor.functorArray)(WFF.Free.create)(vars)
+          }));
+      });
+  });
   var parseSymbol = function (s) {
       return Data_Either.either((function () {
-          var $24 = showError(s);
-          return function ($25) {
-              return Data_Either.Left.create($24($25));
+          var $45 = showError(s);
+          return function ($46) {
+              return Data_Either.Left.create($45($46));
           };
       })())(Data_Either.Right.create)(Text_Parsing_Parser.runParser(s)(Control_Apply.applyFirst(Text_Parsing_Parser.applyParserT(Data_Identity.monadIdentity))(symbol)(Text_Parsing_Parser_String.eof(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity))));
   };
@@ -28089,22 +28204,33 @@ var PS = {};
               if (v instanceof Data_Maybe.Nothing) {
                   return Text_Parsing_Parser.failWithPosition(Data_Identity.monadIdentity)("Unrecognised symbol: " + s)(p);
               };
-              throw new Error("Failed pattern match at Parser (line 39, column 5 - line 41, column 71): " + [ v.constructor.name ]);
+              throw new Error("Failed pattern match at Parser (line 45, column 5 - line 47, column 71): " + [ v.constructor.name ]);
           });
       });
   };
-  var unaryExpression = function (dictLazy) {
+  var unaryOrQExpression = function (dictLazy) {
       return function (m) {
-          return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser.position(Data_Identity.monadIdentity))(function (p) {
+          return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser.position(Data_Identity.monadIdentity))(function (symbolPos) {
               return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(definedSymbol(m))(function (o) {
-                  return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(safeExpression(dictLazy)(m))(function (contents) {
-                      if (o instanceof $$Symbol.UnaryOperator) {
-                          return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))(new WFF.Unary({
-                              operator: o.value0,
-                              contents: contents
-                          }));
-                      };
-                      return Text_Parsing_Parser.failWithPosition(Data_Identity.monadIdentity)("Expected Unary Symbol")(p);
+                  return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser.position(Data_Identity.monadIdentity))(function (contentPos) {
+                      return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(safeExpression(Text_Parsing_Parser.lazyParserT)(m))(function (contents) {
+                          if (o instanceof $$Symbol.UnaryOperator) {
+                              return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))(Data_Either.Right.create(new WFF.Unary({
+                                  operator: o.value0,
+                                  contents: contents
+                              })));
+                          };
+                          if (o instanceof $$Symbol.QuantOperator) {
+                              if (contents instanceof WFF.Pred && contents.value0.variables.length === 0) {
+                                  return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))(Data_Either.Left.create({
+                                      operator: o.value0,
+                                      variable: contents.value0.predicate
+                                  }));
+                              };
+                              return Text_Parsing_Parser.failWithPosition(Data_Identity.monadIdentity)("Expected variable")(contentPos);
+                          };
+                          return Text_Parsing_Parser.failWithPosition(Data_Identity.monadIdentity)("Expected Unary Symbol")(symbolPos);
+                      });
                   });
               });
           });
@@ -28129,15 +28255,13 @@ var PS = {};
   };
   var safeExpression = function (dictLazy) {
       return function (m) {
-          return Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(proposition)(Text_Parsing_Parser_Combinators.between(Data_Identity.monadIdentity)(Text_Parsing_Parser_String["char"](Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("("))(Text_Parsing_Parser_String["char"](Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)(")"))(Control_Lazy.defer(dictLazy)(function (v) {
-              return expression(dictLazy)(m);
-          })));
+          return Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(predicate)(bracketedOrQuantified(dictLazy)(m));
       };
   };
   var maybeBinaryExpression = function (dictLazy) {
       return function (m) {
           return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(safeExpression(dictLazy)(m))(function (left) {
-              return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_Combinators.option(Data_Identity.monadIdentity)(Data_Maybe.Nothing.value)(Data_Functor.map(Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(Data_Maybe.Just.create)(tailBinaryExpression(dictLazy)(m))))(function (rest) {
+              return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_Combinators.optionMaybe(Data_Identity.monadIdentity)(tailBinaryExpression(dictLazy)(m)))(function (rest) {
                   if (rest instanceof Data_Maybe.Nothing) {
                       return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))(left);
                   };
@@ -28148,22 +28272,59 @@ var PS = {};
                           right: rest.value0.right
                       }));
                   };
-                  throw new Error("Failed pattern match at Parser (line 77, column 5 - line 79, column 78): " + [ rest.constructor.name ]);
+                  throw new Error("Failed pattern match at Parser (line 104, column 5 - line 106, column 78): " + [ rest.constructor.name ]);
               });
+          });
+      };
+  };
+  var expressionOrQ = function (dictLazy) {
+      return function (m) {
+          return Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(Data_Functor.map(Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(Data_Either.Right.create)(maybeBinaryExpression(Text_Parsing_Parser.lazyParserT)(m)))(unaryOrQExpression(dictLazy)(m));
+      };
+  };
+  var bracketedOrQuantified = function (dictLazy) {
+      return function (m) {
+          return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser_Combinators.between(Data_Identity.monadIdentity)(Text_Parsing_Parser_String["char"](Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)("("))(Text_Parsing_Parser_String["char"](Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity)(")"))(Control_Lazy.defer(Text_Parsing_Parser.lazyParserT)(function (v) {
+              return expressionOrQ(Text_Parsing_Parser.lazyParserT)(m);
+          })))(function (bracketed) {
+              if (bracketed instanceof Data_Either.Left && bracketed.value0.operator instanceof WFF.Forall) {
+                  return Control_Lazy.defer(dictLazy)(function (v) {
+                      return Data_Functor.map(Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(WFF.foralv(Data_Eq.eqString)(bracketed.value0.variable))(safeExpression(dictLazy)(m));
+                  });
+              };
+              if (bracketed instanceof Data_Either.Left && bracketed.value0.operator instanceof WFF.Exists) {
+                  return Control_Lazy.defer(dictLazy)(function (v) {
+                      return Data_Functor.map(Text_Parsing_Parser.functorParserT(Data_Identity.functorIdentity))(WFF.exists(Data_Eq.eqString)(bracketed.value0.variable))(safeExpression(dictLazy)(m));
+                  });
+              };
+              if (bracketed instanceof Data_Either.Right) {
+                  return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))(bracketed.value0);
+              };
+              throw new Error("Failed pattern match at Parser (line 64, column 5 - line 69, column 26): " + [ bracketed.constructor.name ]);
           });
       };
   };
   var expression = function (dictLazy) {
       return function (m) {
-          return Control_Alt.alt(Text_Parsing_Parser.altParserT(Data_Identity.monadIdentity))(maybeBinaryExpression(dictLazy)(m))(unaryExpression(dictLazy)(m));
+          return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(Text_Parsing_Parser.position(Data_Identity.monadIdentity))(function (p) {
+              return Control_Bind.bind(Text_Parsing_Parser.bindParserT(Data_Identity.monadIdentity))(expressionOrQ(Text_Parsing_Parser.lazyParserT)(m))(function (x) {
+                  if (x instanceof Data_Either.Left) {
+                      return Text_Parsing_Parser.failWithPosition(Data_Identity.monadIdentity)("Unexpected quantifier")(p);
+                  };
+                  if (x instanceof Data_Either.Right) {
+                      return Control_Applicative.pure(Text_Parsing_Parser.applicativeParserT(Data_Identity.monadIdentity))(x.value0);
+                  };
+                  throw new Error("Failed pattern match at Parser (line 115, column 5 - line 117, column 26): " + [ x.constructor.name ]);
+              });
+          });
       };
   };
   var parse = function (m) {
       return function (s) {
           return Data_Either.either((function () {
-              var $26 = showError(removeSpaces(s));
-              return function ($27) {
-                  return Data_Either.Left.create($26($27));
+              var $47 = showError(removeSpaces(s));
+              return function ($48) {
+                  return Data_Either.Left.create($47($48));
               };
           })())(Data_Either.Right.create)(Text_Parsing_Parser.runParser(removeSpaces(s))(Control_Apply.applyFirst(Text_Parsing_Parser.applyParserT(Data_Identity.monadIdentity))(expression(Text_Parsing_Parser.lazyParserT)(m))(Text_Parsing_Parser_String.eof(Text_Parsing_Parser_String.stringLikeString)(Data_Identity.monadIdentity))));
       };
@@ -28915,6 +29076,7 @@ var PS = {};
   exports["allFromJson"] = allFromJson;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["Json.VerOne"] = $PS["Json.VerOne"] || {};
   var exports = $PS["Json.VerOne"];
@@ -29417,6 +29579,7 @@ var PS = {};
   exports["setItem"] = $foreign.setItem;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["UI.AppState"] = $PS["UI.AppState"] || {};
   var exports = $PS["UI.AppState"];
