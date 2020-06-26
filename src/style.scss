@@ -1,4 +1,8 @@
-@import url('https://fonts.googleapis.com/css?family=Anonymous+Pro');
+@import url('https://fonts.googleapis.com/css?family=Fira+Sans');
+@font-face {
+    font-family: "FiraCodeFixed";
+    src: url("FiraCodeFixed-Regular.ttf");
+}
 
 @function light-grey($opacity:1) {
     @return rgba(249, 246, 227, $opacity)
@@ -113,7 +117,7 @@ input {
         width: 100%;
         font-size: 1.2em;
         td {
-            font-family: 'Anonymous Pro', monospace;
+            font-family: 'FiraCodeFixed', monospace;
         }
     }
 
@@ -260,7 +264,7 @@ input {
 
     #symbol-list {
         width: 100%;
-        font-family: 'Anonymous Pro', monospace;
+        font-family: 'FiraCodeFixed', monospace;
         font-size: 1.2em;
 
         .symbol-name {
@@ -295,7 +299,7 @@ input {
     }
 
     #alias-select {
-        font-family: 'Anonymous Pro', monospace;
+        font-family: 'FiraCodeFixed', monospace;
         font-size: 1.2em;
     }
 }
@@ -305,7 +309,7 @@ input {
 
     #sequent-list {
         width: 100%;
-        font-family: 'Anonymous Pro', monospace;
+        font-family: 'FiraCodeFixed', monospace;
         font-size: 1.2em;
     }
 

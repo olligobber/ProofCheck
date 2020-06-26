@@ -1,4 +1,7 @@
-@import url("https://fonts.googleapis.com/css?family=Anonymous+Pro");
+@import url("https://fonts.googleapis.com/css?family=Fira+Sans");
+@font-face {
+  font-family: "FiraCodeFixed";
+  src: url("FiraCodeFixed-Regular.ttf"); }
 .no-display {
   display: none; }
 
@@ -84,7 +87,7 @@ input {
     width: 100%;
     font-size: 1.2em; }
     #proof-box tr td {
-      font-family: 'Anonymous Pro', monospace; }
+      font-family: 'FiraCodeFixed', monospace; }
   #proof-box .assumptions, #proof-box .line-number {
     width: 10%;
     display: inline-block; }
@@ -188,7 +191,7 @@ input {
   left: 15%; }
   #symbol-box #symbol-list {
     width: 100%;
-    font-family: 'Anonymous Pro', monospace;
+    font-family: 'FiraCodeFixed', monospace;
     font-size: 1.2em; }
     #symbol-box #symbol-list .symbol-name {
       text-align: right;
@@ -209,14 +212,14 @@ input {
   #symbol-box #set-def {
     width: 80%; }
   #symbol-box #alias-select {
-    font-family: 'Anonymous Pro', monospace;
+    font-family: 'FiraCodeFixed', monospace;
     font-size: 1.2em; }
 
 #sequent-box {
   left: 20%; }
   #sequent-box #sequent-list {
     width: 100%;
-    font-family: 'Anonymous Pro', monospace;
+    font-family: 'FiraCodeFixed', monospace;
     font-size: 1.2em; }
   #sequent-box #new-sequent {
     border-bottom: 0.2em solid #f9f6e3;
