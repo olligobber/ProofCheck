@@ -64,11 +64,7 @@ fromJson :: SymbolMap -> Array Symbol -> Array (Sequent String String String) ->
     Json -> Either String Proof
 fromJson symbolMap syms seqs j = do
     linesArr <- E.note "Proof is not a list" $ AC.toArray j
-    let startP = Proof
-            { assumptions : S.empty
-            , lines : []
-            }
     foldM
         (\p -> toDeduction symbolMap syms seqs p >=> flip P.addDeduction p)
-        startP
+        P.empty
         linesArr

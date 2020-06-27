@@ -2,6 +2,7 @@ module Sequent
     ( Sequent(..)
     , render
     , match
+    , verifyTypes
     ) where
 
 import Prelude
@@ -9,7 +10,7 @@ import Prelude
     , (<>), (<$>), ($), (==)
     , bind, pure, otherwise)
 import Data.Array as A
-import Data.Foldable (fold)
+import Data.Foldable (fold, foldMap)
 import Data.String.Common (joinWith)
 import Data.Tuple (Tuple(..))
 
@@ -58,3 +59,7 @@ match indices (Sequent small) (Sequent big)
         substitution <- m
         pure permutation
     | otherwise = []
+
+verifyTypes :: forall a. Ord a => Sequent a a a -> Boolean
+verifyTypes (Sequent s) =
+    WFF.isWellTyped $ foldMap WFF.getTyping s.ante <> WFF.getTyping s.conse

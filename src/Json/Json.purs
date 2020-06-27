@@ -3,7 +3,7 @@ module Json
     , fromJson
     ) where
 
-import Prelude (($), (<$>), bind, pure)
+import Prelude (($), (<$>), bind, pure, discard, not)
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core as AC
 import Foreign.Object as O
@@ -12,6 +12,8 @@ import Data.Either (Either(..))
 import Data.Either as E
 import Data.Traversable (traverse)
 import Data.Maybe (Maybe(..))
+import Control.Applicative (when)
+import Data.Foldable (all)
 
 import Json.Proof as JP
 import Json.Symbol as JSym
@@ -19,6 +21,7 @@ import Json.Sequent as JSeq
 import Json.VerOne as JVerOne
 import Symbol (Symbol, SymbolMap)
 import Sequent (Sequent)
+import Sequent as Seq
 import Proof (Proof)
 
 toJson :: Array Symbol -> Array (Sequent String String String) -> Proof -> Json
@@ -41,6 +44,8 @@ fromObject o = do
     seqJson <- E.note "Json is missing sequents" $ O.lookup "sequents" o
     seqArr <- E.note "Sequents are not in a list" $ AC.toArray seqJson
     sequents <- traverse (JSeq.fromJson symbolMap) seqArr
+    when (not $ all Seq.verifyTypes sequents) $
+        Left "Sequent is not well typed"
     linesJson <- E.note "Json is missing lines" $ O.lookup "lines" o
     proof <- JP.fromJson symbolMap symbols sequents linesJson
     pure $ { symbolMap, symbols, sequents, proof }

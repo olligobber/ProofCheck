@@ -189,7 +189,7 @@ oldDefaultMap = M.fromFoldable
     [ Tuple "~" $ UnaryOperator WFF.negOp
     , Tuple "∧" $ BinaryOperator WFF.andOp
     , Tuple "∨" $ BinaryOperator WFF.orOp
-    , Tuple "⇒" $ BinaryOperator WFF.impliesOp
+    , Tuple "→" $ BinaryOperator WFF.impliesOp
     , Tuple "&" $ BinaryOperator WFF.andOp
     , Tuple "|" $ BinaryOperator WFF.orOp
     , Tuple "->" $ BinaryOperator WFF.impliesOp

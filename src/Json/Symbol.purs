@@ -74,7 +74,7 @@ fromObject m o | O.member "builtin" o = do
         "~" -> Right $ Builtin $ BuiltinSymbol $ S.UnaryOperator WFF.negOp
         "∧" -> Right $ Builtin $ BuiltinSymbol $ S.BinaryOperator WFF.andOp
         "∨" -> Right $ Builtin $ BuiltinSymbol $ S.BinaryOperator WFF.orOp
-        "⇒" -> Right $ Builtin $ BuiltinSymbol $ S.BinaryOperator WFF.impliesOp
+        "→" -> Right $ Builtin $ BuiltinSymbol $ S.BinaryOperator WFF.impliesOp
         "∀" -> Right $ Builtin $ BuiltinSymbol $ S.QuantOperator WFF.Forall
         "∃" -> Right $ Builtin $ BuiltinSymbol $ S.QuantOperator WFF.Exists
         _ -> Left $ "Unrecognised builtin symbol: " <> symbol

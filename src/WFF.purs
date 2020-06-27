@@ -29,6 +29,9 @@ module WFF
     , freeVars
     , Match
     , Matches(..)
+    , Typing
+    , isWellTyped
+    , getTyping
     ) where
 
 import Prelude
@@ -42,7 +45,7 @@ import Data.String (joinWith)
 import Data.Array as A
 import Data.Maybe (Maybe(..))
 import Data.Either (Either(..))
-import Data.Foldable (all, foldMap)
+import Data.Foldable (all, foldMap, length)
 import Data.Map (Map)
 import Data.Map as M
 import Data.Set (Set)
@@ -250,7 +253,7 @@ orOp :: BinaryOp
 orOp = BinaryOp "∨"
 
 impliesOp :: BinaryOp
-impliesOp = BinaryOp "⇒"
+impliesOp = BinaryOp "→"
 
 neg :: forall pred free bound.
     WFF pred free bound -> WFF pred free bound
@@ -401,3 +404,43 @@ match (Binary b) (Binary c)
 match (Quant q) (Quant r)
     | q.operator == r.operator = match q.contents r.contents
 match _ _ = Matches []
+
+data Type
+    = FreeVar
+    | BoundVar
+    | Predicate Int
+
+derive instance eqType :: Eq Type
+
+instance showType :: Show Type where
+    show FreeVar = "FreeVar"
+    show BoundVar = "BoundVar"
+    show (Predicate x) = "Predicate " <> show x
+
+newtype Typing x = Typing (Maybe (Map x Type))
+
+instance semigroupTyping :: Ord x => Semigroup (Typing x) where
+    append (Typing (Just m)) (Typing (Just n))
+        | all identity $ M.intersectionWith (==) m n
+            = Typing $ Just $ M.union m n
+    append _ _ = Typing Nothing
+
+instance monoidTyping :: Ord x => Monoid (Typing x) where
+    mempty = Typing $ Just $ M.empty
+
+isWellTyped :: forall x. Typing x -> Boolean
+isWellTyped (Typing (Just _)) = true
+isWellTyped (Typing Nothing) = false
+
+getVarTyping :: forall x. Variable x x -> Map x Type
+getVarTyping (Free a) = M.singleton a FreeVar
+getVarTyping (Bound a _) = M.singleton a BoundVar
+
+getTyping :: forall x. Ord x => WFF x x x -> Typing x
+getTyping (Pred p) = foldMap (Typing <<< Just) $
+    [ M.singleton p.predicate $ Predicate $ length p.variables ]
+    <> (getVarTyping <$> p.variables)
+getTyping (Unary u) = getTyping u.contents
+getTyping (Binary b) = getTyping b.left <> getTyping b.right
+getTyping (Quant q) =
+    (Typing $ Just $ M.singleton q.variable BoundVar) <> getTyping q.contents

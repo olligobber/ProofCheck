@@ -10,7 +10,7 @@ module Proof
 
 import Prelude
     ( (<>), (<$>), ($), (>>>), (==), (/=), (+), (-)
-    , show, bind, map, pure
+    , show, bind, map, pure, mempty, not
     )
 import Data.String.Common (joinWith)
 import Data.Set (Set)
@@ -22,7 +22,7 @@ import Data.Array as A
 import Data.Traversable (traverse)
 import Data.Foldable (length)
 
-import WFF (WFF)
+import WFF (WFF, Typing, isWellTyped, getTyping)
 import Deduction
 
 data Deduction = Deduction
@@ -35,6 +35,7 @@ data Deduction = Deduction
 data Proof = Proof
     { lines :: Array Deduction
     , assumptions :: Set Int
+    , types :: Typing String
     }
 
 renderReason :: Deduction -> String
@@ -47,6 +48,7 @@ empty :: Proof
 empty = Proof
     { lines : []
     , assumptions : Set.empty
+    , types : mempty
     }
 
 isEmpty :: Proof -> Boolean
@@ -68,9 +70,11 @@ addDeduction (Deduction d) (Proof p) = do
     antes <- E.note "Invalid line number in reason"
         $ traverse ((_ - 1) >>> A.index p.lines >>> map pack) d.reasons
     assumptions <- matchDeduction antes d.deduction d.rule
+    let newTypes = p.types <> getTyping d.deduction
     case assumptions of
-        Just x | x == d.assumptions -> Right $ Proof $
-            p { lines = p.lines <> [Deduction d] }
+        _ | not (isWellTyped newTypes) -> Left "Invalid types"
+        Just x | x == d.assumptions  -> Right $ Proof $
+            p { lines = p.lines <> [Deduction d], types = newTypes }
         Just _ -> Left "Incorrect assumptions"
         _ | Set.size d.assumptions /= 1 -> Left "Wrong number of assumptions"
         _ | d.assumptions `Set.subset` p.assumptions ->
@@ -78,6 +82,7 @@ addDeduction (Deduction d) (Proof p) = do
         _ -> Right $ Proof $
             { lines : p.lines <> [Deduction d]
             , assumptions : p.assumptions `Set.union` d.assumptions
+            , types : newTypes
             }
 
 getNextUnused :: Set Int -> Int
