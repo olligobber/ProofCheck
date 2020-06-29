@@ -20,9 +20,12 @@ import Data.Either as E
 import Data.Maybe (Maybe(..))
 import Data.Array as A
 import Data.Traversable (traverse)
-import Data.Foldable (length)
+import Data.Foldable (foldMap)
+import Data.Map (Map)
+import Data.Map as M
+import Data.Tuple (Tuple(..))
 
-import WFF (WFF, Typing, isWellTyped, getTyping)
+import WFF (WFF, Typing, isWellTyped, getTyping, freeVars)
 import Deduction
 
 data Deduction = Deduction
@@ -34,7 +37,7 @@ data Deduction = Deduction
 
 data Proof = Proof
     { lines :: Array Deduction
-    , assumptions :: Set Int
+    , assumptions :: Map Int (Set String)
     , types :: Typing String
     }
 
@@ -47,7 +50,7 @@ renderReason (Deduction d) =
 empty :: Proof
 empty = Proof
     { lines : []
-    , assumptions : Set.empty
+    , assumptions : M.empty
     , types : mempty
     }
 
@@ -69,7 +72,7 @@ addDeduction :: Deduction -> Proof -> Either String Proof
 addDeduction (Deduction d) (Proof p) = do
     antes <- E.note "Invalid line number in reason"
         $ traverse ((_ - 1) >>> A.index p.lines >>> map pack) d.reasons
-    assumptions <- matchDeduction antes d.deduction d.rule
+    assumptions <- matchDeduction antes p.assumptions d.deduction d.rule
     let newTypes = p.types <> getTyping d.deduction
     case assumptions of
         _ | not (isWellTyped newTypes) -> Left "Invalid types"
@@ -77,11 +80,12 @@ addDeduction (Deduction d) (Proof p) = do
             p { lines = p.lines <> [Deduction d], types = newTypes }
         Just _ -> Left "Incorrect assumptions"
         _ | Set.size d.assumptions /= 1 -> Left "Wrong number of assumptions"
-        _ | d.assumptions `Set.subset` p.assumptions ->
+        _ | d.assumptions `Set.subset` M.keys p.assumptions ->
             Left "Assumption number already in use"
         _ -> Right $ Proof $
             { lines : p.lines <> [Deduction d]
-            , assumptions : p.assumptions `Set.union` d.assumptions
+            , assumptions : p.assumptions `M.union` M.fromFoldable
+                (Set.map (\x -> Tuple x $ freeVars d.deduction) d.assumptions)
             , types : newTypes
             }
 
@@ -96,7 +100,7 @@ getAssumptions :: Deduction -> Proof -> Either String (Set Int)
 getAssumptions (Deduction d) (Proof p) = do
     antes <- E.note "Invalid line number in reason"
         $ traverse ((_ - 1) >>> A.index p.lines >>> map pack) d.reasons
-    assumptions <- matchDeduction antes d.deduction d.rule
+    assumptions <- matchDeduction antes p.assumptions d.deduction d.rule
     case assumptions of
         Just s -> pure s
-        Nothing -> pure $ Set.singleton $ getNextUnused p.assumptions
+        Nothing -> pure $ Set.singleton $ getNextUnused $ M.keys p.assumptions

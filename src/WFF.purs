@@ -12,6 +12,7 @@ module WFF
     , traverseFree
     , traverseBound
     , prop
+    , pred
     , negOp
     , andOp
     , impliesOp
@@ -123,8 +124,12 @@ data WFF pred free bound
         , contents :: WFF pred free bound
         }
 
+pred :: forall pred free bound.
+    pred -> Array (Variable free bound) -> WFF pred free bound
+pred f x = Pred { predicate : f, variables : x}
+
 prop :: forall pred free bound. pred -> WFF pred free bound
-prop x = Pred { predicate : x, variables : []}
+prop x = pred x []
 
 derive instance eqWFF :: (Eq pred, Eq free, Eq bound) =>
     Eq (WFF pred free bound)

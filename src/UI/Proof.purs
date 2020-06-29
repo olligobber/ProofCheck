@@ -149,6 +149,10 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
                 , Tuple "∧E" $ Full AndElimination
                 , Tuple "∨I" $ Full OrIntroduction
                 , Tuple "∨E" $ Full OrElimination
+                , Tuple "∀I" $ Full UniversalIntroduction
+                , Tuple "∀E" $ Full UniversalElimination
+                , Tuple "∃I" $ Full ExistentialIntroduction
+                , Tuple "∃E" $ Full ExistentialElimination
                 , Tuple "RAA" $ Full RAA
                 , Tuple "SI" PartSequent
                 , Tuple "Def" PartSymbol

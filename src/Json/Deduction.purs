@@ -61,6 +61,10 @@ fromString "∧I" = Right AndIntroduction
 fromString "∧E" = Right AndElimination
 fromString "∨I" = Right OrIntroduction
 fromString "∨E" = Right OrElimination
+fromString "∀I" = Right UniversalIntroduction
+fromString "∀E" = Right UniversalElimination
+fromString "∃I" = Right ExistentialIntroduction
+fromString "∃E" = Right ExistentialElimination
 fromString "RAA" = Right RAA
 fromString r = Left $ "Invalid non-indexed deduction rule: " <> r
 

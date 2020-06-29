@@ -17,7 +17,7 @@ import Data.Tuple (Tuple(..))
 import Data.Traversable (traverse)
 import Data.Maybe (Maybe(..))
 
-import WFF (WFF)
+import WFF (WFF, Match)
 import WFF as WFF
 
 data Sequent pred free bound = Sequent
@@ -49,26 +49,30 @@ permute l = do
     pure $ A.cons h t
 
 -- Match a sequent to one after substitutions were applied and the antecedents
--- permuted, returning all possible inverse permutations
+-- permuted, returning all possible substitutions and inverse permutations
 match :: forall a b c x y z i.
     Ord a => Ord b => Eq x => Ord y => Eq z => Eq i =>
-    Array i -> Sequent a b c -> Sequent x y z -> Array (Array i)
+    Array i -> Sequent a b c -> Sequent x y z ->
+    Array { perm :: Array i, sub :: Match a b x y }
 match indices (Sequent small) (Sequent big)
     | A.length small.ante == A.length big.ante = do
         let indexedAnte = A.zip indices big.ante
-        Tuple permutation bigantes <- A.unzip <$> permute indexedAnte
+        Tuple perm bigantes <- A.unzip <$> permute indexedAnte
         let WFF.Matches m =
                 match1 (Sequent small) $ Sequent $ big { ante = bigantes }
-        substitution <- m
-        pure permutation
+        sub <- m
+        pure { perm, sub }
     | otherwise = []
 
 -- Match a sequent to one after substitutions were applied and the formulas
--- lifted uniformly, returning all possible inverse permutations
--- Probably won't work with multiple antecedents and alpha equivalent quantifiers
+-- lifted uniformly, returning all possible substitutions and inverse
+-- permutations
+-- Probably won't work with multiple antecedents and alpha equivalent
+-- quantifiers
 matchLift :: forall a b c x y z i.
     Ord a => Ord b => Eq x => Ord y => Eq z => Eq i =>
-    Array i -> Sequent a b c -> Sequent x y z -> Array (Array i)
+    Array i -> Sequent a b c -> Sequent x y z ->
+    Array { perm :: Array i, sub :: Match a b x y }
 matchLift indices small (Sequent big) =
     plainMatch (Sequent big) <> case big.conse of
         WFF.Unary u -> case traverse fromUnary big.ante of
