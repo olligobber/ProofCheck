@@ -2,17 +2,20 @@ module Sequent
     ( Sequent(..)
     , render
     , match
+    , matchLift
     , verifyTypes
     ) where
 
 import Prelude
     ( class Eq, class Ord
-    , (<>), (<$>), ($), (==)
+    , (<>), (<$>), ($), (==), (<<<), (&&)
     , bind, pure, otherwise)
 import Data.Array as A
-import Data.Foldable (fold, foldMap)
+import Data.Foldable (fold, foldMap, all)
 import Data.String.Common (joinWith)
 import Data.Tuple (Tuple(..))
+import Data.Traversable (traverse)
+import Data.Maybe (Maybe(..))
 
 import WFF (WFF)
 import WFF as WFF
@@ -59,6 +62,47 @@ match indices (Sequent small) (Sequent big)
         substitution <- m
         pure permutation
     | otherwise = []
+
+-- Match a sequent to one after substitutions were applied and the formulas
+-- lifted uniformly, returning all possible inverse permutations
+-- Probably won't work with multiple antecedents and alpha equivalent quantifiers
+matchLift :: forall a b c x y z i.
+    Ord a => Ord b => Eq x => Ord y => Eq z => Eq i =>
+    Array i -> Sequent a b c -> Sequent x y z -> Array (Array i)
+matchLift indices small (Sequent big) =
+    plainMatch (Sequent big) <> case big.conse of
+        WFF.Unary u -> case traverse fromUnary big.ante of
+            Just uantes | all ((_ == u.operator) <<< _.operator) uantes ->
+                recurseMatch $
+                    Sequent { ante : _.contents <$> uantes, conse : u.contents }
+            _ -> []
+        WFF.Binary b -> case traverse fromBinary big.ante of
+            Just bantes | all
+                ((_ == b.left) <<< _.left && (_ == b.operator) <<< _.operator)
+                bantes ->
+                    recurseMatch $
+                        Sequent { ante : _.right <$> bantes, conse : b.right }
+            Just bantes | all
+                ((_ == b.right) <<< _.right && (_ == b.operator) <<< _.operator)
+                bantes ->
+                    recurseMatch $
+                        Sequent { ante : _.left <$> bantes, conse : b.left }
+            _ -> []
+        WFF.Quant q -> case traverse fromQuant big.ante of
+            Just qantes | all ((_ == q.operator) <<< _.operator) qantes ->
+                recurseMatch $
+                    Sequent { ante : _.contents <$> qantes, conse : q.contents }
+            _ -> []
+        _ -> []
+    where
+        plainMatch = match indices small
+        recurseMatch = matchLift indices small
+        fromUnary (WFF.Unary u) = Just u
+        fromUnary _ = Nothing
+        fromBinary (WFF.Binary b) = Just b
+        fromBinary _ = Nothing
+        fromQuant (WFF.Quant q) = Just q
+        fromQuant _ = Nothing
 
 verifyTypes :: forall a. Ord a => Sequent a a a -> Boolean
 verifyTypes (Sequent s) =

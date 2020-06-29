@@ -7,7 +7,7 @@ module Deduction
 
 import Prelude
     ( (<>), (<$>), ($)
-    , bind, pure, discard, not
+    , bind, pure, discard
     , class Eq, class Ord
     )
 import Data.Either (Either(..))
@@ -147,13 +147,12 @@ matchDeduction a conse d@OrElimination =
         guard $ secondA.isAssumption
         guard $ firstA.assumptions `Set.subset` firstC.assumptions
         guard $ secondA.assumptions `Set.subset` secondC.assumptions
-        guard $ not $ firstA.assumptions `Set.subset` secondC.assumptions
-        guard $ not $ firstA.assumptions `Set.subset` orA.assumptions
-        guard $ not $ secondA.assumptions `Set.subset` firstC.assumptions
-        guard $ not $ secondA.assumptions `Set.subset` orA.assumptions
         pure $
-            Set.unions (_.assumptions <$> [orA, firstC, secondC])
-            `Set.difference` Set.unions (_.assumptions <$> [firstA, secondA])
+            Set.unions
+                [ orA.assumptions
+                , firstC.assumptions `Set.difference` firstA.assumptions
+                , secondC.assumptions `Set.difference` secondA.assumptions
+                ]
     of
         Nothing -> Left "Invalid use of deduction rule"
         x -> Right x
@@ -170,10 +169,17 @@ matchDeduction a conse d@RAA =
     of
         Nothing -> Left "Invalid use of deduction rule"
         x -> Right x
+matchDeduction a conse d@(Definition _ _) =
+    case do
+        s <- toSequents d
+        Seq.matchLift a s $ Sequent {ante : _.formula <$> a, conse}
+    of
+        [] -> Left "Invalid use of deduction rule"
+        _ -> Right $ Just $ Set.unions $ _.assumptions <$> a
 matchDeduction a conse d =
     case do
         s <- toSequents d
         Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
     of
         [] -> Left "Invalid use of deduction rule"
-        _ -> Right $ Just $ Set.unions $_.assumptions <$> a
+        _ -> Right $ Just $ Set.unions $ _.assumptions <$> a

@@ -22924,6 +22924,7 @@ var PS = {};
   exports["Pred"] = Pred;
   exports["Unary"] = Unary;
   exports["Binary"] = Binary;
+  exports["Quant"] = Quant;
   exports["render"] = render;
   exports["renderQ"] = renderQ;
   exports["renderUnaryOp"] = renderUnaryOp;
@@ -22949,6 +22950,7 @@ var PS = {};
   exports["ordUnaryOp"] = ordUnaryOp;
   exports["eqBinaryOp"] = eqBinaryOp;
   exports["ordBinaryOp"] = ordBinaryOp;
+  exports["eqQuantifier"] = eqQuantifier;
   exports["eqWFF"] = eqWFF;
   exports["ordWFF"] = ordWFF;
   exports["semigroupMatches"] = semigroupMatches;
@@ -22967,10 +22969,13 @@ var PS = {};
   var Data_Eq = $PS["Data.Eq"];
   var Data_Foldable = $PS["Data.Foldable"];
   var Data_Functor = $PS["Data.Functor"];
+  var Data_HeytingAlgebra = $PS["Data.HeytingAlgebra"];
+  var Data_Maybe = $PS["Data.Maybe"];
   var Data_Ord = $PS["Data.Ord"];
   var Data_Ordering = $PS["Data.Ordering"];
   var Data_Semigroup = $PS["Data.Semigroup"];
   var Data_String_Common = $PS["Data.String.Common"];
+  var Data_Traversable = $PS["Data.Traversable"];
   var Data_Tuple = $PS["Data.Tuple"];
   var WFF = $PS["WFF"];                
   var Sequent = (function () {
@@ -23044,7 +23049,132 @@ var PS = {};
                                       if (Data_Boolean.otherwise) {
                                           return [  ];
                                       };
-                                      throw new Error("Failed pattern match at Sequent (line 50, column 1 - line 52, column 65): " + [ indices.constructor.name, v.constructor.name, v1.constructor.name ]);
+                                      throw new Error("Failed pattern match at Sequent (line 53, column 1 - line 55, column 65): " + [ indices.constructor.name, v.constructor.name, v1.constructor.name ]);
+                                  };
+                              };
+                          };
+                      };
+                  };
+              };
+          };
+      };
+  };
+
+  // Match a sequent to one after substitutions were applied and the formulas
+  // lifted uniformly, returning all possible inverse permutations
+  // Probably won't work with multiple antecedents and alpha equivalent quantifiers
+  var matchLift = function (dictOrd) {
+      return function (dictOrd1) {
+          return function (dictEq) {
+              return function (dictOrd2) {
+                  return function (dictEq1) {
+                      return function (dictEq2) {
+                          return function (indices) {
+                              return function (small) {
+                                  return function (v) {
+                                      var recurseMatch = matchLift(dictOrd)(dictOrd1)(dictEq)(dictOrd2)(dictEq1)(dictEq2)(indices)(small);
+                                      var plainMatch = match(dictOrd)(dictOrd1)(dictEq)(dictOrd2)(dictEq1)(dictEq2)(indices)(small);
+                                      var fromUnary = function (v1) {
+                                          if (v1 instanceof WFF.Unary) {
+                                              return new Data_Maybe.Just(v1.value0);
+                                          };
+                                          return Data_Maybe.Nothing.value;
+                                      };
+                                      var fromQuant = function (v1) {
+                                          if (v1 instanceof WFF.Quant) {
+                                              return new Data_Maybe.Just(v1.value0);
+                                          };
+                                          return Data_Maybe.Nothing.value;
+                                      };
+                                      var fromBinary = function (v1) {
+                                          if (v1 instanceof WFF.Binary) {
+                                              return new Data_Maybe.Just(v1.value0);
+                                          };
+                                          return Data_Maybe.Nothing.value;
+                                      };
+                                      return Data_Semigroup.append(Data_Semigroup.semigroupArray)(plainMatch(new Sequent(v.value0)))((function () {
+                                          if (v.value0.conse instanceof WFF.Unary) {
+                                              var v1 = Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)(fromUnary)(v.value0.ante);
+                                              if (v1 instanceof Data_Maybe.Just && Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)(function ($116) {
+                                                  return (function (v2) {
+                                                      return Data_Eq.eq(WFF.eqUnaryOp)(v2)(v.value0.conse.value0.operator);
+                                                  })((function (v2) {
+                                                      return v2.operator;
+                                                  })($116));
+                                              })(v1.value0)) {
+                                                  return recurseMatch(new Sequent({
+                                                      ante: Data_Functor.map(Data_Functor.functorArray)(function (v2) {
+                                                          return v2.contents;
+                                                      })(v1.value0),
+                                                      conse: v.value0.conse.value0.contents
+                                                  }));
+                                              };
+                                              return [  ];
+                                          };
+                                          if (v.value0.conse instanceof WFF.Binary) {
+                                              var v1 = Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)(fromBinary)(v.value0.ante);
+                                              if (v1 instanceof Data_Maybe.Just && Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)(Data_HeytingAlgebra.conj(Data_HeytingAlgebra.heytingAlgebraFunction(Data_HeytingAlgebra.heytingAlgebraBoolean))(function ($117) {
+                                                  return (function (v2) {
+                                                      return Data_Eq.eq(WFF.eqWFF(dictEq)(dictOrd2.Eq0())(dictEq1))(v2)(v.value0.conse.value0.left);
+                                                  })((function (v2) {
+                                                      return v2.left;
+                                                  })($117));
+                                              })(function ($118) {
+                                                  return (function (v2) {
+                                                      return Data_Eq.eq(WFF.eqBinaryOp)(v2)(v.value0.conse.value0.operator);
+                                                  })((function (v2) {
+                                                      return v2.operator;
+                                                  })($118));
+                                              }))(v1.value0)) {
+                                                  return recurseMatch(new Sequent({
+                                                      ante: Data_Functor.map(Data_Functor.functorArray)(function (v2) {
+                                                          return v2.right;
+                                                      })(v1.value0),
+                                                      conse: v.value0.conse.value0.right
+                                                  }));
+                                              };
+                                              if (v1 instanceof Data_Maybe.Just && Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)(Data_HeytingAlgebra.conj(Data_HeytingAlgebra.heytingAlgebraFunction(Data_HeytingAlgebra.heytingAlgebraBoolean))(function ($119) {
+                                                  return (function (v2) {
+                                                      return Data_Eq.eq(WFF.eqWFF(dictEq)(dictOrd2.Eq0())(dictEq1))(v2)(v.value0.conse.value0.right);
+                                                  })((function (v2) {
+                                                      return v2.right;
+                                                  })($119));
+                                              })(function ($120) {
+                                                  return (function (v2) {
+                                                      return Data_Eq.eq(WFF.eqBinaryOp)(v2)(v.value0.conse.value0.operator);
+                                                  })((function (v2) {
+                                                      return v2.operator;
+                                                  })($120));
+                                              }))(v1.value0)) {
+                                                  return recurseMatch(new Sequent({
+                                                      ante: Data_Functor.map(Data_Functor.functorArray)(function (v2) {
+                                                          return v2.left;
+                                                      })(v1.value0),
+                                                      conse: v.value0.conse.value0.left
+                                                  }));
+                                              };
+                                              return [  ];
+                                          };
+                                          if (v.value0.conse instanceof WFF.Quant) {
+                                              var v1 = Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)(fromQuant)(v.value0.ante);
+                                              if (v1 instanceof Data_Maybe.Just && Data_Foldable.all(Data_Foldable.foldableArray)(Data_HeytingAlgebra.heytingAlgebraBoolean)(function ($121) {
+                                                  return (function (v2) {
+                                                      return Data_Eq.eq(WFF.eqQuantifier)(v2)(v.value0.conse.value0.operator);
+                                                  })((function (v2) {
+                                                      return v2.operator;
+                                                  })($121));
+                                              })(v1.value0)) {
+                                                  return recurseMatch(new Sequent({
+                                                      ante: Data_Functor.map(Data_Functor.functorArray)(function (v2) {
+                                                          return v2.contents;
+                                                      })(v1.value0),
+                                                      conse: v.value0.conse.value0.contents
+                                                  }));
+                                              };
+                                              return [  ];
+                                          };
+                                          return [  ];
+                                      })());
                                   };
                               };
                           };
@@ -23088,6 +23218,7 @@ var PS = {};
   exports["Sequent"] = Sequent;
   exports["render"] = render;
   exports["match"] = match;
+  exports["matchLift"] = matchLift;
   exports["verifyTypes"] = verifyTypes;
   exports["eqSequent"] = eqSequent;
   exports["ordSequent"] = ordSequent;
@@ -23756,19 +23887,7 @@ var PS = {};
                                                   return Control_Bind.discard(Control_Bind.discardUnit)(Control_Bind.bindArray)(Control_MonadZero.guard(Control_MonadZero.monadZeroArray)(secondA.isAssumption))(function () {
                                                       return Control_Bind.discard(Control_Bind.discardUnit)(Control_Bind.bindArray)(Control_MonadZero.guard(Control_MonadZero.monadZeroArray)(Data_Set.subset(Data_Ord.ordInt)(firstA.assumptions)(firstC.assumptions)))(function () {
                                                           return Control_Bind.discard(Control_Bind.discardUnit)(Control_Bind.bindArray)(Control_MonadZero.guard(Control_MonadZero.monadZeroArray)(Data_Set.subset(Data_Ord.ordInt)(secondA.assumptions)(secondC.assumptions)))(function () {
-                                                              return Control_Bind.discard(Control_Bind.discardUnit)(Control_Bind.bindArray)(Control_MonadZero.guard(Control_MonadZero.monadZeroArray)(!Data_Set.subset(Data_Ord.ordInt)(firstA.assumptions)(secondC.assumptions)))(function () {
-                                                                  return Control_Bind.discard(Control_Bind.discardUnit)(Control_Bind.bindArray)(Control_MonadZero.guard(Control_MonadZero.monadZeroArray)(!Data_Set.subset(Data_Ord.ordInt)(firstA.assumptions)(orA.assumptions)))(function () {
-                                                                      return Control_Bind.discard(Control_Bind.discardUnit)(Control_Bind.bindArray)(Control_MonadZero.guard(Control_MonadZero.monadZeroArray)(!Data_Set.subset(Data_Ord.ordInt)(secondA.assumptions)(firstC.assumptions)))(function () {
-                                                                          return Control_Bind.discard(Control_Bind.discardUnit)(Control_Bind.bindArray)(Control_MonadZero.guard(Control_MonadZero.monadZeroArray)(!Data_Set.subset(Data_Ord.ordInt)(secondA.assumptions)(orA.assumptions)))(function () {
-                                                                              return Control_Applicative.pure(Control_Applicative.applicativeArray)(Data_Set.difference(Data_Ord.ordInt)(Data_Set.unions(Data_Foldable.foldableArray)(Data_Ord.ordInt)(Data_Functor.map(Data_Functor.functorArray)(function (v2) {
-                                                                                  return v2.assumptions;
-                                                                              })([ orA, firstC, secondC ])))(Data_Set.unions(Data_Foldable.foldableArray)(Data_Ord.ordInt)(Data_Functor.map(Data_Functor.functorArray)(function (v2) {
-                                                                                  return v2.assumptions;
-                                                                              })([ firstA, secondA ]))));
-                                                                          });
-                                                                      });
-                                                                  });
-                                                              });
+                                                              return Control_Applicative.pure(Control_Applicative.applicativeArray)(Data_Set.unions(Data_Foldable.foldableArray)(Data_Ord.ordInt)([ orA.assumptions, Data_Set.difference(Data_Ord.ordInt)(firstC.assumptions)(firstA.assumptions), Data_Set.difference(Data_Ord.ordInt)(secondC.assumptions)(secondA.assumptions) ]));
                                                           });
                                                       });
                                                   });
@@ -23814,6 +23933,28 @@ var PS = {};
                       return new Data_Either.Left("Invalid use of deduction rule");
                   };
                   return new Data_Either.Right(v1);
+              };
+              if (v instanceof Definition) {
+                  var v1 = Control_Bind.bind(Control_Bind.bindArray)(toSequents(v))(function (s) {
+                      return Sequent.matchLift(Data_Ord.ordString)(Data_Ord.ordString)(Data_Eq.eqString)(Data_Ord.ordString)(Data_Eq.eqString)(Data_Eq.eqRec()(Data_Eq.eqRowCons(Data_Eq.eqRowCons(Data_Eq.eqRowCons(Data_Eq.eqRowNil)()(new Data_Symbol.IsSymbol(function () {
+                          return "isAssumption";
+                      }))(Data_Eq.eqBoolean))()(new Data_Symbol.IsSymbol(function () {
+                          return "formula";
+                      }))(WFF.eqWFF(Data_Eq.eqString)(Data_Eq.eqString)(Data_Eq.eqString)))()(new Data_Symbol.IsSymbol(function () {
+                          return "assumptions";
+                      }))(Data_Set.eqSet(Data_Eq.eqInt))))(a)(s)(new Sequent.Sequent({
+                          ante: Data_Functor.map(Data_Functor.functorArray)(function (v2) {
+                              return v2.formula;
+                          })(a),
+                          conse: conse
+                      }));
+                  });
+                  if (v1.length === 0) {
+                      return new Data_Either.Left("Invalid use of deduction rule");
+                  };
+                  return Data_Either.Right.create(Data_Maybe.Just.create(Data_Set.unions(Data_Foldable.foldableArray)(Data_Ord.ordInt)(Data_Functor.map(Data_Functor.functorArray)(function (v2) {
+                      return v2.assumptions;
+                  })(a))));
               };
               var v1 = Control_Bind.bind(Control_Bind.bindArray)(toSequents(v))(function (s) {
                   return Sequent.match(Data_Ord.ordString)(Data_Ord.ordString)(Data_Eq.eqString)(Data_Ord.ordString)(Data_Eq.eqString)(Data_Eq.eqRec()(Data_Eq.eqRowCons(Data_Eq.eqRowCons(Data_Eq.eqRowCons(Data_Eq.eqRowNil)()(new Data_Symbol.IsSymbol(function () {
