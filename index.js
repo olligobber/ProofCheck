@@ -23825,34 +23825,6 @@ var PS = {};
       OrElimination.value = new OrElimination();
       return OrElimination;
   })();
-  var UniversalIntroduction = (function () {
-      function UniversalIntroduction() {
-
-      };
-      UniversalIntroduction.value = new UniversalIntroduction();
-      return UniversalIntroduction;
-  })();
-  var UniversalElimination = (function () {
-      function UniversalElimination() {
-
-      };
-      UniversalElimination.value = new UniversalElimination();
-      return UniversalElimination;
-  })();
-  var ExistentialIntroduction = (function () {
-      function ExistentialIntroduction() {
-
-      };
-      ExistentialIntroduction.value = new ExistentialIntroduction();
-      return ExistentialIntroduction;
-  })();
-  var ExistentialElimination = (function () {
-      function ExistentialElimination() {
-
-      };
-      ExistentialElimination.value = new ExistentialElimination();
-      return ExistentialElimination;
-  })();
   var RAA = (function () {
       function RAA() {
 
@@ -23883,6 +23855,34 @@ var PS = {};
           };
       };
       return Introduction;
+  })();
+  var UniversalIntroduction = (function () {
+      function UniversalIntroduction() {
+
+      };
+      UniversalIntroduction.value = new UniversalIntroduction();
+      return UniversalIntroduction;
+  })();
+  var UniversalElimination = (function () {
+      function UniversalElimination() {
+
+      };
+      UniversalElimination.value = new UniversalElimination();
+      return UniversalElimination;
+  })();
+  var ExistentialIntroduction = (function () {
+      function ExistentialIntroduction() {
+
+      };
+      ExistentialIntroduction.value = new ExistentialIntroduction();
+      return ExistentialIntroduction;
+  })();
+  var ExistentialElimination = (function () {
+      function ExistentialElimination() {
+
+      };
+      ExistentialElimination.value = new ExistentialElimination();
+      return ExistentialElimination;
   })();
   var toSequents = function (v) {
       if (v instanceof Assumption) {
@@ -24043,7 +24043,7 @@ var PS = {};
  *     Check a deduction was correctly applied, given
  *         - the list of referenced formulas, whether they were assumptions, and
  *             what assumptions they rely on
- *         - the set of free variables in the assumptions
+ *         - the map from assumption numbers to formulas
  *         - the conclusion
  *         - the deduction rule
  *     returns either an error or the assumptions the conclusion relies on,
@@ -24164,10 +24164,10 @@ var PS = {};
                                   return v4.assumptions;
                               })(a);
                               var assFreeVars = Data_Foldable.fold(Data_Set.foldableSet)(Data_Set.monoidSet(Data_Ord.ordString))(Data_Set.mapMaybe(Data_Set.ordSet(Data_Ord.ordString))((function () {
-                                  var $132 = Data_Functor.map(Data_Maybe.functorMaybe)(WFF.freeVars(Data_Ord.ordString));
-                                  var $133 = Data_Function.flip(Data_Map_Internal.lookup(Data_Ord.ordInt))(v);
-                                  return function ($134) {
-                                      return $132($133($134));
+                                  var $136 = Data_Functor.map(Data_Maybe.functorMaybe)(WFF.freeVars(Data_Ord.ordString));
+                                  var $137 = Data_Function.flip(Data_Map_Internal.lookup(Data_Ord.ordInt))(v);
+                                  return function ($138) {
+                                      return $136($137($138));
                                   };
                               })())(assumptions));
                               var v4 = Data_Map_Internal.lookup(Data_Ord.ordString)("x")(v3.sub.freeMatch);
@@ -24211,10 +24211,10 @@ var PS = {};
                                               return Control_Bind.discard(Control_Bind.discardUnit)(Control_Bind.bindArray)(Control_MonadZero.guard(Control_MonadZero.monadZeroArray)(Data_Set.subset(Data_Ord.ordInt)(assumption.assumptions)(conclusion.assumptions)))(function () {
                                                   var assumptions = Data_Set.union(Data_Ord.ordInt)(existential.assumptions)(Data_Set.difference(Data_Ord.ordInt)(conclusion.assumptions)(assumption.assumptions));
                                                   var assFreeVars = Data_Foldable.fold(Data_Set.foldableSet)(Data_Set.monoidSet(Data_Ord.ordString))(Data_Set.mapMaybe(Data_Set.ordSet(Data_Ord.ordString))((function () {
-                                                      var $135 = Data_Functor.map(Data_Maybe.functorMaybe)(WFF.freeVars(Data_Ord.ordString));
-                                                      var $136 = Data_Function.flip(Data_Map_Internal.lookup(Data_Ord.ordInt))(v);
-                                                      return function ($137) {
-                                                          return $135($136($137));
+                                                      var $139 = Data_Functor.map(Data_Maybe.functorMaybe)(WFF.freeVars(Data_Ord.ordString));
+                                                      var $140 = Data_Function.flip(Data_Map_Internal.lookup(Data_Ord.ordInt))(v);
+                                                      return function ($141) {
+                                                          return $139($140($141));
                                                       };
                                                   })())(assumptions));
                                                   var v4 = Data_Map_Internal.lookup(Data_Ord.ordString)("x")(v3.sub.freeMatch);
@@ -24355,6 +24355,15 @@ var PS = {};
           if (x instanceof OrElimination && y instanceof OrElimination) {
               return true;
           };
+          if (x instanceof RAA && y instanceof RAA) {
+              return true;
+          };
+          if (x instanceof Definition && y instanceof Definition) {
+              return Data_Eq.eq($$Symbol.eqCustomSymbol)(x.value0)(y.value0) && x.value1 === y.value1;
+          };
+          if (x instanceof Introduction && y instanceof Introduction) {
+              return Data_Eq.eq(Sequent.eqSequent(Data_Eq.eqString)(Data_Eq.eqString)(Data_Eq.eqString))(x.value0)(y.value0) && x.value1 === y.value1;
+          };
           if (x instanceof UniversalIntroduction && y instanceof UniversalIntroduction) {
               return true;
           };
@@ -24366,15 +24375,6 @@ var PS = {};
           };
           if (x instanceof ExistentialElimination && y instanceof ExistentialElimination) {
               return true;
-          };
-          if (x instanceof RAA && y instanceof RAA) {
-              return true;
-          };
-          if (x instanceof Definition && y instanceof Definition) {
-              return Data_Eq.eq($$Symbol.eqCustomSymbol)(x.value0)(y.value0) && x.value1 === y.value1;
-          };
-          if (x instanceof Introduction && y instanceof Introduction) {
-              return Data_Eq.eq(Sequent.eqSequent(Data_Eq.eqString)(Data_Eq.eqString)(Data_Eq.eqString))(x.value0)(y.value0) && x.value1 === y.value1;
           };
           return false;
       };
@@ -24464,42 +24464,6 @@ var PS = {};
           if (y instanceof OrElimination) {
               return Data_Ordering.GT.value;
           };
-          if (x instanceof UniversalIntroduction && y instanceof UniversalIntroduction) {
-              return Data_Ordering.EQ.value;
-          };
-          if (x instanceof UniversalIntroduction) {
-              return Data_Ordering.LT.value;
-          };
-          if (y instanceof UniversalIntroduction) {
-              return Data_Ordering.GT.value;
-          };
-          if (x instanceof UniversalElimination && y instanceof UniversalElimination) {
-              return Data_Ordering.EQ.value;
-          };
-          if (x instanceof UniversalElimination) {
-              return Data_Ordering.LT.value;
-          };
-          if (y instanceof UniversalElimination) {
-              return Data_Ordering.GT.value;
-          };
-          if (x instanceof ExistentialIntroduction && y instanceof ExistentialIntroduction) {
-              return Data_Ordering.EQ.value;
-          };
-          if (x instanceof ExistentialIntroduction) {
-              return Data_Ordering.LT.value;
-          };
-          if (y instanceof ExistentialIntroduction) {
-              return Data_Ordering.GT.value;
-          };
-          if (x instanceof ExistentialElimination && y instanceof ExistentialElimination) {
-              return Data_Ordering.EQ.value;
-          };
-          if (x instanceof ExistentialElimination) {
-              return Data_Ordering.LT.value;
-          };
-          if (y instanceof ExistentialElimination) {
-              return Data_Ordering.GT.value;
-          };
           if (x instanceof RAA && y instanceof RAA) {
               return Data_Ordering.EQ.value;
           };
@@ -24535,6 +24499,42 @@ var PS = {};
               };
               return Data_Ord.compare(Data_Ord.ordInt)(x.value1)(y.value1);
           };
+          if (x instanceof Introduction) {
+              return Data_Ordering.LT.value;
+          };
+          if (y instanceof Introduction) {
+              return Data_Ordering.GT.value;
+          };
+          if (x instanceof UniversalIntroduction && y instanceof UniversalIntroduction) {
+              return Data_Ordering.EQ.value;
+          };
+          if (x instanceof UniversalIntroduction) {
+              return Data_Ordering.LT.value;
+          };
+          if (y instanceof UniversalIntroduction) {
+              return Data_Ordering.GT.value;
+          };
+          if (x instanceof UniversalElimination && y instanceof UniversalElimination) {
+              return Data_Ordering.EQ.value;
+          };
+          if (x instanceof UniversalElimination) {
+              return Data_Ordering.LT.value;
+          };
+          if (y instanceof UniversalElimination) {
+              return Data_Ordering.GT.value;
+          };
+          if (x instanceof ExistentialIntroduction && y instanceof ExistentialIntroduction) {
+              return Data_Ordering.EQ.value;
+          };
+          if (x instanceof ExistentialIntroduction) {
+              return Data_Ordering.LT.value;
+          };
+          if (y instanceof ExistentialIntroduction) {
+              return Data_Ordering.GT.value;
+          };
+          if (x instanceof ExistentialElimination && y instanceof ExistentialElimination) {
+              return Data_Ordering.EQ.value;
+          };
           throw new Error("Failed pattern match at Deduction (line 52, column 1 - line 52, column 54): " + [ x.constructor.name, y.constructor.name ]);
       };
   });
@@ -24547,13 +24547,13 @@ var PS = {};
   exports["AndElimination"] = AndElimination;
   exports["OrIntroduction"] = OrIntroduction;
   exports["OrElimination"] = OrElimination;
+  exports["RAA"] = RAA;
+  exports["Definition"] = Definition;
+  exports["Introduction"] = Introduction;
   exports["UniversalIntroduction"] = UniversalIntroduction;
   exports["UniversalElimination"] = UniversalElimination;
   exports["ExistentialIntroduction"] = ExistentialIntroduction;
   exports["ExistentialElimination"] = ExistentialElimination;
-  exports["RAA"] = RAA;
-  exports["Definition"] = Definition;
-  exports["Introduction"] = Introduction;
   exports["isAssumption"] = isAssumption;
   exports["renderRule"] = renderRule;
   exports["matchDeduction"] = matchDeduction;
@@ -29013,6 +29013,7 @@ var PS = {};
   exports["fromJson"] = fromJson;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["Proof"] = $PS["Proof"] || {};
   var exports = $PS["Proof"];
@@ -31078,7 +31079,7 @@ var PS = {};
           return Data_Maybe.Just.create(Formula.create($127));
       }), Halogen_HTML_Properties.id_("formula-input"), Halogen_HTML_Properties.value(state.formula) ]) ]), Halogen_HTML_Elements.td([ Halogen_HTML_Properties.class_("reason") ])([ UI_HTMLHelp.select(ordPartialDeduction)("reason-dropdown")(function ($128) {
           return Data_Maybe.Just.create(Reason.create($128));
-      })(Data_Function["const"](false))(makePartial(state.reason))([ Data_Tuple.Tuple.create("A")(new Full(Deduction.Assumption.value)), Data_Tuple.Tuple.create("MP")(new Full(Deduction.ModusPonens.value)), Data_Tuple.Tuple.create("MT")(new Full(Deduction.ModusTollens.value)), Data_Tuple.Tuple.create("DN")(new Full(Deduction.DoubleNegation.value)), Data_Tuple.Tuple.create("CP")(new Full(Deduction.ConditionalProof.value)), Data_Tuple.Tuple.create("\u2227I")(new Full(Deduction.AndIntroduction.value)), Data_Tuple.Tuple.create("\u2227E")(new Full(Deduction.AndElimination.value)), Data_Tuple.Tuple.create("\u2228I")(new Full(Deduction.OrIntroduction.value)), Data_Tuple.Tuple.create("\u2228E")(new Full(Deduction.OrElimination.value)), Data_Tuple.Tuple.create("\u2200I")(new Full(Deduction.UniversalIntroduction.value)), Data_Tuple.Tuple.create("\u2200E")(new Full(Deduction.UniversalElimination.value)), Data_Tuple.Tuple.create("\u2203I")(new Full(Deduction.ExistentialIntroduction.value)), Data_Tuple.Tuple.create("\u2203E")(new Full(Deduction.ExistentialElimination.value)), Data_Tuple.Tuple.create("RAA")(new Full(Deduction.RAA.value)), new Data_Tuple.Tuple("SI", PartSequent.value), new Data_Tuple.Tuple("Def", PartSymbol.value) ]), Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Halogen_HTML_Properties.id_("input-dropdown") ])((function () {
+      })(Data_Function["const"](false))(makePartial(state.reason))([ Data_Tuple.Tuple.create("A")(new Full(Deduction.Assumption.value)), Data_Tuple.Tuple.create("MP")(new Full(Deduction.ModusPonens.value)), Data_Tuple.Tuple.create("MT")(new Full(Deduction.ModusTollens.value)), Data_Tuple.Tuple.create("DN")(new Full(Deduction.DoubleNegation.value)), Data_Tuple.Tuple.create("CP")(new Full(Deduction.ConditionalProof.value)), Data_Tuple.Tuple.create("\u2227I")(new Full(Deduction.AndIntroduction.value)), Data_Tuple.Tuple.create("\u2227E")(new Full(Deduction.AndElimination.value)), Data_Tuple.Tuple.create("\u2228I")(new Full(Deduction.OrIntroduction.value)), Data_Tuple.Tuple.create("\u2228E")(new Full(Deduction.OrElimination.value)), Data_Tuple.Tuple.create("RAA")(new Full(Deduction.RAA.value)), new Data_Tuple.Tuple("SI", PartSequent.value), new Data_Tuple.Tuple("Def", PartSymbol.value), Data_Tuple.Tuple.create("\u2200I")(new Full(Deduction.UniversalIntroduction.value)), Data_Tuple.Tuple.create("\u2200E")(new Full(Deduction.UniversalElimination.value)), Data_Tuple.Tuple.create("\u2203I")(new Full(Deduction.ExistentialIntroduction.value)), Data_Tuple.Tuple.create("\u2203E")(new Full(Deduction.ExistentialElimination.value)) ]), Halogen_HTML_Elements.div(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Halogen_HTML_Properties.id_("input-dropdown") ])((function () {
           if (state.reason instanceof PartSymbol) {
               return [  ];
           };

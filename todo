@@ -2,3 +2,4 @@ tests
 si vs si(s)
 delete buttons
 neaten and comment code
+fix overflow of floating windows

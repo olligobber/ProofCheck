@@ -40,13 +40,13 @@ data DeductionRule
     | AndElimination
     | OrIntroduction
     | OrElimination
+    | RAA
+    | Definition CustomSymbol Int
+    | Introduction (Sequent String String String) Int
     | UniversalIntroduction
     | UniversalElimination
     | ExistentialIntroduction
     | ExistentialElimination
-    | RAA
-    | Definition CustomSymbol Int
-    | Introduction (Sequent String String String) Int
 
 derive instance eqDeductionRule :: Eq DeductionRule
 derive instance ordDeductionRule :: Ord DeductionRule
@@ -147,7 +147,7 @@ toSequents (Introduction s _) = [ s ]
     Check a deduction was correctly applied, given
         - the list of referenced formulas, whether they were assumptions, and
             what assumptions they rely on
-        - the set of free variables in the assumptions
+        - the map from assumption numbers to formulas
         - the conclusion
         - the deduction rule
     returns either an error or the assumptions the conclusion relies on,
