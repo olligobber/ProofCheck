@@ -122,9 +122,10 @@ expression m = do
 
 manyExpression :: Lazy (Parser String (Array (WFF String String String))) =>
     SymbolMap -> Parser String (Array (WFF String String String))
-manyExpression m = PC.chainl1
+manyExpression m = PC.chainl
     (A.singleton <$> expression m)
     ((<>) <$ PS.char ',')
+    []
 
 showError :: String -> P.ParseError -> String
 showError s (P.ParseError e (PP.Position p)) =
