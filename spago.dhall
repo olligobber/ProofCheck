@@ -13,11 +13,14 @@ You can edit this file as you like.
   , "foreign-object"
   , "functors"
   , "halogen"
+  , "node-buffer"
+  , "node-fs"
   , "ordered-collections"
   , "parsing"
   , "psci-support"
   , "strings"
   , "stringutils"
+  , "test-unit"
   ]
 , packages = ./packages.dhall
 , sources = [ "src/**/*.purs", "test/**/*.purs" ]

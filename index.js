@@ -24163,7 +24163,13 @@ var PS = {};
                               var assumptions = Data_Foldable.foldMap(Data_Foldable.foldableArray)(Data_Set.monoidSet(Data_Ord.ordInt))(function (v4) {
                                   return v4.assumptions;
                               })(a);
-                              var assFreeVars = Data_Foldable.fold(Data_Set.foldableSet)(Data_Set.monoidSet(Data_Ord.ordString))(Data_Set.mapMaybe(Data_Set.ordSet(Data_Ord.ordString))(Data_Function.flip(Data_Map_Internal.lookup(Data_Ord.ordInt))(v))(assumptions));
+                              var assFreeVars = Data_Foldable.fold(Data_Set.foldableSet)(Data_Set.monoidSet(Data_Ord.ordString))(Data_Set.mapMaybe(Data_Set.ordSet(Data_Ord.ordString))((function () {
+                                  var $132 = Data_Functor.map(Data_Maybe.functorMaybe)(WFF.freeVars(Data_Ord.ordString));
+                                  var $133 = Data_Function.flip(Data_Map_Internal.lookup(Data_Ord.ordInt))(v);
+                                  return function ($134) {
+                                      return $132($133($134));
+                                  };
+                              })())(assumptions));
                               var v4 = Data_Map_Internal.lookup(Data_Ord.ordString)("x")(v3.sub.freeMatch);
                               if (v4 instanceof Data_Maybe.Nothing) {
                                   return [  ];
@@ -24176,7 +24182,7 @@ var PS = {};
                                       return Control_Applicative.pure(Control_Applicative.applicativeArray)(assumptions);
                                   });
                               };
-                              throw new Error("Failed pattern match at Deduction (line 209, column 9 - line 214, column 33): " + [ v4.constructor.name ]);
+                              throw new Error("Failed pattern match at Deduction (line 210, column 9 - line 215, column 33): " + [ v4.constructor.name ]);
                           });
                       }));
                       if (v2 instanceof Data_Maybe.Nothing) {
@@ -24204,7 +24210,13 @@ var PS = {};
                                           return Control_Bind.discard(Control_Bind.discardUnit)(Control_Bind.bindArray)(Control_MonadZero.guard(Control_MonadZero.monadZeroArray)(assumption.isAssumption))(function () {
                                               return Control_Bind.discard(Control_Bind.discardUnit)(Control_Bind.bindArray)(Control_MonadZero.guard(Control_MonadZero.monadZeroArray)(Data_Set.subset(Data_Ord.ordInt)(assumption.assumptions)(conclusion.assumptions)))(function () {
                                                   var assumptions = Data_Set.union(Data_Ord.ordInt)(existential.assumptions)(Data_Set.difference(Data_Ord.ordInt)(conclusion.assumptions)(assumption.assumptions));
-                                                  var assFreeVars = Data_Foldable.fold(Data_Set.foldableSet)(Data_Set.monoidSet(Data_Ord.ordString))(Data_Set.mapMaybe(Data_Set.ordSet(Data_Ord.ordString))(Data_Function.flip(Data_Map_Internal.lookup(Data_Ord.ordInt))(v))(assumptions));
+                                                  var assFreeVars = Data_Foldable.fold(Data_Set.foldableSet)(Data_Set.monoidSet(Data_Ord.ordString))(Data_Set.mapMaybe(Data_Set.ordSet(Data_Ord.ordString))((function () {
+                                                      var $135 = Data_Functor.map(Data_Maybe.functorMaybe)(WFF.freeVars(Data_Ord.ordString));
+                                                      var $136 = Data_Function.flip(Data_Map_Internal.lookup(Data_Ord.ordInt))(v);
+                                                      return function ($137) {
+                                                          return $135($136($137));
+                                                      };
+                                                  })())(assumptions));
                                                   var v4 = Data_Map_Internal.lookup(Data_Ord.ordString)("x")(v3.sub.freeMatch);
                                                   if (v4 instanceof Data_Maybe.Nothing) {
                                                       return [  ];
@@ -24219,7 +24231,7 @@ var PS = {};
                                                           });
                                                       });
                                                   };
-                                                  throw new Error("Failed pattern match at Deduction (line 230, column 9 - line 236, column 33): " + [ v4.constructor.name ]);
+                                                  throw new Error("Failed pattern match at Deduction (line 232, column 9 - line 238, column 33): " + [ v4.constructor.name ]);
                                               });
                                           });
                                       });
@@ -29001,7 +29013,6 @@ var PS = {};
   exports["fromJson"] = fromJson;
 })(PS);
 (function($PS) {
-  // Generated by purs version 0.13.8
   "use strict";
   $PS["Proof"] = $PS["Proof"] || {};
   var exports = $PS["Proof"];
@@ -29068,17 +29079,17 @@ var PS = {};
       if (v instanceof Data_Maybe.Just) {
           return v.value0;
       };
-      throw new Error("Failed pattern match at Proof (line 93, column 19 - line 95, column 16): " + [ v.constructor.name ]);
+      throw new Error("Failed pattern match at Proof (line 104, column 19 - line 106, column 16): " + [ v.constructor.name ]);
   };
   var getAssumptions = function (v) {
       return function (v1) {
           return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Invalid line number in reason")(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)((function () {
-              var $33 = Data_Functor.map(Data_Maybe.functorMaybe)(pack);
-              var $34 = Data_Array.index(v1.value0.lines);
-              return function ($35) {
-                  return $33($34((function (v2) {
+              var $43 = Data_Functor.map(Data_Maybe.functorMaybe)(pack);
+              var $44 = Data_Array.index(v1.value0.lines);
+              return function ($45) {
+                  return $43($44((function (v2) {
                       return v2 - 1 | 0;
-                  })($35)));
+                  })($45)));
               };
           })())(v.value0.reasons)))(function (antes) {
               return Control_Bind.bind(Data_Either.bindEither)(Deduction_1.matchDeduction(antes)(v1.value0.assumptions)(v.value0.deduction)(v.value0.rule))(function (assumptions) {
@@ -29088,7 +29099,7 @@ var PS = {};
                   if (assumptions instanceof Data_Maybe.Nothing) {
                       return Control_Applicative.pure(Data_Either.applicativeEither)(Data_Set.singleton(getNextUnused(Data_Map.keys(v1.value0.assumptions))));
                   };
-                  throw new Error("Failed pattern match at Proof (line 104, column 5 - line 106, column 79): " + [ assumptions.constructor.name ]);
+                  throw new Error("Failed pattern match at Proof (line 115, column 5 - line 117, column 79): " + [ assumptions.constructor.name ]);
               });
           });
       };
@@ -29101,12 +29112,12 @@ var PS = {};
   var addDeduction = function (v) {
       return function (v1) {
           return Control_Bind.bind(Data_Either.bindEither)(Data_Either.note("Invalid line number in reason")(Data_Traversable.traverse(Data_Traversable.traversableArray)(Data_Maybe.applicativeMaybe)((function () {
-              var $36 = Data_Functor.map(Data_Maybe.functorMaybe)(pack);
-              var $37 = Data_Array.index(v1.value0.lines);
-              return function ($38) {
-                  return $36($37((function (v2) {
+              var $46 = Data_Functor.map(Data_Maybe.functorMaybe)(pack);
+              var $47 = Data_Array.index(v1.value0.lines);
+              return function ($48) {
+                  return $46($47((function (v2) {
                       return v2 - 1 | 0;
-                  })($38)));
+                  })($48)));
               };
           })())(v.value0.reasons)))(function (antes) {
               return Control_Bind.bind(Data_Either.bindEither)(Deduction_1.matchDeduction(antes)(v1.value0.assumptions)(v.value0.deduction)(v.value0.rule))(function (assumptions) {
@@ -29132,8 +29143,8 @@ var PS = {};
                   };
                   return Data_Either.Right.create(Proof.create({
                       lines: Data_Semigroup.append(Data_Semigroup.semigroupArray)(v1.value0.lines)([ new Deduction(v.value0) ]),
-                      assumptions: Data_Map_Internal.union(Data_Ord.ordInt)(v1.value0.assumptions)(Data_Map_Internal.fromFoldable(Data_Ord.ordInt)(Data_Set.foldableSet)(Data_Set.map(Data_Tuple.ordTuple(Data_Ord.ordInt)(Data_Set.ordSet(Data_Ord.ordString)))(function (x) {
-                          return Data_Tuple.Tuple.create(x)(WFF.freeVars(Data_Ord.ordString)(v.value0.deduction));
+                      assumptions: Data_Map_Internal.union(Data_Ord.ordInt)(v1.value0.assumptions)(Data_Map_Internal.fromFoldable(Data_Ord.ordInt)(Data_Set.foldableSet)(Data_Set.map(Data_Tuple.ordTuple(Data_Ord.ordInt)(WFF.ordWFF(Data_Ord.ordString)(Data_Ord.ordString)(Data_Ord.ordString)))(function (x) {
+                          return Data_Tuple.Tuple.create(x)(v.value0.deduction);
                       })(v.value0.assumptions))),
                       types: newTypes
                   }));

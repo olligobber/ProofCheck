@@ -6,8 +6,8 @@ module Deduction
     ) where
 
 import Prelude
-    ( (<>), (<$>), ($)
-    , bind, pure, discard, flip, not
+    ( (<>), (<$>), ($), (<<<)
+    , bind, pure, discard, flip, not, map
     , class Eq, class Ord
     )
 import Data.Either (Either(..))
@@ -157,8 +157,8 @@ matchDeduction :: Array
     { formula :: WFF String String String
     , isAssumption :: Boolean
     , assumptions :: Set Int
-    } -> Map Int (Set String) -> WFF String String String -> DeductionRule ->
-    Either String (Maybe (Set Int))
+    } -> Map Int (WFF String String String) -> WFF String String String ->
+    DeductionRule -> Either String (Maybe (Set Int))
 matchDeduction a _ conse d@Assumption =
     case A.head $ do
         s <- toSequents d
@@ -205,7 +205,8 @@ matchDeduction a m conse d@UniversalIntroduction =
         s <- toSequents d
         {perm, sub} <- Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
         let assumptions = foldMap _.assumptions a
-        let assFreeVars = fold $ Set.mapMaybe (flip M.lookup m) assumptions
+        let assFreeVars = fold $
+                Set.mapMaybe (map freeVars <<< flip M.lookup m) assumptions
         case M.lookup "x" sub.freeMatch of
             Nothing -> []
             Just (Left _) -> pure assumptions
@@ -226,7 +227,8 @@ matchDeduction a m conse d@ExistentialElimination =
         guard $ assumption.assumptions `Set.subset` conclusion.assumptions
         let assumptions = Set.union existential.assumptions $
                 conclusion.assumptions `Set.difference` assumption.assumptions
-        let assFreeVars = fold $ Set.mapMaybe (flip M.lookup m) assumptions
+        let assFreeVars = fold $
+                Set.mapMaybe (map freeVars <<< flip M.lookup m) assumptions
         case M.lookup "x" sub.freeMatch of
             Nothing -> []
             Just (Left _) -> pure assumptions

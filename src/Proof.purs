@@ -3,6 +3,7 @@ module Proof
     , Proof(..)
     , empty
     , isEmpty
+    , conclusion
     , addDeduction
     , renderReason
     , getAssumptions
@@ -10,7 +11,7 @@ module Proof
 
 import Prelude
     ( (<>), (<$>), ($), (>>>), (==), (/=), (+), (-)
-    , show, bind, map, pure, mempty, not
+    , show, bind, map, pure, mempty, not, flip
     )
 import Data.String.Common (joinWith)
 import Data.Set (Set)
@@ -20,12 +21,13 @@ import Data.Either as E
 import Data.Maybe (Maybe(..))
 import Data.Array as A
 import Data.Traversable (traverse)
-import Data.Foldable (foldMap)
+import Data.Foldable (length)
 import Data.Map (Map)
 import Data.Map as M
 import Data.Tuple (Tuple(..))
 
-import WFF (WFF, Typing, isWellTyped, getTyping, freeVars)
+import WFF (WFF, Typing, isWellTyped, getTyping)
+import Sequent (Sequent(..))
 import Deduction
 
 data Deduction = Deduction
@@ -37,7 +39,7 @@ data Deduction = Deduction
 
 data Proof = Proof
     { lines :: Array Deduction
-    , assumptions :: Map Int (Set String)
+    , assumptions :: Map Int (WFF String String String)
     , types :: Typing String
     }
 
@@ -56,6 +58,15 @@ empty = Proof
 
 isEmpty :: Proof -> Boolean
 isEmpty (Proof p) = length p.lines == 0
+
+conclusion :: Proof -> Maybe (Sequent String String String)
+conclusion (Proof p) = case A.last p.lines of
+    Just (Deduction d) -> case
+        traverse (flip M.lookup p.assumptions) $ A.fromFoldable d.assumptions
+        of
+            Just ante -> Just $ Sequent { ante, conse : d.deduction }
+            Nothing -> Nothing
+    Nothing -> Nothing
 
 pack :: Deduction ->
     { formula :: WFF String String String
@@ -85,7 +96,7 @@ addDeduction (Deduction d) (Proof p) = do
         _ -> Right $ Proof $
             { lines : p.lines <> [Deduction d]
             , assumptions : p.assumptions `M.union` M.fromFoldable
-                (Set.map (\x -> Tuple x $ freeVars d.deduction) d.assumptions)
+                (Set.map (\x -> Tuple x $ d.deduction) d.assumptions)
             , types : newTypes
             }
 
