@@ -1,3 +1,6 @@
+fix implementation
+	bindings must bind a variable
+	name clashes are illegal
 tests
 si vs si(s)
 delete buttons

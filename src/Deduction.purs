@@ -207,11 +207,13 @@ matchDeduction a m conse d@UniversalIntroduction =
         let assumptions = foldMap _.assumptions a
         let assFreeVars = fold $
                 Set.mapMaybe (map freeVars <<< flip M.lookup m) assumptions
-        case M.lookup "x" sub.freeMatch of
-            Nothing -> []
-            Just (Left _) -> pure assumptions
-            Just (Right x) -> do
-                guard $ not $ x `Set.member` assFreeVars
+        x <- A.fromFoldable $ M.lookup "x" sub.freeMatch
+        f <- A.fromFoldable $ M.lookup "F" sub.predMatch
+        case x of
+            Left _ -> pure assumptions
+            Right xx -> do
+                guard $ not $ xx `Set.member` assFreeVars
+                guard $ not $ Right xx `Set.member` freeVars f
                 pure assumptions
     of
         Nothing -> Left "Invalid use of deduction rule"
