@@ -22195,23 +22195,23 @@ var PS = {};
       return function (f) {
           return function (v) {
               if (v instanceof Pred) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($405) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($412) {
                       return Pred.create((function (v1) {
                           return {
                               predicate: v1,
                               variables: v.value0.variables
                           };
-                      })($405));
+                      })($412));
                   })(f(v.value0.predicate));
               };
               if (v instanceof Unary) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($406) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($413) {
                       return Unary.create((function (v1) {
                           return {
                               operator: v.value0.operator,
                               contents: v1
                           };
-                      })($406));
+                      })($413));
                   })(traversePredicates(dictApplicative)(f)(v.value0.contents));
               };
               if (v instanceof Binary) {
@@ -22226,14 +22226,14 @@ var PS = {};
                   })(traversePredicates(dictApplicative)(f)(v.value0.left)))(traversePredicates(dictApplicative)(f)(v.value0.right));
               };
               if (v instanceof Quant) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($407) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($414) {
                       return Quant.create((function (v1) {
                           return {
                               operator: v.value0.operator,
                               variable: v.value0.variable,
                               contents: v1
                           };
-                      })($407));
+                      })($414));
                   })(traversePredicates(dictApplicative)(f)(v.value0.contents));
               };
               throw new Error("Failed pattern match at WFF (line 146, column 1 - line 147, column 59): " + [ f.constructor.name, v.constructor.name ]);
@@ -22244,13 +22244,13 @@ var PS = {};
       return function (f) {
           return function (v) {
               if (v instanceof Pred) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($408) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($415) {
                       return Pred.create((function (v1) {
                           return {
                               predicate: v.value0.predicate,
                               variables: v1
                           };
-                      })($408));
+                      })($415));
                   })(Data_Traversable.traverse(Data_Traversable.traversableArray)(dictApplicative)(function (x) {
                       if (x instanceof Free) {
                           return Data_Functor.map((dictApplicative.Apply0()).Functor0())(Free.create)(f(x.value0));
@@ -22262,13 +22262,13 @@ var PS = {};
                   })(v.value0.variables));
               };
               if (v instanceof Unary) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($409) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($416) {
                       return Unary.create((function (v1) {
                           return {
                               operator: v.value0.operator,
                               contents: v1
                           };
-                      })($409));
+                      })($416));
                   })(traverseFree(dictApplicative)(f)(v.value0.contents));
               };
               if (v instanceof Binary) {
@@ -22283,14 +22283,14 @@ var PS = {};
                   })(traverseFree(dictApplicative)(f)(v.value0.left)))(traverseFree(dictApplicative)(f)(v.value0.right));
               };
               if (v instanceof Quant) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($410) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($417) {
                       return Quant.create((function (v1) {
                           return {
                               operator: v.value0.operator,
                               variable: v.value0.variable,
                               contents: v1
                           };
-                      })($410));
+                      })($417));
                   })(traverseFree(dictApplicative)(f)(v.value0.contents));
               };
               throw new Error("Failed pattern match at WFF (line 160, column 1 - line 161, column 59): " + [ f.constructor.name, v.constructor.name ]);
@@ -22301,13 +22301,13 @@ var PS = {};
       return function (f) {
           return function (v) {
               if (v instanceof Pred) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($411) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($418) {
                       return Pred.create((function (v1) {
                           return {
                               predicate: v.value0.predicate,
                               variables: v1
                           };
-                      })($411));
+                      })($418));
                   })(Data_Traversable.traverse(Data_Traversable.traversableArray)(dictApplicative)(function (x) {
                       if (x instanceof Free) {
                           return Control_Applicative.pure(dictApplicative)(new Free(x.value0));
@@ -22319,13 +22319,13 @@ var PS = {};
                   })(v.value0.variables));
               };
               if (v instanceof Unary) {
-                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($412) {
+                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($419) {
                       return Unary.create((function (v1) {
                           return {
                               operator: v.value0.operator,
                               contents: v1
                           };
-                      })($412));
+                      })($419));
                   })(traverseBound(dictApplicative)(f)(v.value0.contents));
               };
               if (v instanceof Binary) {
@@ -22439,58 +22439,80 @@ var PS = {};
           contents: contents
       });
   };
-  var mapVarsLevel = function (l) {
-      return function (f) {
-          return function (g) {
-              return function (v) {
-                  if (v instanceof Pred) {
-                      var theMap = function (v1) {
-                          if (v1 instanceof Free) {
-                              return Free.create(f(v1.value0));
-                          };
-                          if (v1 instanceof Bound) {
-                              var v2 = g(v1.value1 - l | 0)(v1.value0);
-                              if (v2 instanceof Data_Maybe.Nothing) {
-                                  return new Bound(Data_Unit.unit, v1.value1);
+  var mapVarsLevel = function (dictApplicative) {
+      return function (l) {
+          return function (f) {
+              return function (g) {
+                  return function (v) {
+                      if (v instanceof Pred) {
+                          var theMap = function (v1) {
+                              if (v1 instanceof Free) {
+                                  return Data_Functor.map((dictApplicative.Apply0()).Functor0())(Free.create)(f(v1.value0));
                               };
-                              if (v2 instanceof Data_Maybe.Just) {
-                                  return new Free(v2.value0);
+                              if (v1 instanceof Bound) {
+                                  return Control_Applicative.pure(dictApplicative)((function () {
+                                      var v2 = g(v1.value1 - l | 0)(v1.value0);
+                                      if (v2 instanceof Data_Maybe.Nothing) {
+                                          return new Bound(Data_Unit.unit, v1.value1);
+                                      };
+                                      if (v2 instanceof Data_Maybe.Just) {
+                                          return new Free(v2.value0);
+                                      };
+                                      throw new Error("Failed pattern match at WFF (line 357, column 41 - line 359, column 33): " + [ v2.constructor.name ]);
+                                  })());
                               };
-                              throw new Error("Failed pattern match at WFF (line 356, column 30 - line 358, column 29): " + [ v2.constructor.name ]);
+                              throw new Error("Failed pattern match at WFF (line 356, column 13 - line 356, column 43): " + [ v1.constructor.name ]);
                           };
-                          throw new Error("Failed pattern match at WFF (line 355, column 9 - line 355, column 37): " + [ v1.constructor.name ]);
+                          return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($420) {
+                              return Pred.create((function (v1) {
+                                  return {
+                                      predicate: v.value0.predicate,
+                                      variables: v1
+                                  };
+                              })($420));
+                          })(Data_Traversable.traverse(Data_Traversable.traversableArray)(dictApplicative)(theMap)(v.value0.variables));
                       };
-                      return Pred.create({
-                          predicate: v.value0.predicate,
-                          variables: Data_Functor.map(Data_Functor.functorArray)(theMap)(v.value0.variables)
-                      });
+                      if (v instanceof Unary) {
+                          return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($421) {
+                              return Unary.create((function (v1) {
+                                  return {
+                                      operator: v.value0.operator,
+                                      contents: v1
+                                  };
+                              })($421));
+                          })(mapVarsLevel(dictApplicative)(l)(f)(g)(v.value0.contents));
+                      };
+                      if (v instanceof Binary) {
+                          return Data_Functor.map((dictApplicative.Apply0()).Functor0())(Binary.create)(Control_Apply.apply(dictApplicative.Apply0())(Data_Functor.map((dictApplicative.Apply0()).Functor0())(function (v1) {
+                              return function (v2) {
+                                  return {
+                                      left: v1,
+                                      right: v2,
+                                      operator: v.value0.operator
+                                  };
+                              };
+                          })(mapVarsLevel(dictApplicative)(l)(f)(g)(v.value0.left)))(mapVarsLevel(dictApplicative)(l)(f)(g)(v.value0.right)));
+                      };
+                      if (v instanceof Quant) {
+                          return Data_Functor.map((dictApplicative.Apply0()).Functor0())(function ($422) {
+                              return Quant.create((function (v1) {
+                                  return {
+                                      operator: v.value0.operator,
+                                      variable: Data_Unit.unit,
+                                      contents: v1
+                                  };
+                              })($422));
+                          })(mapVarsLevel(dictApplicative)(l + 1 | 0)(f)(g)(v.value0.contents));
+                      };
+                      throw new Error("Failed pattern match at WFF (line 351, column 1 - line 352, column 79): " + [ l.constructor.name, f.constructor.name, g.constructor.name, v.constructor.name ]);
                   };
-                  if (v instanceof Unary) {
-                      return Unary.create({
-                          operator: v.value0.operator,
-                          contents: mapVarsLevel(l)(f)(g)(v.value0.contents)
-                      });
-                  };
-                  if (v instanceof Binary) {
-                      return Binary.create({
-                          operator: v.value0.operator,
-                          left: mapVarsLevel(l)(f)(g)(v.value0.left),
-                          right: mapVarsLevel(l)(f)(g)(v.value0.right)
-                      });
-                  };
-                  if (v instanceof Quant) {
-                      return Quant.create({
-                          operator: v.value0.operator,
-                          variable: Data_Unit.unit,
-                          contents: mapVarsLevel(l + 1 | 0)(f)(g)(v.value0.contents)
-                      });
-                  };
-                  throw new Error("Failed pattern match at WFF (line 351, column 1 - line 352, column 36): " + [ l.constructor.name, f.constructor.name, g.constructor.name, v.constructor.name ]);
               };
           };
       };
   };
-  var mapVars = mapVarsLevel(0);
+  var mapVars = function (dictApplicative) {
+      return mapVarsLevel(dictApplicative)(0);
+  };
   var isWellTyped = function (v) {
       if (v instanceof Data_Maybe.Just) {
           return true;
@@ -22634,8 +22656,8 @@ var PS = {};
   var getTyping = function (dictOrd) {
       return function (v) {
           if (v instanceof Pred) {
-              return Data_Foldable.foldMap(Data_Foldable.foldableArray)(monoidTyping(dictOrd))(function ($413) {
-                  return Typing(Data_Maybe.Just.create($413));
+              return Data_Foldable.foldMap(Data_Foldable.foldableArray)(monoidTyping(dictOrd))(function ($423) {
+                  return Typing(Data_Maybe.Just.create($423));
               })(Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Data_Map_Internal.singleton(v.value0.predicate)(Predicate.create(Data_Foldable.length(Data_Foldable.foldableArray)(Data_Semiring.semiringInt)(v.value0.variables))) ])(Data_Functor.map(Data_Functor.functorArray)(getVarTyping)(v.value0.variables)));
           };
           if (v instanceof Unary) {
@@ -22935,12 +22957,12 @@ var PS = {};
                                   return function (x) {
                                       var v2 = Data_Array.elemIndex(eqVariable(Data_Either.eqEither(Data_Set.eqSet(dictOrd2.Eq0()))(dictOrd2.Eq0()))(Data_Eq.eqUnit))(Free.create(new Data_Either.Right(x)))(m);
                                       if (v2 instanceof Data_Maybe.Just) {
-                                          return new Data_Either.Left(v2.value0);
+                                          return [ new Data_Either.Left(v2.value0), new Data_Either.Right(x) ];
                                       };
                                       if (v2 instanceof Data_Maybe.Nothing) {
-                                          return new Data_Either.Right(x);
+                                          return [ new Data_Either.Right(x) ];
                                       };
-                                      throw new Error("Failed pattern match at WFF (line 399, column 27 - line 401, column 31): " + [ v2.constructor.name ]);
+                                      throw new Error("Failed pattern match at WFF (line 399, column 27 - line 401, column 35): " + [ v2.constructor.name ]);
                                   };
                               };
                               var replaceBound = function (m) {
@@ -22960,8 +22982,8 @@ var PS = {};
                               };
                               var getMapped = function (v2) {
                                   if (v2 instanceof Free) {
-                                      return Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Free.create(new Data_Either.Left(vars)) ])(Data_Functor.map(Data_Functor.functorArray)(function ($414) {
-                                          return Free.create(Data_Either.Right.create($414));
+                                      return Data_Semigroup.append(Data_Semigroup.semigroupArray)([ Free.create(new Data_Either.Left(vars)) ])(Data_Functor.map(Data_Functor.functorArray)(function ($424) {
+                                          return Free.create(Data_Either.Right.create($424));
                                       })(Data_Set.toUnfoldable(Data_Unfoldable.unfoldableArray)(vars)));
                                   };
                                   if (v2 instanceof Bound) {
@@ -22970,15 +22992,16 @@ var PS = {};
                                   throw new Error("Failed pattern match at WFF (line 389, column 9 - line 389, column 78): " + [ v2.constructor.name ]);
                               };
                               return Matches.create(Control_Bind.bind(Control_Bind.bindArray)(Data_Traversable.traverse(Data_Traversable.traversableArray)(Control_Applicative.applicativeArray)(getMapped)(v.value0.variables))(function (mapping) {
-                                  var mappedW = mapVars(replaceFree(mapping))(replaceBound(mapping))(v1);
-                                  var $389 = closed(mappedW);
-                                  if ($389) {
-                                      return Control_Applicative.pure(Control_Applicative.applicativeArray)({
-                                          predMatch: Data_Map_Internal.singleton(v.value0.predicate)(mappedW),
-                                          freeMatch: Data_Foldable.foldMap(Data_Foldable.foldableArray)(Data_Map_Internal.monoidMap(dictOrd1))(Control_Category.identity(Control_Category.categoryFn))(Data_Array.zipWith(matchVar)(v.value0.variables)(mapping))
-                                      });
-                                  };
-                                  return [  ];
+                                  return Control_Bind.bind(Control_Bind.bindArray)(mapVars(Control_Applicative.applicativeArray)(replaceFree(mapping))(replaceBound(mapping))(v1))(function (mappedW) {
+                                      var $396 = closed(mappedW);
+                                      if ($396) {
+                                          return Control_Applicative.pure(Control_Applicative.applicativeArray)({
+                                              predMatch: Data_Map_Internal.singleton(v.value0.predicate)(mappedW),
+                                              freeMatch: Data_Foldable.foldMap(Data_Foldable.foldableArray)(Data_Map_Internal.monoidMap(dictOrd1))(Control_Category.identity(Control_Category.categoryFn))(Data_Array.zipWith(matchVar)(v.value0.variables)(mapping))
+                                          });
+                                      };
+                                      return [  ];
+                                  });
                               }));
                           };
                           if (v instanceof Unary && (v1 instanceof Unary && Data_Eq.eq(eqUnaryOp)(v.value0.operator)(v1.value0.operator))) {
@@ -23005,8 +23028,8 @@ var PS = {};
                       return Pred.create({
                           predicate: v.value0.predicate,
                           variables: Data_Functor.map(Data_Functor.functorArray)(function (v2) {
-                              var $400 = Data_Eq.eq(eqVariable(dictEq)(dictEq))(v2)(new Free(e));
-                              if ($400) {
+                              var $407 = Data_Eq.eq(eqVariable(dictEq)(dictEq))(v2)(new Free(e));
+                              if ($407) {
                                   return new Bound(e, l);
                               };
                               return v2;
@@ -23118,6 +23141,7 @@ var PS = {};
   exports["monoidTyping"] = monoidTyping;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["Sequent"] = $PS["Sequent"] || {};
   var exports = $PS["Sequent"];
@@ -23166,8 +23190,6 @@ var PS = {};
           });
       };
   };
-
-  // Match a sequent to one after substitutions were applied
   var match1 = function (dictOrd) {
       return function (dictOrd1) {
           return function (dictEq) {
@@ -23181,9 +23203,6 @@ var PS = {};
           };
       };
   };
-
-  // Match a sequent to one after substitutions were applied and the antecedents
-  // permuted, returning all possible substitutions and inverse permutations
   var match = function (dictOrd) {
       return function (dictOrd1) {
           return function (dictEq) {
@@ -23221,12 +23240,6 @@ var PS = {};
           };
       };
   };
-
-  // Match a sequent to one after substitutions were applied and the formulas
-  // lifted uniformly, returning all possible substitutions and inverse
-  // permutations
-  // Probably won't work with multiple antecedents and alpha equivalent
-  // quantifiers
   var matchLift = function (dictOrd) {
       return function (dictOrd1) {
           return function (dictEq) {
@@ -23741,6 +23754,7 @@ var PS = {};
   exports["ordCustomSymbol"] = ordCustomSymbol;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["Deduction"] = $PS["Deduction"] || {};
   var exports = $PS["Deduction"];
@@ -24037,18 +24051,6 @@ var PS = {};
       };
       throw new Error("Failed pattern match at Deduction (line 58, column 1 - line 58, column 38): " + [ v.constructor.name ]);
   };
-
-  /**
- * 
- *     Check a deduction was correctly applied, given
- *         - the list of referenced formulas, whether they were assumptions, and
- *             what assumptions they rely on
- *         - the map from assumption numbers to formulas
- *         - the conclusion
- *         - the deduction rule
- *     returns either an error or the assumptions the conclusion relies on,
- *     using Nothing as a flag that this is a new assumption
- */  
   var matchDeduction = function (a) {
       return function (v) {
           return function (conse) {
@@ -28789,6 +28791,7 @@ var PS = {};
   exports["letter"] = letter;
 })(PS);
 (function($PS) {
+  // Generated by purs version 0.13.8
   "use strict";
   $PS["Parser"] = $PS["Parser"] || {};
   var exports = $PS["Parser"];

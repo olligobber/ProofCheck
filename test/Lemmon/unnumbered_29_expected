@@ -1,0 +1,1 @@
+Success: (∃y)(∀x)P(y,x) ⊢ (∃y)(∀x)P(y,x)

@@ -1,0 +1,1 @@
+Success: (∃x)(G(x)∧(∀y)(B(y)→L(y,x))) ⊢ (∃x)(G(x)∧(∀y)(B(y)→L(y,x)))
