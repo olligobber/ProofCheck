@@ -33,14 +33,15 @@ module WFF
     , Typing
     , isWellTyped
     , getTyping
+    , validateBindings
     ) where
 
 import Prelude
     ( class Eq, class Ord, class Show, class Semigroup, class Applicative
-    , class Monoid, class Functor
+    , class Monoid
     , Unit
     , show, identity, otherwise, unit, bind, pure, not
-    , (<>), ($), (<$>), (<<<), (==), (&&), (+), (<), (<*>), (-)
+    , (<>), ($), (<$>), (<<<), (==), (&&), (+), (<), (<*>), (-), (>)
     )
 import Data.String (joinWith)
 import Data.Array as A
@@ -108,6 +109,11 @@ renderVariable (Bound x _) = x
 boundBelow :: forall free bound. Int -> Variable free bound -> Boolean
 boundBelow _ (Free _) = true
 boundBelow b (Bound _ i) = i < b
+
+isBound :: forall free bound. Eq bound =>
+    bound -> Int -> Variable free bound -> Boolean
+isBound v l (Bound w k) = v == w && l == k
+isBound _ _ (Free _) = false
 
 -- WFF with a type for propositions, predicates, and variables
 data WFF pred free bound
@@ -449,3 +455,28 @@ getTyping (Unary u) = getTyping u.contents
 getTyping (Binary b) = getTyping b.left <> getTyping b.right
 getTyping (Quant q) =
     (Typing $ Just $ M.singleton q.variable BoundVar) <> getTyping q.contents
+
+-- Given a bound variable, check it is not bound elsewhere and how many times
+-- it is used
+validBoundVariable :: forall pred free bound. Eq bound =>
+    Int -> bound -> WFF pred free bound -> Maybe Int
+validBoundVariable l v (Pred p) =
+    Just $ length $ A.filter (isBound v l) p.variables
+validBoundVariable l v (Unary u) = validBoundVariable l v u.contents
+validBoundVariable l v (Binary b) =
+    (+) <$> validBoundVariable l v b.left <*> validBoundVariable l v b.right
+validBoundVariable l v (Quant q)
+    | q.variable == v = Nothing
+    | otherwise = validBoundVariable (l+1) v q.contents
+
+-- Verifies all bindings are correct, returning an error if there is any
+validateBindings :: forall pred free bound. Eq bound =>
+    WFF pred free bound -> Maybe String
+validateBindings (Pred _) = Nothing
+validateBindings (Unary u) = validateBindings u.contents
+validateBindings (Binary b) =
+    validateBindings b.left <> validateBindings b.right
+validateBindings (Quant q) = case validBoundVariable 0 q.variable q.contents of
+    Just n | n > 0 -> validateBindings q.contents
+    Just _ -> Just "Quantifier does not bind any variables"
+    Nothing -> Just "Nested quantifiers use same variable name"

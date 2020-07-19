@@ -11,7 +11,7 @@ module Proof
 
 import Prelude
     ( (<>), (<$>), ($), (>>>), (==), (/=), (+), (-)
-    , show, bind, map, pure, mempty, not, flip
+    , show, bind, map, pure, mempty, not, flip, discard, unit
     )
 import Data.String.Common (joinWith)
 import Data.Set (Set)
@@ -26,7 +26,7 @@ import Data.Map (Map)
 import Data.Map as M
 import Data.Tuple (Tuple(..))
 
-import WFF (WFF, Typing, isWellTyped, getTyping)
+import WFF (WFF, Typing, isWellTyped, getTyping, validateBindings)
 import Sequent (Sequent(..))
 import Deduction
 
@@ -81,6 +81,9 @@ pack (Deduction d) =
 
 addDeduction :: Deduction -> Proof -> Either String Proof
 addDeduction (Deduction d) (Proof p) = do
+    case validateBindings d.deduction of
+        Just e -> Left e
+        Nothing -> Right unit
     antes <- E.note "Invalid line number in reason"
         $ traverse ((_ - 1) >>> A.index p.lines >>> map pack) d.reasons
     assumptions <- matchDeduction antes p.assumptions d.deduction d.rule
@@ -109,6 +112,9 @@ getNextUnused s = case Set.findMin $ plus `Set.difference` s of
 
 getAssumptions :: Deduction -> Proof -> Either String (Set Int)
 getAssumptions (Deduction d) (Proof p) = do
+    case validateBindings d.deduction of
+        Just e -> Left e
+        Nothing -> Right unit
     antes <- E.note "Invalid line number in reason"
         $ traverse ((_ - 1) >>> A.index p.lines >>> map pack) d.reasons
     assumptions <- matchDeduction antes p.assumptions d.deduction d.rule

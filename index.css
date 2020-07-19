@@ -1,3 +1,4 @@
+@charset "UTF-8";
 @import url("https://fonts.googleapis.com/css?family=Fira+Sans");
 @font-face {
   font-family: "FiraCodeFixed";
@@ -51,7 +52,7 @@ body {
   #menu #import-export-window-button {
     min-width: 7em; }
   #menu .disabled {
-    opacity: .5; }
+    opacity: 0.5 ∀x F(a) →G(a); }
     #menu .disabled:hover {
       background-color: inherit;
       cursor: default; }
@@ -149,7 +150,6 @@ input {
   position: fixed;
   line-height: 3em;
   bottom: 0;
-  height: 3em;
   width: 100%;
   background-color: #cc516a;
   text-align: center;

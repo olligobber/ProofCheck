@@ -1,0 +1,13 @@
+{
+	"version":2,
+	"symbols":[{"symbol":"~","builtin":null},{"symbol":"∧","builtin":null},{"symbol":"∨","builtin":null},{"symbol":"→","builtin":null},{"symbol":"∀","builtin":null},{"symbol":"∃","builtin":null},{"symbol":"&","alias":"∧"},{"symbol":"|","alias":"∨"},{"symbol":"->","alias":"→"},{"symbol":"@","alias":"∀"},{"symbol":"!","alias":"∃"}],
+	"sequents":[],
+	"lines":[
+		{"assumptions":[1],"formula":"(∀y)(∃x)F(x,y)","rule":"A","references":[]},
+		{"assumptions":[1],"formula":"(∃x)F(x,a)","rule":"∀E","references":[1]},
+		{"assumptions":[3],"formula":"F(b,a)","rule":"A","references":[]},
+		{"assumptions":[3],"formula":"(∀y)F(b,y)","rule":"∀I","references":[3]},
+		{"assumptions":[3],"formula":"(∃x)(∀y)F(x,y)","rule":"∃I","references":[4]},
+		{"assumptions":[1],"formula":"(∃x)(∀y)F(x,y)","rule":"∃E","references":[2,3,5]}
+	]
+}

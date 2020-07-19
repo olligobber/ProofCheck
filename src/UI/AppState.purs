@@ -32,7 +32,7 @@ import Effect.Class (liftEffect)
 
 import UI.File as F
 import Json (toJson, fromJson)
-import Sequent (Sequent, verifyTypes)
+import Sequent (Sequent, verifyTypes, verifyBindings)
 import Symbol
     (Symbol(..), SymbolMap, newDefaultMap, newDefaultSymbols, updateMap)
 import Proof (Proof, Deduction(..))
@@ -43,7 +43,7 @@ import UI.Capabilities
     , class ReadSymbols, class WriteSymbols, class ReadSequents
     , class WriteSequents, class ReadProof, class WriteProof, class Error
     , class ReadError, class ReadNav, class Nav, class History, class ReadFile
-    , error, canNew
+    , error, errors, canNew
     )
 
 type ProofState =
@@ -140,15 +140,17 @@ instance readSequentsAppStateM :: ReadSequents AppStateM where
 instance writeSequentsAppStateM :: WriteSequents AppStateM where
     addSequent sequent = do
         state <- get
-        if verifyTypes sequent then do
-            modify $ _
-                { history = state.history <> [state.present]
-                , future = []
-                , present = state.present
-                    { sequents = state.present.sequents <> [sequent] }
-                , error = Nothing
-                }
-            true <$ write
+        if verifyTypes sequent then case verifyBindings sequent of
+            Nothing -> do
+                modify $ _
+                    { history = state.history <> [state.present]
+                    , future = []
+                    , present = state.present
+                        { sequents = state.present.sequents <> [sequent] }
+                    , error = Nothing
+                    }
+                true <$ write
+            Just e -> false <$ errors e
         else
             false <$ error "Invalid types"
 

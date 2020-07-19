@@ -4,12 +4,14 @@ module Sequent
     , match
     , matchLift
     , verifyTypes
+    , verifyBindings
     ) where
 
 import Prelude
     ( class Eq, class Ord
     , (<>), (<$>), ($), (==), (<<<), (&&)
-    , bind, pure, otherwise)
+    , bind, pure, otherwise, map
+    )
 import Data.Array as A
 import Data.Foldable (fold, foldMap, all)
 import Data.String.Common (joinWith)
@@ -111,3 +113,9 @@ matchLift indices small (Sequent big) =
 verifyTypes :: forall a. Ord a => Sequent a a a -> Boolean
 verifyTypes (Sequent s) =
     WFF.isWellTyped $ foldMap WFF.getTyping s.ante <> WFF.getTyping s.conse
+
+verifyBindings :: forall pred free bound. Eq bound =>
+    Sequent pred free bound -> Maybe (Array String)
+verifyBindings (Sequent s) =
+    foldMap (map pure <<< WFF.validateBindings) s.ante <>
+    (map pure <<< WFF.validateBindings) s.conse

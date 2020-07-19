@@ -1,0 +1,1 @@
+Success: (∀x)(∀y)(F(x,y)→(∃z)I(z,x,y)),(∀x)(∀y)(∀z)(I(z,x,y)→(G(z,x)∧G(z,y))),(∀x)F(x,m) ⊢ (∀x)(∃y)(I(y,x,m)∧G(y,m))
