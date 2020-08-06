@@ -40,7 +40,7 @@ import Prelude
     ( class Eq, class Ord, class Show, class Semigroup, class Applicative
     , class Monoid
     , Unit
-    , show, identity, otherwise, unit, bind, pure, not
+    , show, identity, otherwise, unit, bind, pure, not, discard
     , (<>), ($), (<$>), (<<<), (==), (&&), (+), (<), (<*>), (-), (>)
     )
 import Data.String (joinWith)
@@ -53,6 +53,8 @@ import Data.Map as M
 import Data.Set (Set)
 import Data.Set as S
 import Data.Traversable (traverse)
+import Data.Tuple (Tuple(..))
+import Control.MonadZero (guard)
 
 newtype UnaryOp = UnaryOp String
 
@@ -60,7 +62,7 @@ derive instance eqUnaryOp :: Eq UnaryOp
 derive instance ordUnaryOp :: Ord UnaryOp
 
 instance showUnaryOp :: Show UnaryOp where
-    show (UnaryOp s) = "UnaryOp " <> show s
+    show (UnaryOp s) = "(UnaryOp " <> show s <> ")"
 
 renderUnaryOp :: UnaryOp -> String
 renderUnaryOp (UnaryOp s) = s
@@ -71,7 +73,7 @@ derive instance eqBinaryOp :: Eq BinaryOp
 derive instance ordBinaryOp :: Ord BinaryOp
 
 instance showBinaryOp :: Show BinaryOp where
-    show (BinaryOp s) = "BinaryOp " <> show s
+    show (BinaryOp s) = "(BinaryOp " <> show s <> ")"
 
 renderBinaryOp :: BinaryOp -> String
 renderBinaryOp (BinaryOp s) = s
@@ -99,8 +101,8 @@ derive instance ordVariable :: (Ord free, Ord bound) =>
 
 instance showVariable :: (Show free, Show bound) =>
     Show (Variable free bound) where
-        show (Free x) = "Free " <> show x
-        show (Bound x i) = "Bound " <> show x <> " " <> show i
+        show (Free x) = "(Free " <> show x <> ")"
+        show (Bound x i) = "(Bound " <> show x <> " " <> show i <> ")"
 
 renderVariable :: Variable String String -> String
 renderVariable (Free x) = x
@@ -144,10 +146,10 @@ derive instance ordWFF :: (Ord pred, Ord free, Ord bound) =>
 
 instance showWFF :: (Show pred, Show free, Show bound) =>
     Show (WFF pred free bound) where
-        show (Pred p) = "Pred " <> show p
-        show (Unary u) = "Unary " <> show u
-        show (Binary b) = "Binary " <> show b
-        show (Quant q) = "Quant " <> show q
+        show (Pred p) = "(Pred " <> show p <> ")"
+        show (Unary u) = "(Unary " <> show u <> ")"
+        show (Binary b) = "(Binary " <> show b <> ")"
+        show (Quant q) = "(Quant " <> show q <> ")"
 
 traversePredicates :: forall a b f free bound. Applicative f =>
     (a -> f b) -> WFF a free bound -> f (WFF b free bound)
@@ -324,7 +326,7 @@ data Matches a b x y = Matches (Array (Match a b x y))
 
 instance showMatches :: (Show a, Show b, Show x, Show y) =>
     Show (Matches a b x y) where
-        show (Matches m) = "Matches " <> show m
+        show (Matches m) = "(Matches " <> show m <> ")"
 
 joinMatch :: forall a b x y. Ord a => Ord b => Eq x => Ord y =>
     Match a b x y -> Match a b x y -> Maybe (Match a b x y)
@@ -346,23 +348,23 @@ instance semigroupMatches :: (Ord a, Ord b, Eq x, Ord y) =>
             n <- ns
             A.fromFoldable $ joinMatch m n
 
-instance monoidMatching :: (Ord a, Ord b, Eq x, Ord y) =>
+instance monoidMatches :: (Ord a, Ord b, Eq x, Ord y) =>
     Monoid (Matches a b x y) where
         mempty = Matches [ { predMatch : M.empty, freeMatch : M.empty } ]
 
-mapVars :: forall pred a b x f. Applicative f =>
-    (a -> f x) -> (Int -> b -> Maybe x) -> WFF pred a b -> f (WFF pred x Unit)
+mapVars :: forall pred a b x f. Applicative f => (a -> f x) ->
+    (Int -> b -> Maybe (f x)) -> WFF pred a b -> f (WFF pred x Unit)
 mapVars = mapVarsLevel 0
 
-mapVarsLevel :: forall pred a b x f. Applicative f => Int ->
-    (a -> f x) -> (Int -> b -> Maybe x) -> WFF pred a b -> f (WFF pred x Unit)
+mapVarsLevel :: forall pred a b x f. Applicative f => Int -> (a -> f x) ->
+    (Int -> b -> Maybe (f x)) -> WFF pred a b -> f (WFF pred x Unit)
 mapVarsLevel l f g (Pred p) =
     Pred <<< p { variables = _ } <$> traverse theMap p.variables
         where
             theMap (Free x) = Free <$> f x
-            theMap (Bound x i) = pure $ case g (i-l) x of
-                Nothing -> Bound unit i
-                Just y -> Free y
+            theMap (Bound x i) = case g (i-l) x of
+                Nothing -> pure $ Bound unit i
+                Just y -> Free <$> y
 mapVarsLevel l f g (Unary u) =
     Unary <<< u { contents = _ } <$> mapVarsLevel l f g u.contents
 mapVarsLevel l f g (Binary b) = Binary <$>
@@ -372,6 +374,12 @@ mapVarsLevel l f g (Binary b) = Binary <$>
     )
 mapVarsLevel l f g (Quant q) = Quant <<< q { variable = unit, contents = _ }
     <$> mapVarsLevel (l+1) f g q.contents
+
+getAllIndex :: forall a. Eq a => a -> Array a -> Array Int
+getAllIndex x a = do
+    Tuple i v <- A.mapWithIndex Tuple a
+    guard $ v == x
+    pure i
 
 -- Match a WFF to one after substitutions were applied,
 -- given a list of all free variables,
@@ -402,12 +410,13 @@ match (Pred p) w = Matches $ do
         matchVar _ _ = M.empty
         replaceFree :: Array (Variable (Either (Set y) y) Unit) -> y ->
             Array (Either Int y)
-        replaceFree m x = case A.elemIndex (Free $ Right x) m of
-            Just i -> [ Left i, Right x ]
-            Nothing -> [ Right x ]
+        replaceFree m x =
+            [ Right x ] <> (Left <$> getAllIndex (Free $ Right x) m)
         replaceBound :: Array (Variable (Either (Set y) y) Unit) -> Int -> z ->
-            Maybe (Either Int y)
-        replaceBound m i _ = Left <$> A.elemIndex (Bound unit i) m
+            Maybe (Array (Either Int y))
+        replaceBound m i _ = case getAllIndex (Bound unit i) m of
+            [] -> Nothing
+            a -> Just $ Left <$> a
 match (Unary u) (Unary v)
     | u.operator == v.operator = match u.contents v.contents
 match (Binary b) (Binary c)
@@ -426,7 +435,7 @@ derive instance eqType :: Eq Type
 instance showType :: Show Type where
     show FreeVar = "FreeVar"
     show BoundVar = "BoundVar"
-    show (Predicate x) = "Predicate " <> show x
+    show (Predicate x) = "(Predicate " <> show x <> ")"
 
 newtype Typing x = Typing (Maybe (Map x Type))
 
