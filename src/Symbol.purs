@@ -24,7 +24,7 @@ module Symbol
 import Prelude
     ( class Eq, class Ord
     , Unit
-    , (==), ($), (<>), (>>=), (>=>), (<<<)
+    , (==), ($), (<>), (>>=), (>>>)
     , unit, otherwise, const
     )
 import Data.Either (Either(..))
@@ -34,11 +34,11 @@ import Data.Map as M
 import Data.Maybe (Maybe(..))
 import Data.Tuple (Tuple(..))
 import Data.Void (Void, absurd)
-import Data.Identity (Identity(..))
 
 import Sequent (Sequent(..))
 import WFF (WFF(..), UnaryOp, BinaryOp, Quantifier)
 import WFF as WFF
+import Util (mapTraversal)
 
 data Operator
     = QuantOperator Quantifier
@@ -111,22 +111,17 @@ makeBinary p q s w = case removedVars of
                 else if q == r then Just false
                 else Nothing)
 
-fromIdentity :: forall a. Identity a -> a
-fromIdentity (Identity x) = x
-
 renderableUnary :: forall a b. WFF Unit Void Void -> WFF String a b
-renderableUnary = fromIdentity <<<
-    ( WFF.traversePredicates (const $ Identity "A")
-    >=> WFF.traverseFree absurd
-    >=> WFF.traverseBound absurd
-    )
+renderableUnary =
+    mapTraversal WFF.traversePredicates (const "A")
+    >>> mapTraversal WFF.traverseFree absurd
+    >>> mapTraversal WFF.traverseBound absurd
 
 renderableBinary :: forall a b. WFF Boolean Void Void -> WFF String a b
-renderableBinary = fromIdentity <<<
-    ( WFF.traversePredicates (if _ then Identity "A" else Identity "B")
-    >=> WFF.traverseFree absurd
-    >=> WFF.traverseBound absurd
-    )
+renderableBinary =
+    mapTraversal WFF.traversePredicates (if _ then "A" else "B")
+    >>> mapTraversal WFF.traverseFree absurd
+    >>> mapTraversal WFF.traverseBound absurd
 
 toSequents :: forall a b. CustomSymbol -> Array (Sequent String a b)
 toSequents (UnarySymbol s) =

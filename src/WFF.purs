@@ -40,8 +40,8 @@ import Prelude
     ( class Eq, class Ord, class Show, class Semigroup, class Applicative
     , class Monoid
     , Unit
-    , show, identity, otherwise, unit, bind, pure, not, discard
-    , (<>), ($), (<$>), (<<<), (==), (&&), (+), (<), (<*>), (-), (>)
+    , show, identity, otherwise, unit, bind, pure, not, const
+    , (<>), ($), (<$>), (<<<), (==), (&&), (+), (<), (<*>), (-), (>), (>>>)
     )
 import Data.String (joinWith)
 import Data.Array as A
@@ -53,8 +53,8 @@ import Data.Map as M
 import Data.Set (Set)
 import Data.Set as S
 import Data.Traversable (traverse)
-import Data.Tuple (Tuple(..))
-import Control.MonadZero (guard)
+
+import Util (mapTraversal, getAllIndex)
 
 newtype UnaryOp = UnaryOp String
 
@@ -352,34 +352,27 @@ instance monoidMatches :: (Ord a, Ord b, Eq x, Ord y) =>
     Monoid (Matches a b x y) where
         mempty = Matches [ { predMatch : M.empty, freeMatch : M.empty } ]
 
-mapVars :: forall pred a b x f. Applicative f => (a -> f x) ->
-    (Int -> b -> Maybe (f x)) -> WFF pred a b -> f (WFF pred x Unit)
-mapVars = mapVarsLevel 0
+boundToFree :: forall pred free bound.
+    (Int -> bound -> Maybe free) -> WFF pred free bound -> WFF pred free bound
+boundToFree = boundToFreeLevel 0
 
-mapVarsLevel :: forall pred a b x f. Applicative f => Int -> (a -> f x) ->
-    (Int -> b -> Maybe (f x)) -> WFF pred a b -> f (WFF pred x Unit)
-mapVarsLevel l f g (Pred p) =
-    Pred <<< p { variables = _ } <$> traverse theMap p.variables
+boundToFreeLevel :: forall pred free bound. Int ->
+    (Int -> bound -> Maybe free) -> WFF pred free bound -> WFF pred free bound
+boundToFreeLevel l f (Pred p) =
+    Pred $ p { variables = mapBound <$> p.variables }
         where
-            theMap (Free x) = Free <$> f x
-            theMap (Bound x i) = case g (i-l) x of
-                Nothing -> pure $ Bound unit i
-                Just y -> Free <$> y
-mapVarsLevel l f g (Unary u) =
-    Unary <<< u { contents = _ } <$> mapVarsLevel l f g u.contents
-mapVarsLevel l f g (Binary b) = Binary <$>
-    ( b { left = _, right = _ }
-        <$> mapVarsLevel l f g b.left
-        <*> mapVarsLevel l f g b.right
-    )
-mapVarsLevel l f g (Quant q) = Quant <<< q { variable = unit, contents = _ }
-    <$> mapVarsLevel (l+1) f g q.contents
-
-getAllIndex :: forall a. Eq a => a -> Array a -> Array Int
-getAllIndex x a = do
-    Tuple i v <- A.mapWithIndex Tuple a
-    guard $ v == x
-    pure i
+            mapBound (Free x) = Free x
+            mapBound (Bound x i) = case f (i-l) x of
+                Nothing -> Bound x i
+                Just y -> Free y
+boundToFreeLevel l f (Unary u) =
+    Unary $ u { contents = boundToFreeLevel l f u.contents }
+boundToFreeLevel l f (Binary b) = Binary $ b
+    { left = boundToFreeLevel l f b.left
+    , right = boundToFreeLevel l f b.right
+    }
+boundToFreeLevel l f (Quant q) =
+    Quant $ q { contents = boundToFreeLevel (l+1) f q.contents }
 
 -- Match a WFF to one after substitutions were applied,
 -- given a list of all free variables,
@@ -388,7 +381,7 @@ match :: forall a b c x y z. Ord a => Ord b => Eq x => Ord y =>
     WFF a b c -> WFF x y z -> Matches a b x y
 match (Pred p) w = Matches $ do
     mapping <- traverse getMapped p.variables
-    mappedW <- mapVars (replaceFree mapping) (replaceBound mapping) w
+    mappedW <- mapVars mapping w
     if closed mappedW then
         pure
             { predMatch : M.singleton p.predicate mappedW
@@ -398,6 +391,10 @@ match (Pred p) w = Matches $ do
     else
         []
     where
+        mapVars m = mapTraversal traverseFree (replaceFree m)
+            >>> boundToFree (replaceBound m)
+            >>> mapTraversal traverseBound (const unit)
+            >>> traverseFree identity
         vars :: Set y
         vars = freeVars w
         getMapped :: Variable b c -> Array (Variable (Either (Set y) y) Unit)
