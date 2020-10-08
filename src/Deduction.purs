@@ -134,8 +134,8 @@ toSequents ExistentialElimination =
     ]
 toSequents RAA =
     [ Sequent
-        { ante : [prop "A", prop "B" /\ neg (prop "B")]
-        , conse : neg $ prop "A"
+        { ante : [neg $ prop "A", falsum]
+        , conse : prop "A"
         }
     ]
 toSequents (Definition s _) = Sym.toSequents s

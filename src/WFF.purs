@@ -445,6 +445,8 @@ match (Pred p) w = Matches $ do
         replaceBound m i _ = case getAllIndex (Bound unit i) m of
             [] -> Nothing
             a -> Just $ Left <$> a
+match (Nullary m) (Nullary n)
+    | m == n = mempty
 match (Unary u) (Unary v)
     | u.operator == v.operator = match u.contents v.contents
 match (Binary b) (Binary c)
