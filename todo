@@ -7,3 +7,10 @@ delete buttons
 neaten and comment code
 fix overflow of floating windows
 make errors more descriptive
+
+COMP2022
+- functions
+- <-> operator
+- remove brackets around nullary operators if possible?
+- Fix rules
+- Disable custom sequents and adding custom symbols

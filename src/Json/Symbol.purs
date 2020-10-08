@@ -71,7 +71,8 @@ fromObject m o | O.member "builtin" o = do
     symbol <- AC.caseJsonString (Left "Symbol name is not a string")
         parseSymbol symJson
     case symbol of
-        "~" -> Right $ Builtin $ BuiltinSymbol $ S.UnaryOperator WFF.negOp
+        "⊥" -> Right $ Builtin $ BuiltinSymbol $ S.NullaryOperator WFF.falsumOp
+        "¬" -> Right $ Builtin $ BuiltinSymbol $ S.UnaryOperator WFF.negOp
         "∧" -> Right $ Builtin $ BuiltinSymbol $ S.BinaryOperator WFF.andOp
         "∨" -> Right $ Builtin $ BuiltinSymbol $ S.BinaryOperator WFF.orOp
         "→" -> Right $ Builtin $ BuiltinSymbol $ S.BinaryOperator WFF.impliesOp

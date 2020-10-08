@@ -23,7 +23,7 @@ import Data.Foldable (foldMap, fold)
 import WFF
     ( WFF, Variable(Free)
     , (==>), (/\), (\/)
-    , neg, prop, foralv, exists, pred, freeVars
+    , falsum, neg, prop, foralv, exists, pred, freeVars
     )
 import Sequent (Sequent(..))
 import Sequent as Seq
@@ -32,15 +32,16 @@ import Symbol as Sym
 
 data DeductionRule
     = Assumption
-    | ModusPonens
-    | ModusTollens
-    | DoubleNegation
-    | ConditionalProof
-    | AndIntroduction
     | AndElimination
+    | AndIntroduction
     | OrIntroduction
     | OrElimination
+    | ModusPonens
+    | ConditionalProof
+    | NegationElimination
+    | NegationIntroduction
     | RAA
+    | Falsum
     | Definition CustomSymbol Int
     | Introduction (Sequent String String String) Int
     | UniversalIntroduction
@@ -56,20 +57,21 @@ isAssumption Assumption = true
 isAssumption _ = false
 
 renderRule :: DeductionRule -> String
-renderRule Assumption = "A"
-renderRule ModusPonens = "MP"
-renderRule ModusTollens = "MT"
-renderRule DoubleNegation = "DN"
-renderRule ConditionalProof = "CP"
-renderRule AndIntroduction = "∧I"
+renderRule Assumption = "Assump. I"
 renderRule AndElimination = "∧E"
-renderRule OrIntroduction = "∨I"
+renderRule AndIntroduction = "∧I"
 renderRule OrElimination = "∨E"
+renderRule OrIntroduction = "∨I"
+renderRule ModusPonens = "→E"
+renderRule ConditionalProof = "→I"
+renderRule NegationElimination = "¬E"
+renderRule NegationIntroduction = "¬I"
+renderRule RAA = "RA"
+renderRule Falsum = "⊥"
 renderRule UniversalIntroduction = "∀I"
 renderRule UniversalElimination = "∀E"
 renderRule ExistentialIntroduction = "∃I"
 renderRule ExistentialElimination = "∃E"
-renderRule RAA = "RAA"
 renderRule (Definition s _) =
     "Def (" <> Sym.getDisplay (Sym.getOperator $ Sym.Custom s) <> ")"
 renderRule (Introduction s _) = "SI (" <> Seq.render s <> ")"
@@ -78,16 +80,6 @@ toSequents :: DeductionRule -> Array (Sequent String String String)
 toSequents Assumption = [ Sequent {ante : [], conse : prop "A"} ]
 toSequents ModusPonens =
     [ Sequent {ante : [prop "A", prop "A" ==> prop "B"], conse : prop "B"}]
-toSequents ModusTollens =
-    [ Sequent
-        { ante : [neg $ prop "B", prop "A" ==> prop "B"]
-        , conse : neg $ prop "A"
-        }
-    ]
-toSequents DoubleNegation =
-    [ Sequent {ante : [prop "A"], conse : neg $ neg $ prop "A"}
-    , Sequent {ante : [neg $ neg $ prop "A"], conse : prop "A"}
-    ]
 toSequents ConditionalProof =
     [ Sequent {ante : [prop "A", prop "B"], conse : prop "A" ==> prop "B"} ]
 toSequents AndIntroduction =
@@ -106,6 +98,12 @@ toSequents OrElimination =
         , conse : prop "C"
         }
     ]
+toSequents NegationElimination =
+    [ Sequent {ante : [prop "A", neg $ prop "A"], conse : falsum} ]
+toSequents NegationIntroduction =
+    [ Sequent {ante : [prop "A", falsum], conse : neg $ prop "A"} ]
+toSequents Falsum =
+    [ Sequent {ante : [falsum], conse : prop "A"} ]
 toSequents UniversalIntroduction =
     [ Sequent
         { ante : [ pred "F" [Free "x"] ]
@@ -197,6 +195,18 @@ matchDeduction a _ conse d@OrElimination =
                 , firstC.assumptions `Set.difference` firstA.assumptions
                 , secondC.assumptions `Set.difference` secondA.assumptions
                 ]
+    of
+        Nothing -> Left "Invalid use of deduction rule"
+        x -> Right x
+matchDeduction a _ conse d@NegationIntroduction =
+    case A.head $ do
+        s <- toSequents d
+        {perm, sub} <- Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
+        assumption <- A.fromFoldable $ A.index perm 0
+        conclusion <- A.fromFoldable $ A.index perm 1
+        guard $ assumption.isAssumption
+        guard $ assumption.assumptions `Set.subset` conclusion.assumptions
+        pure $ conclusion.assumptions `Set.difference` assumption.assumptions
     of
         Nothing -> Left "Invalid use of deduction rule"
         x -> Right x

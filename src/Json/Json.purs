@@ -19,7 +19,6 @@ import Data.Array as A
 import Json.Proof as JP
 import Json.Symbol as JSym
 import Json.Sequent as JSeq
-import Json.VerOne as JVerOne
 import Symbol (Symbol, SymbolMap)
 import Sequent (Sequent)
 import Sequent as Seq
@@ -27,7 +26,7 @@ import Proof (Proof)
 
 toJson :: Array Symbol -> Array (Sequent String String String) -> Proof -> Json
 toJson syms seqs p = AC.fromObject $ O.fromFoldable
-    [ Tuple "version" $ AC.fromNumber 2.0
+    [ Tuple "version" $ AC.fromString "COMP2022 1.0"
     , Tuple "symbols" $ AC.fromArray $ JSym.toJson <$> syms
     , Tuple "sequents" $ AC.fromArray $ JSeq.toJson <$> seqs
     , Tuple "lines" $ JP.toJson p
@@ -63,9 +62,8 @@ fromJson :: Json -> Either String
 fromJson j = do
     o <- E.note "Json is not an object" $ AC.toObject j
     case O.lookup "version" o of
-        Nothing -> JVerOne.fromObject o
-        Just verJson -> case AC.toNumber verJson of
-            Nothing -> Left "Save version is not a number"
-            Just 2.0 -> fromObject o
-            Just 1.0 -> JVerOne.fromObject o
-            _ -> Left "Unrecognised save version"
+        Nothing -> Left "Unrecognised save version, maybe you are using a save from the main non-COMP2022 branch"
+        Just verJson -> case AC.toString verJson of
+            Nothing -> Left "Save version is not a string"
+            Just "COMP2022 1.0" -> fromObject o
+            _ -> Left "Unrecognised save version, maybe you are using a save from the main non-COMP2022 branch"

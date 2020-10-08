@@ -12,11 +12,9 @@ module Symbol
     , getDisplay
     , getTyped
     , getOperator
-    , oldDefaultSymbols
-    , newDefaultSymbols
+    , defaultSymbols
     , SymbolMap
-    , oldDefaultMap
-    , newDefaultMap
+    , defaultMap
     , updateMap
     , makeMap
     ) where
@@ -36,12 +34,13 @@ import Data.Tuple (Tuple(..))
 import Data.Void (Void, absurd)
 
 import Sequent (Sequent(..))
-import WFF (WFF(..), UnaryOp, BinaryOp, Quantifier)
+import WFF (WFF(..), NullaryOp, UnaryOp, BinaryOp, Quantifier)
 import WFF as WFF
 import Util (mapTraversal)
 
 data Operator
     = QuantOperator Quantifier
+    | NullaryOperator NullaryOp
     | UnaryOperator UnaryOp
     | BinaryOperator BinaryOp
 
@@ -150,6 +149,7 @@ getOperator (Alias a) = a.operator
 getOperator (Builtin (BuiltinSymbol o)) = o
 
 getDisplay :: Operator -> String
+getDisplay (NullaryOperator n) = WFF.renderNullaryOp n
 getDisplay (UnaryOperator u) = WFF.renderUnaryOp u
 getDisplay (BinaryOperator b) = WFF.renderBinaryOp b
 getDisplay (QuantOperator q) = WFF.renderQ q
@@ -158,9 +158,10 @@ getTyped :: Symbol -> String
 getTyped (Alias a) = a.name
 getTyped s = getDisplay $ getOperator s
 
-oldDefaultSymbols :: Array Symbol
-oldDefaultSymbols =
-    [ Builtin $ BuiltinSymbol $ UnaryOperator WFF.negOp
+defaultSymbols :: Array Symbol
+defaultSymbols =
+    [ Builtin $ BuiltinSymbol $ NullaryOperator WFF.falsumOp
+    , Builtin $ BuiltinSymbol $ UnaryOperator WFF.negOp
     , Builtin $ BuiltinSymbol $ BinaryOperator WFF.andOp
     , Builtin $ BuiltinSymbol $ BinaryOperator WFF.orOp
     , Builtin $ BuiltinSymbol $ BinaryOperator WFF.impliesOp
@@ -169,18 +170,17 @@ oldDefaultSymbols =
     , Alias { name : "&", operator : BinaryOperator WFF.andOp }
     , Alias { name : "|", operator : BinaryOperator WFF.orOp }
     , Alias { name : "->", operator : BinaryOperator WFF.impliesOp }
-    ]
-
-newDefaultSymbols :: Array Symbol
-newDefaultSymbols = oldDefaultSymbols <>
-    [ Alias { name : "@", operator : QuantOperator WFF.Forall }
+    , Alias { name : "~", operator : UnaryOperator WFF.negOp }
+    , Alias { name : "_|_", operator : NullaryOperator WFF.falsumOp }
+    , Alias { name : "@", operator : QuantOperator WFF.Forall }
     , Alias { name : "!", operator : QuantOperator WFF.Exists }
     ]
 
+
 type SymbolMap = Map String Operator
 
-oldDefaultMap :: SymbolMap
-oldDefaultMap = M.fromFoldable
+defaultMap :: SymbolMap
+defaultMap = M.fromFoldable
     [ Tuple "~" $ UnaryOperator WFF.negOp
     , Tuple "∧" $ BinaryOperator WFF.andOp
     , Tuple "∨" $ BinaryOperator WFF.orOp
@@ -190,11 +190,10 @@ oldDefaultMap = M.fromFoldable
     , Tuple "->" $ BinaryOperator WFF.impliesOp
     , Tuple "∀" $ QuantOperator WFF.Forall
     , Tuple "∃" $ QuantOperator WFF.Exists
-    ]
-
-newDefaultMap :: SymbolMap
-newDefaultMap = oldDefaultMap <> M.fromFoldable
-    [ Tuple "@" $ QuantOperator WFF.Forall
+    , Tuple "⊥" $ NullaryOperator WFF.falsumOp
+    , Tuple "¬" $ UnaryOperator WFF.negOp
+    , Tuple "_|_" $ NullaryOperator WFF.falsumOp
+    , Tuple "@" $ QuantOperator WFF.Forall
     , Tuple "!" $ QuantOperator WFF.Exists
     ]
 

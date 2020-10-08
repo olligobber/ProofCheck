@@ -75,21 +75,22 @@ bracketedOrQuantified m = do
 safeExpression :: Lazy StringWFFParser => SymbolMap -> StringWFFParser
 safeExpression m = predicate <|> bracketedOrQuantified m
 
-unaryOrQExpression :: Lazy StringWFFQuantParser =>
+startSymbolExpression :: Lazy StringWFFQuantParser =>
     SymbolMap -> StringWFFQuantParser
-unaryOrQExpression m = do
+startSymbolExpression m = do
     symbolPos <- P.position
     o <- definedSymbol m
-    contentPos <- P.position
-    contents <- safeExpression m
     case o of
-        UnaryOperator operator ->
+        NullaryOperator operator ->
+            pure $ Right $ WFF.Nullary operator
+        UnaryOperator operator -> do
+            contents <- safeExpression m
             pure $ Right $ WFF.Unary { operator, contents }
-        QuantOperator operator -> case contents of
-            WFF.Pred { predicate : variable, variables : [] } ->
-                pure $ Left $ { operator, variable }
-            _ -> P.failWithPosition "Expected variable" contentPos
-        _ -> P.failWithPosition "Expected Unary Symbol" symbolPos
+        QuantOperator operator -> do
+            variable <- fromCharArray <$> A.some PT.letter
+            pure $ Left $ { operator, variable }
+        _ -> P.failWithPosition
+            "Expected Nullary, Unary, or Quantifier Symbol" symbolPos
 
 tailBinaryExpression :: Lazy StringWFFParser => SymbolMap ->
     Parser String { operator :: BinaryOp, right :: WFF String String String }
@@ -110,7 +111,8 @@ maybeBinaryExpression m = do
         Just {right, operator} -> pure $ WFF.Binary $ {left, operator, right}
 
 expressionOrQ :: Lazy StringWFFQuantParser => SymbolMap -> StringWFFQuantParser
-expressionOrQ m = (Right <$> maybeBinaryExpression m) <|> unaryOrQExpression m
+expressionOrQ m =
+    (Right <$> maybeBinaryExpression m) <|> startSymbolExpression m
 
 expression :: Lazy StringWFFParser => SymbolMap -> StringWFFParser
 expression m = do

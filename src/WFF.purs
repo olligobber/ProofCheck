@@ -1,11 +1,13 @@
 module WFF
-    ( UnaryOp(..)
+    ( NullaryOp(..)
+    , UnaryOp(..)
     , BinaryOp(..)
     , Quantifier(..)
     , Variable(..)
     , WFF(..)
     , render
     , renderQ
+    , renderNullaryOp
     , renderUnaryOp
     , renderBinaryOp
     , traversePredicates
@@ -13,10 +15,12 @@ module WFF
     , traverseBound
     , prop
     , pred
+    , falsumOp
     , negOp
     , andOp
     , impliesOp
     , orOp
+    , falsum
     , neg
     , and
     , or
@@ -40,7 +44,7 @@ import Prelude
     ( class Eq, class Ord, class Show, class Semigroup, class Applicative
     , class Monoid
     , Unit
-    , show, identity, otherwise, unit, bind, pure, not, const
+    , show, identity, otherwise, unit, bind, pure, not, const, mempty
     , (<>), ($), (<$>), (<<<), (==), (&&), (+), (<), (<*>), (-), (>), (>>>)
     )
 import Data.String (joinWith)
@@ -55,6 +59,17 @@ import Data.Set as S
 import Data.Traversable (traverse)
 
 import Util (mapTraversal, getAllIndex)
+
+newtype NullaryOp = NullaryOp String
+
+derive instance eqNullaryOp :: Eq NullaryOp
+derive instance ordNullaryOp :: Ord NullaryOp
+
+instance showNullaryOp :: Show NullaryOp where
+    show (NullaryOp s) = "(NullaryOp " <> show s <> ")"
+
+renderNullaryOp :: NullaryOp -> String
+renderNullaryOp (NullaryOp s) = s
 
 newtype UnaryOp = UnaryOp String
 
@@ -121,6 +136,7 @@ isBound _ _ (Free _) = false
 data WFF pred free bound
     = Pred { predicate :: pred, variables :: Array (Variable free bound) }
     | Unary { operator :: UnaryOp, contents :: WFF pred free bound }
+    | Nullary NullaryOp
     | Binary
         { operator :: BinaryOp
         , left :: WFF pred free bound
@@ -147,6 +163,7 @@ derive instance ordWFF :: (Ord pred, Ord free, Ord bound) =>
 instance showWFF :: (Show pred, Show free, Show bound) =>
     Show (WFF pred free bound) where
         show (Pred p) = "(Pred " <> show p <> ")"
+        show (Nullary n) = "(Nullary " <> show n <> ")"
         show (Unary u) = "(Unary " <> show u <> ")"
         show (Binary b) = "(Binary " <> show b <> ")"
         show (Quant q) = "(Quant " <> show q <> ")"
@@ -155,6 +172,7 @@ traversePredicates :: forall a b f free bound. Applicative f =>
     (a -> f b) -> WFF a free bound -> f (WFF b free bound)
 traversePredicates f (Pred p) =
     Pred <<< { predicate : _, variables : p.variables } <$> f p.predicate
+traversePredicates _ (Nullary n) = pure $ Nullary n
 traversePredicates f (Unary u) =
     Unary <<< { operator : u.operator, contents : _ }
     <$> traversePredicates f u.contents
@@ -173,6 +191,7 @@ traverseFree f (Pred p) =
         Free y -> Free <$> f y
         Bound y i -> pure $ Bound y i
         ) p.variables
+traverseFree _ (Nullary n) = pure $ Nullary n
 traverseFree f (Unary u) =
     Unary <<< { operator : u.operator, contents : _ }
     <$> traverseFree f u.contents
@@ -191,6 +210,7 @@ traverseBound f (Pred p) =
         Free y -> pure $ Free y
         Bound y i -> Bound <$> f y <*> pure i
         ) p.variables
+traverseBound _ (Nullary n) = pure $ Nullary n
 traverseBound f (Unary u) =
     Unary <<< { operator : u.operator, contents : _ }
     <$> traverseBound f u.contents
@@ -205,6 +225,7 @@ freeVars :: forall pred free bound. Ord free => WFF pred free bound -> Set free
 freeVars (Pred p) = foldMap getFree p.variables where
     getFree (Free x) = S.singleton x
     getFree (Bound _ _) = S.empty
+freeVars (Nullary n) = S.empty
 freeVars (Unary u) = freeVars u.contents
 freeVars (Binary b) = freeVars b.left <> freeVars b.right
 freeVars (Quant q) = freeVars q.contents
@@ -218,6 +239,7 @@ render (Pred p) = case p.variables of
         "(" <>
         joinWith "," (renderVariable <$> p.variables) <>
         ")"
+render (Nullary n) = renderNullaryOp n
 render (Unary u) = renderUnaryOp u.operator <> safeRender u.contents
 render (Binary b) =
     safeRender b.left <> renderBinaryOp b.operator <> safeRender b.right
@@ -240,6 +262,7 @@ bindAt :: forall pred var. Eq var =>
 bindAt l e (Pred p) = Pred $ p
     { variables = (\v -> if v == Free e then Bound e l else v) <$> p.variables
     }
+bindAt _ _ (Nullary n) = Nullary n
 bindAt l e (Unary u) = Unary $ u { contents = bindAt l e u.contents }
 bindAt l e (Binary b) =
     Binary $ b { left = bindAt l e b.left, right = bindAt l e b.right }
@@ -251,13 +274,17 @@ closed = closedAt 0
 
 closedAt :: forall pred free bound. Int -> WFF pred free bound -> Boolean
 closedAt i (Pred p) = all (boundBelow i) p.variables
+closedAt _ (Nullary n) = true
 closedAt i (Unary u) = closedAt i u.contents
 closedAt i (Binary b) = closedAt i b.left && closedAt i b.right
 closedAt i (Quant q) = closedAt (i+1) q.contents
 
 -- Builtin operators
+falsumOp :: NullaryOp
+falsumOp = NullaryOp "⊥"
+
 negOp :: UnaryOp
-negOp = UnaryOp "~"
+negOp = UnaryOp "¬"
 
 andOp :: BinaryOp
 andOp = BinaryOp "∧"
@@ -267,6 +294,9 @@ orOp = BinaryOp "∨"
 
 impliesOp :: BinaryOp
 impliesOp = BinaryOp "→"
+
+falsum :: forall pred free bound. WFF pred free bound
+falsum = Nullary falsumOp
 
 neg :: forall pred free bound.
     WFF pred free bound -> WFF pred free bound
@@ -365,6 +395,7 @@ boundToFreeLevel l f (Pred p) =
             mapBound (Bound x i) = case f (i-l) x of
                 Nothing -> Bound x i
                 Just y -> Free y
+boundToFreeLevel _ _ (Nullary n) = Nullary n
 boundToFreeLevel l f (Unary u) =
     Unary $ u { contents = boundToFreeLevel l f u.contents }
 boundToFreeLevel l f (Binary b) = Binary $ b
@@ -457,6 +488,7 @@ getTyping :: forall x. Ord x => WFF x x x -> Typing x
 getTyping (Pred p) = foldMap (Typing <<< Just) $
     [ M.singleton p.predicate $ Predicate $ length p.variables ]
     <> (getVarTyping <$> p.variables)
+getTyping (Nullary _) = mempty
 getTyping (Unary u) = getTyping u.contents
 getTyping (Binary b) = getTyping b.left <> getTyping b.right
 getTyping (Quant q) =
@@ -468,6 +500,7 @@ validBoundVariable :: forall pred free bound. Eq bound =>
     Int -> bound -> WFF pred free bound -> Maybe Int
 validBoundVariable l v (Pred p) =
     Just $ length $ A.filter (isBound v l) p.variables
+validBoundVariable _ _ (Nullary _) = Just 0
 validBoundVariable l v (Unary u) = validBoundVariable l v u.contents
 validBoundVariable l v (Binary b) =
     (+) <$> validBoundVariable l v b.left <*> validBoundVariable l v b.right
@@ -479,6 +512,7 @@ validBoundVariable l v (Quant q)
 validateBindings :: forall pred free bound. Eq bound =>
     WFF pred free bound -> Maybe String
 validateBindings (Pred _) = Nothing
+validateBindings (Nullary _) = Nothing
 validateBindings (Unary u) = validateBindings u.contents
 validateBindings (Binary b) =
     validateBindings b.left <> validateBindings b.right

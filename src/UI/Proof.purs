@@ -140,18 +140,19 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
         [ HP.class_ $ HH.ClassName "reason" ]
         [ select "reason-dropdown" (Just <<< Reason) (const false)
             (makePartial state.reason)
-                [ Tuple "A" $ Full Assumption
-                , Tuple "MP" $ Full ModusPonens
-                , Tuple "MT" $ Full ModusTollens
-                , Tuple "DN" $ Full DoubleNegation
-                , Tuple "CP" $ Full ConditionalProof
+                [ Tuple "Assump. I" $ Full Assumption
+                , Tuple "→E" $ Full ModusPonens
+                , Tuple "→I" $ Full ConditionalProof
                 , Tuple "∧I" $ Full AndIntroduction
                 , Tuple "∧E" $ Full AndElimination
                 , Tuple "∨I" $ Full OrIntroduction
                 , Tuple "∨E" $ Full OrElimination
-                , Tuple "RAA" $ Full RAA
-                , Tuple "SI" PartSequent
+                , Tuple "¬E" $ Full NegationElimination
+                , Tuple "¬I" $ Full NegationIntroduction
+                , Tuple "RA" $ Full RAA
+                , Tuple "⊥" $ Full Falsum
                 , Tuple "Def" PartSymbol
+                , Tuple "SI" PartSequent
                 , Tuple "∀I" $ Full UniversalIntroduction
                 , Tuple "∀E" $ Full UniversalElimination
                 , Tuple "∃I" $ Full ExistentialIntroduction
