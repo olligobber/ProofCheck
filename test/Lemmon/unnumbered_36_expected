@@ -1,1 +1,0 @@
-Success: (∀x)((N(x)∧G(x))→(∃y)(S(y)∧L(x,y))) ⊢ (∀x)((N(x)∧G(x))→(∃y)(S(y)∧L(x,y)))

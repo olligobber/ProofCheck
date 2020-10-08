@@ -1,1 +1,0 @@
-Success: (∀x)(F(x)∧G(x)) ⊢ (∀x)F(x)∧(∀x)G(x)

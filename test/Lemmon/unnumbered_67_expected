@@ -1,1 +1,0 @@
-Success:  ⊢ (∀x)((∀u)(F(u,x,a)∧G(a,x,a))→(∀u)(F(u,b,a)∧G(a,b,a)))→(∃y)((∀x)(∀u)(F(u,x,x)∧G(x,x,a))→(∀u)(F(u,b,y)∧G(y,b,a)))

@@ -1,6 +1,6 @@
 # ProofCheck
 
-Proof Checker for a system of Propositional Logic.
+Proof Checker for COMP2022's Predicate Logic.
 
 ## Contributors
 
