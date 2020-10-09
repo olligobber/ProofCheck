@@ -10,7 +10,7 @@ module UI.AppState
 
 import Prelude
     ( class Functor, class Apply, class Applicative, class Bind, class Monad
-    , ($), (>>=), (<$>), (<>), (/=), (||), (<$)
+    , ($), (>>=), (<$>), (<>), (/=), (||), (<$), (==)
     , bind, const, pure, unit, not, discard
     , Unit
     )
@@ -34,9 +34,10 @@ import UI.File as F
 import Json (toJson, fromJson)
 import Sequent (Sequent, verifyTypes, verifyBindings)
 import Symbol
-    (Symbol, SymbolMap, defaultMap, defaultSymbols, updateMap)
+    (Symbol(..), SymbolMap, defaultMap, defaultSymbols, updateMap)
 import Proof (Proof, Deduction(..))
 import Proof as P
+import Deduction (DeductionRule(..))
 import UI.Capabilities
     ( Window(..)
     , class ReadSymbols, class WriteSymbols, class ReadSequents
@@ -159,9 +160,12 @@ instance readProofAppStateM :: ReadProof AppStateM where
 instance writeProofAppStateM :: WriteProof AppStateM where
     addDeduction deduction@(Deduction d) = get >>= \state ->
         case d.rule of
-            -- Definition sym i -> case A.index state.present.symbols i of
-            --     Just (Custom s) | sym == s -> validate state
-            --     _ -> false <$ error "Symbol is not available"
+            Introduction seq i -> case A.index state.present.sequents i of
+                Just s | seq == s -> validate state
+                _ -> false <$ error "Sequent is not available"
+            Definition sym i -> case A.index state.present.symbols i of
+                Just (Custom s) | sym == s -> validate state
+                _ -> false <$ error "Symbol is not available"
             _ -> validate state
         where
             validate s = case P.addDeduction deduction s.present.proof of

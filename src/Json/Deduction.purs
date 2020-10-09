@@ -3,24 +3,30 @@ module Json.Deduction
     , fromJson
     ) where
 
-import Prelude (($), (<>), bind)
+import Prelude (($), (<>), bind, pure)
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core as AC
 import Foreign.Object as O
-import Data.Int (fromNumber)
+import Data.Tuple (Tuple(..))
+import Data.Array as A
+import Data.Int (toNumber, fromNumber)
 import Data.Either (Either(..))
 import Data.Either as E
 
-import Symbol (Symbol)
+import Symbol (Symbol(..))
 import Sequent (Sequent)
 import Deduction (DeductionRule(..))
 import Deduction as D
 
 toJson :: DeductionRule -> Json
--- toJson (Definition _ i) = AC.fromObject $ O.fromFoldable
---     [ Tuple "rule" $ AC.fromString "Def"
---     , Tuple "number" $ AC.fromNumber $ toNumber i
---     ]
+toJson (Introduction _ i) = AC.fromObject $ O.fromFoldable
+    [ Tuple "rule" $ AC.fromString "SI"
+    , Tuple "number" $ AC.fromNumber $ toNumber i
+    ]
+toJson (Definition _ i) = AC.fromObject $ O.fromFoldable
+    [ Tuple "rule" $ AC.fromString "Def"
+    , Tuple "number" $ AC.fromNumber $ toNumber i
+    ]
 toJson d = AC.fromString $ D.renderRule d
 
 fromObject :: Array Symbol -> Array (Sequent String String String) ->
@@ -35,11 +41,14 @@ fromObject syms seqs o = do
         Right numJson
     i <- E.note "Deduction rule number is not an integer" $ fromNumber number
     case rule of
-        -- "Def" -> do
-        --     sym <- E.note "Deduction rule index out of range" $ A.index syms i
-        --     case sym of
-        --         Custom s -> pure $ Definition s i
-        --         _ -> Left "Deduction rule index is for non-custom symbol"
+        "SI" -> do
+            seq <- E.note "Deduction rule index out of range" $ A.index seqs i
+            pure $ Introduction seq i
+        "Def" -> do
+            sym <- E.note "Deduction rule index out of range" $ A.index syms i
+            case sym of
+                Custom s -> pure $ Definition s i
+                _ -> Left "Deduction rule index is for non-custom symbol"
         _ -> Left $ "Invalid indexed deduction rule: " <> rule
 
 fromString :: String -> Either String DeductionRule
