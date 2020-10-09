@@ -118,6 +118,9 @@ renderNewLine :: forall m. State -> H.ComponentHTML Action () m
 renderNewLine state = let Proof proof = state.proof in HH.tr
     [ HP.id_ "new-line" ]
     [ HH.td
+        [ HP.class_ $ HH.ClassName "line-number" ]
+        [ HH.text $ "(" <> show (length proof.lines + 1) <> ")" ]
+    , HH.td
         [ HP.class_ $ HH.ClassName "assumptions" ]
         [ HH.input
             [ HE.onValueChange $ Just <<< Assumptions
@@ -125,9 +128,6 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
             , HP.id_ "assumptions-input"
             ] -- todo make input type text?
         ]
-    , HH.td
-        [ HP.class_ $ HH.ClassName "line-number" ]
-        [ HH.text $ "(" <> show (length proof.lines + 1) <> ")" ]
     , HH.td
         [ HP.class_ $ HH.ClassName "formula" ]
         [ HH.input
@@ -209,12 +209,12 @@ renderDeduction :: forall a m. Int -> Deduction -> H.ComponentHTML a () m
 renderDeduction i (Deduction ded) = HH.tr
     []
     [ HH.td
+        [ HP.class_ $ HH.ClassName "line-number" ]
+        [ HH.text $ "(" <> show (i+1) <> ")" ]
+    , HH.td
         [ HP.class_ $ HH.ClassName "assumptions" ]
         [ HH.text $ S.joinWith "," $
             show <$> Set.toUnfoldable ded.assumptions ]
-    , HH.td
-        [ HP.class_ $ HH.ClassName "line-number" ]
-        [ HH.text $ "(" <> show (i+1) <> ")" ]
     , HH.td
         [ HP.class_ $ HH.ClassName "formula" ]
         [ HH.text $ W.render ded.deduction ]
@@ -227,11 +227,11 @@ lineHeading :: forall a m. H.ComponentHTML a () m
 lineHeading = HH.tr
     []
     [ HH.th
-        [ HP.class_ $ HH.ClassName "assumptions" ]
-        [ HH.text "Assumptions" ]
-    , HH.th
         [ HP.class_ $ HH.ClassName "line-number" ]
         [ HH.text "Line No." ]
+    , HH.th
+        [ HP.class_ $ HH.ClassName "assumptions" ]
+        [ HH.text "Assumptions" ]
     , HH.th
         [ HP.class_ $ HH.ClassName "formula" ]
         [ HH.text "Formula" ]
