@@ -241,8 +241,8 @@ render (Pred p) = case p.variables of
         ")"
 render (Nullary n) = renderNullaryOp n
 render (Unary u) = renderUnaryOp u.operator <> safeRender u.contents
-render (Binary b) =
-    safeRender b.left <> renderBinaryOp b.operator <> safeRender b.right
+render (Binary b) = "(" <>
+    safeRender b.left <> renderBinaryOp b.operator <> safeRender b.right <> ")"
 render (Quant q) =
     "(" <> renderQ q.operator <> q.variable <> ")" <> safeRender q.contents
 
@@ -250,6 +250,7 @@ render (Quant q) =
 safeRender :: WFF String String String -> String
 safeRender (Pred p) = render $ Pred p
 safeRender (Quant q) = render $ Quant q
+safeRender (Binary b) = render $ Binary b
 safeRender w = "(" <> render w <> ")"
 
 -- Binds all instances of a variable
