@@ -6,8 +6,8 @@ module Deduction
     ) where
 
 import Prelude
-    ( (<>), (<$>), ($)
-    , map, bind, pure, discard, not
+    ( (<>), (<$>), ($), (<<<)
+    , bind, pure, discard, flip, not, map
     , class Eq, class Ord
     )
 import Data.Either (Either(..))
@@ -16,11 +16,18 @@ import Data.Set (Set)
 import Data.Set as Set
 import Data.Array as A
 import Control.MonadZero (guard)
+import Data.Map (Map)
+import Data.Map as M
+import Data.Foldable (foldMap, fold)
 
-import WFF (WFF(..), (==>), (/\), (\/), neg)
+import WFF
+    ( WFF, Variable(Free)
+    , (==>), (/\), (\/)
+    , neg, prop, foralv, exists, pred, freeVars
+    )
 import Sequent (Sequent(..))
 import Sequent as Seq
-import Symbol (Symbol(..))
+import Symbol (CustomSymbol)
 import Symbol as Sym
 
 data DeductionRule
@@ -34,8 +41,12 @@ data DeductionRule
     | OrIntroduction
     | OrElimination
     | RAA
-    | Definition Symbol Int
-    | Introduction (Sequent String) Int
+    | Definition CustomSymbol Int
+    | Introduction (Sequent String String String) Int
+    | UniversalIntroduction
+    | UniversalElimination
+    | ExistentialIntroduction
+    | ExistentialElimination
 
 derive instance eqDeductionRule :: Eq DeductionRule
 derive instance ordDeductionRule :: Ord DeductionRule
@@ -50,74 +61,115 @@ renderRule ModusPonens = "MP"
 renderRule ModusTollens = "MT"
 renderRule DoubleNegation = "DN"
 renderRule ConditionalProof = "CP"
-renderRule AndIntroduction = "&I"
-renderRule AndElimination = "&E"
-renderRule OrIntroduction = "|I"
-renderRule OrElimination = "|E"
+renderRule AndIntroduction = "∧I"
+renderRule AndElimination = "∧E"
+renderRule OrIntroduction = "∨I"
+renderRule OrElimination = "∨E"
+renderRule UniversalIntroduction = "∀I"
+renderRule UniversalElimination = "∀E"
+renderRule ExistentialIntroduction = "∃I"
+renderRule ExistentialElimination = "∃E"
 renderRule RAA = "RAA"
-renderRule (Definition (UnarySymbol s) _) =
-    "Def (" <> s.operator.symbol <> ")"
-renderRule (Definition (BinarySymbol s) _) =
-    "Def (" <> s.operator.symbol <> ")"
+renderRule (Definition s _) =
+    "Def (" <> Sym.getDisplay (Sym.getOperator $ Sym.Custom s) <> ")"
 renderRule (Introduction s _) = "SI (" <> Seq.render s <> ")"
 
-toSequents :: DeductionRule -> Array (Sequent (Either Int String))
-toSequents Assumption = [ Left <$> Sequent {ante : [], conse : Prop 1} ]
+toSequents :: DeductionRule -> Array (Sequent String String String)
+toSequents Assumption = [ Sequent {ante : [], conse : prop "A"} ]
 toSequents ModusPonens =
-    [ Left <$> Sequent {ante : [Prop 1, Prop 1 ==> Prop 2], conse : Prop 2} ]
-toSequents ModusTollens = map Left <$>
-    [ Sequent {ante : [neg $ Prop 2, Prop 1 ==> Prop 2], conse : neg $ Prop 1} ]
-toSequents DoubleNegation =
-    [ Left <$> Sequent {ante : [Prop 1], conse : neg $ neg $ Prop 1}
-    , Left <$> Sequent {ante : [neg $ neg $ Prop 1], conse : Prop 1}
-    ]
-toSequents ConditionalProof =
-    [ Left <$> Sequent {ante : [Prop 1, Prop 2], conse : Prop 1 ==> Prop 2} ]
-toSequents AndIntroduction =
-    [ Left <$> Sequent {ante : [Prop 1, Prop 2], conse : Prop 1 /\ Prop 2} ]
-toSequents AndElimination =
-    [ Left <$> Sequent {ante : [Prop 1 /\ Prop 2], conse : Prop 1}
-    , Left <$> Sequent {ante : [Prop 1 /\ Prop 2], conse : Prop 2}
-    ]
-toSequents OrIntroduction =
-    [ Left <$> Sequent {ante : [Prop 1], conse : Prop 1 \/ Prop 2}
-    , Left <$> Sequent {ante : [Prop 2], conse : Prop 1 \/ Prop 2}
-    ]
-toSequents OrElimination =
-    [ Left <$> Sequent
-        { ante : [Prop 1, Prop 2, Prop 1 \/ Prop 2, Prop 3, Prop 3]
-        , conse : Prop 3
+    [ Sequent {ante : [prop "A", prop "A" ==> prop "B"], conse : prop "B"}]
+toSequents ModusTollens =
+    [ Sequent
+        { ante : [neg $ prop "B", prop "A" ==> prop "B"]
+        , conse : neg $ prop "A"
         }
     ]
-toSequents RAA = map Left <$>
-    [ Sequent {ante : [Prop 1, Prop 2 /\ neg (Prop 2)], conse : neg $ Prop 1} ]
-toSequents (Definition s _) = map Left <$> Sym.toSequents s
-toSequents (Introduction s _) = [ Right <$> s ]
+toSequents DoubleNegation =
+    [ Sequent {ante : [prop "A"], conse : neg $ neg $ prop "A"}
+    , Sequent {ante : [neg $ neg $ prop "A"], conse : prop "A"}
+    ]
+toSequents ConditionalProof =
+    [ Sequent {ante : [prop "A", prop "B"], conse : prop "A" ==> prop "B"} ]
+toSequents AndIntroduction =
+    [ Sequent {ante : [prop "A", prop "B"], conse : prop "A" /\ prop "B"} ]
+toSequents AndElimination =
+    [ Sequent {ante : [prop "A" /\ prop "B"], conse : prop "A"}
+    , Sequent {ante : [prop "A" /\ prop "B"], conse : prop "B"}
+    ]
+toSequents OrIntroduction =
+    [ Sequent {ante : [prop "A"], conse : prop "A" \/ prop "B"}
+    , Sequent {ante : [prop "B"], conse : prop "A" \/ prop "B"}
+    ]
+toSequents OrElimination =
+    [ Sequent
+        { ante : [prop "A", prop "B", prop "A" \/ prop "B", prop "C", prop "C"]
+        , conse : prop "C"
+        }
+    ]
+toSequents UniversalIntroduction =
+    [ Sequent
+        { ante : [ pred "F" [Free "x"] ]
+        , conse : foralv "x" $ pred "F" [Free "x"]
+        }
+    ]
+toSequents UniversalElimination =
+    [ Sequent
+        { ante : [foralv "x" $ pred "F" [Free "x"] ]
+        , conse : pred "F" [Free "x"]
+        }
+    ]
+toSequents ExistentialIntroduction =
+    [ Sequent
+        { ante : [ pred "F" [Free "x"] ]
+        , conse : exists "x" $ pred "F" [Free "x"]
+        }
+    ]
+toSequents ExistentialElimination =
+    [ Sequent
+        { ante :
+            [ exists "x" $ pred "F" [Free "x"]
+            , pred "F" [Free "x"]
+            , prop "P"
+            ]
+        , conse : prop "P"
+        }
+    ]
+toSequents RAA =
+    [ Sequent
+        { ante : [prop "A", prop "B" /\ neg (prop "B")]
+        , conse : neg $ prop "A"
+        }
+    ]
+toSequents (Definition s _) = Sym.toSequents s
+toSequents (Introduction s _) = [ s ]
 
 {-
     Check a deduction was correctly applied, given
         - the list of referenced formulas, whether they were assumptions, and
             what assumptions they rely on
+        - the map from assumption numbers to formulas
         - the conclusion
         - the deduction rule
     returns either an error or the assumptions the conclusion relies on,
     using Nothing as a flag that this is a new assumption
 -}
 matchDeduction :: Array
-    {formula :: WFF String, isAssumption :: Boolean, assumptions :: Set Int} ->
-    WFF String -> DeductionRule -> Either String (Maybe (Set Int))
-matchDeduction a conse d@Assumption =
+    { formula :: WFF String String String
+    , isAssumption :: Boolean
+    , assumptions :: Set Int
+    } -> Map Int (WFF String String String) -> WFF String String String ->
+    DeductionRule -> Either String (Maybe (Set Int))
+matchDeduction a _ conse d@Assumption =
     case A.head $ do
         s <- toSequents d
         Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
     of
         Nothing -> Left "Invalid use of deduction rule"
         Just _ -> Right Nothing
-matchDeduction a conse d@ConditionalProof =
+matchDeduction a _ conse d@ConditionalProof =
     case A.head $ do
         s <- toSequents d
-        perm <- _.permutation <$> Seq.match a s
-            (Sequent {ante : _.formula <$> a, conse})
+        {perm, sub} <- Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
         assumption <- A.fromFoldable $ A.index perm 0
         conclusion <- A.fromFoldable $ A.index perm 1
         guard $ assumption.isAssumption
@@ -126,11 +178,10 @@ matchDeduction a conse d@ConditionalProof =
     of
         Nothing -> Left "Invalid use of deduction rule"
         x -> Right x
-matchDeduction a conse d@OrElimination =
+matchDeduction a _ conse d@OrElimination =
     case A.head $ do
         s <- toSequents d
-        perm <- _.permutation <$> Seq.match a s
-            (Sequent {ante : _.formula <$> a, conse})
+        {perm, sub} <- Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
         firstA <- A.fromFoldable $ A.index perm 0
         secondA <- A.fromFoldable $ A.index perm 1
         orA <- A.fromFoldable $ A.index perm 2
@@ -140,21 +191,60 @@ matchDeduction a conse d@OrElimination =
         guard $ secondA.isAssumption
         guard $ firstA.assumptions `Set.subset` firstC.assumptions
         guard $ secondA.assumptions `Set.subset` secondC.assumptions
-        guard $ not $ firstA.assumptions `Set.subset` secondC.assumptions
-        guard $ not $ firstA.assumptions `Set.subset` orA.assumptions
-        guard $ not $ secondA.assumptions `Set.subset` firstC.assumptions
-        guard $ not $ secondA.assumptions `Set.subset` orA.assumptions
         pure $
-            Set.unions (_.assumptions <$> [orA, firstC, secondC])
-            `Set.difference` Set.unions (_.assumptions <$> [firstA, secondA])
+            Set.unions
+                [ orA.assumptions
+                , firstC.assumptions `Set.difference` firstA.assumptions
+                , secondC.assumptions `Set.difference` secondA.assumptions
+                ]
     of
         Nothing -> Left "Invalid use of deduction rule"
         x -> Right x
-matchDeduction a conse d@RAA =
+matchDeduction a m conse d@UniversalIntroduction =
     case A.head $ do
         s <- toSequents d
-        perm <- _.permutation <$> Seq.match a s
-            (Sequent {ante : _.formula <$> a, conse})
+        {perm, sub} <- Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
+        let assumptions = foldMap _.assumptions a
+        let assFreeVars = fold $
+                Set.mapMaybe (map freeVars <<< flip M.lookup m) assumptions
+        x <- A.fromFoldable $ M.lookup "x" sub.freeMatch
+        f <- A.fromFoldable $ M.lookup "F" sub.predMatch
+        case x of
+            Left _ -> pure assumptions
+            Right xx -> do
+                guard $ not $ xx `Set.member` assFreeVars
+                guard $ not $ Right xx `Set.member` freeVars f
+                pure assumptions
+    of
+        Nothing -> Left "Invalid use of deduction rule"
+        x -> Right x
+matchDeduction a m conse d@ExistentialElimination =
+    case A.head $ do
+        s <- toSequents d
+        {perm, sub} <- Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
+        existential <- A.fromFoldable $ A.index perm 0
+        assumption <- A.fromFoldable $ A.index perm 1
+        conclusion <- A.fromFoldable $ A.index perm 2
+        guard $ assumption.isAssumption
+        guard $ assumption.assumptions `Set.subset` conclusion.assumptions
+        let assumptions = Set.union existential.assumptions $
+                conclusion.assumptions `Set.difference` assumption.assumptions
+        let assFreeVars = fold $
+                Set.mapMaybe (map freeVars <<< flip M.lookup m) assumptions
+        case M.lookup "x" sub.freeMatch of
+            Nothing -> []
+            Just (Left _) -> pure assumptions
+            Just (Right x) -> do
+                guard $ not $ x `Set.member` assFreeVars
+                guard $ not $ x `Set.member` freeVars conse
+                pure assumptions
+    of
+        Nothing -> Left "Invalid use of deduction rule"
+        x -> Right x
+matchDeduction a _ conse d@RAA =
+    case A.head $ do
+        s <- toSequents d
+        {perm, sub} <- Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
         assumption <- A.fromFoldable $ A.index perm 0
         contradiction <- A.fromFoldable $ A.index perm 1
         guard $ assumption.isAssumption
@@ -164,10 +254,17 @@ matchDeduction a conse d@RAA =
     of
         Nothing -> Left "Invalid use of deduction rule"
         x -> Right x
-matchDeduction a conse d =
+matchDeduction a _ conse d@(Definition _ _) =
+    case do
+        s <- toSequents d
+        Seq.matchLift a s $ Sequent {ante : _.formula <$> a, conse}
+    of
+        [] -> Left "Invalid use of deduction rule"
+        _ -> Right $ Just $ Set.unions $ _.assumptions <$> a
+matchDeduction a _ conse d =
     case do
         s <- toSequents d
         Seq.match a s $ Sequent {ante : _.formula <$> a, conse}
     of
         [] -> Left "Invalid use of deduction rule"
-        _ -> Right $ Just $ Set.unions $_.assumptions <$> a
+        _ -> Right $ Just $ Set.unions $ _.assumptions <$> a

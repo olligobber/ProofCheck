@@ -3,14 +3,13 @@ module Json.Proof
     , fromJson
     ) where
 
-import Prelude (($), (<<<), (<$>), (>=>), (-), (+), pure, bind, flip, map)
+import Prelude (($), (<<<), (<$>), (>=>), pure, bind, flip)
 import Data.Argonaut.Core (Json)
 import Data.Argonaut.Core as AC
 import Foreign.Object as O
 import Data.Tuple (Tuple(..))
 import Data.Either (Either)
 import Data.Either as E
-import Data.Maybe (Maybe(..))
 import Data.Int (toNumber, fromNumber)
 import Data.Set as S
 import Data.Traversable (traverse)
@@ -31,11 +30,11 @@ fromDeduction (Deduction d) = AC.fromObject $ O.fromFoldable
     , Tuple "formula" $ JW.toJson d.deduction
     , Tuple "rule" $ JD.toJson d.rule
     , Tuple "references" $ AC.fromArray $
-        AC.fromNumber <<< toNumber <<< (_ - 1) <$> d.reasons
+        AC.fromNumber <<< toNumber <$> d.reasons
     ]
 
-toDeduction :: SymbolMap -> Array Symbol -> Array (Sequent String) -> Proof ->
-    Json -> Either String Deduction
+toDeduction :: SymbolMap -> Array Symbol -> Array (Sequent String String String)
+    -> Proof -> Json -> Either String Deduction
 toDeduction symbolMap syms seqs (Proof p) j = do
     o <- E.note "Deduction is not an object" $ AC.toObject j
     formJson <- E.note "Deduction is missing formula" $ O.lookup "formula" o
@@ -47,34 +46,25 @@ toDeduction symbolMap syms seqs (Proof p) j = do
     refArr <- E.note "Deduction references are not a list" $
         AC.toArray refJson
     reasons <- E.note "Deduction references are not integers" $
-        map (_ + 1) <<< sort <$>
+        sort <$>
         traverse (AC.toNumber >=> fromNumber) refArr
-    case O.lookup "assumptions" o of
-        Just assJson -> do
-            assArr <- E.note "Deduction assumptions are not a list" $
-                AC.toArray assJson
-            assumptions <- E.note "Deduction assumptions are not integers" $
-                S.fromFoldable <$>
-                traverse (AC.toNumber >=> fromNumber) assArr
-            pure $ Deduction { assumptions, deduction, rule, reasons }
-        Nothing -> do
-            let d = Deduction
-                    { assumptions : S.empty, deduction, rule, reasons }
-            assumptions <- P.getAssumptions d $ Proof p
-            pure $ Deduction { assumptions, deduction, rule, reasons }
+    assJson <- E.note "Deduction is missing assumptions" $
+        O.lookup "assumptions" o
+    assArr <- E.note "Deduction assumptions are not a list" $
+        AC.toArray assJson
+    assumptions <- E.note "Deduction assumptions are not integers" $
+        S.fromFoldable <$>
+        traverse (AC.toNumber >=> fromNumber) assArr
+    pure $ Deduction { assumptions, deduction, rule, reasons }
 
 toJson :: Proof -> Json
 toJson (Proof p) = AC.fromArray $ fromDeduction <$> p.lines
 
-fromJson :: SymbolMap -> Array Symbol -> Array (Sequent String) -> Json ->
-    Either String Proof
+fromJson :: SymbolMap -> Array Symbol -> Array (Sequent String String String) ->
+    Json -> Either String Proof
 fromJson symbolMap syms seqs j = do
     linesArr <- E.note "Proof is not a list" $ AC.toArray j
-    let startP = Proof
-            { assumptions : S.empty
-            , lines : []
-            }
     foldM
         (\p -> toDeduction symbolMap syms seqs p >=> flip P.addDeduction p)
-        startP
+        P.empty
         linesArr

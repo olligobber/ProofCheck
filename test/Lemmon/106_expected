@@ -1,0 +1,1 @@
+Success: (∀x)(G(x)→H(x)),(∃x)(F(x)∧G(x)) ⊢ (∃x)(F(x)∧H(x))

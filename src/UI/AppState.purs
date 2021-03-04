@@ -32,8 +32,9 @@ import Effect.Class (liftEffect)
 
 import UI.File as F
 import Json (toJson, fromJson)
-import Sequent (Sequent)
-import Symbol (Symbol, SymbolMap, defaultMap, updateMap)
+import Sequent (Sequent, verifyTypes, verifyBindings)
+import Symbol
+    (Symbol(..), SymbolMap, newDefaultMap, newDefaultSymbols, updateMap)
 import Proof (Proof, Deduction(..))
 import Proof as P
 import Deduction (DeductionRule(..))
@@ -42,11 +43,11 @@ import UI.Capabilities
     , class ReadSymbols, class WriteSymbols, class ReadSequents
     , class WriteSequents, class ReadProof, class WriteProof, class Error
     , class ReadError, class ReadNav, class Nav, class History, class ReadFile
-    , error, canNew
+    , error, errors, canNew
     )
 
 type ProofState =
-    { sequents :: Array (Sequent String)
+    { sequents :: Array (Sequent String String String)
     , symbols :: Array Symbol
     , symbolMap :: SymbolMap
     , proof :: Proof
@@ -66,8 +67,8 @@ start =
     , future : []
     , present :
         { sequents : []
-        , symbols : []
-        , symbolMap : defaultMap
+        , symbols : newDefaultSymbols
+        , symbolMap : newDefaultMap
         , proof : P.empty
         }
     , error : Nothing
@@ -75,13 +76,7 @@ start =
     }
 
 startWith :: ProofState -> AppState
-startWith present =
-    { history : []
-    , future : []
-    , present
-    , error : Nothing
-    , window : NoWindow
-    }
+startWith present = start { present = present }
 
 startWithErr :: String -> AppState
 startWithErr e = start { error = Just [e] }
@@ -145,14 +140,19 @@ instance readSequentsAppStateM :: ReadSequents AppStateM where
 instance writeSequentsAppStateM :: WriteSequents AppStateM where
     addSequent sequent = do
         state <- get
-        modify $ _
-            { history = state.history <> [state.present]
-            , future = []
-            , present = state.present
-                { sequents = state.present.sequents <> [sequent] }
-            , error = Nothing
-            }
-        true <$ write
+        if verifyTypes sequent then case verifyBindings sequent of
+            Nothing -> do
+                modify $ _
+                    { history = state.history <> [state.present]
+                    , future = []
+                    , present = state.present
+                        { sequents = state.present.sequents <> [sequent] }
+                    , error = Nothing
+                    }
+                true <$ write
+            Just e -> false <$ errors e
+        else
+            false <$ error "Invalid types"
 
 instance readProofAppStateM :: ReadProof AppStateM where
     getProof = _.present.proof <$> get
@@ -164,7 +164,7 @@ instance writeProofAppStateM :: WriteProof AppStateM where
                 Just s | seq == s -> validate state
                 _ -> false <$ error "Sequent is not available"
             Definition sym i -> case A.index state.present.symbols i of
-                Just s | sym == s -> validate state
+                Just (Custom s) | sym == s -> validate state
                 _ -> false <$ error "Symbol is not available"
             _ -> validate state
         where
@@ -223,8 +223,8 @@ instance historyAppStateM :: History AppStateM where
                 , future = []
                 , present =
                     { sequents : []
-                    , symbols : []
-                    , symbolMap : defaultMap
+                    , symbols : newDefaultSymbols
+                    , symbolMap : newDefaultMap
                     , proof : P.empty
                     }
                 , error = Nothing

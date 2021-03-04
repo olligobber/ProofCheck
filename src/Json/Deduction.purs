@@ -13,7 +13,7 @@ import Data.Array as A
 import Data.Either (Either(..))
 import Data.Either as E
 
-import Symbol (Symbol)
+import Symbol (Symbol(..))
 import Sequent (Sequent)
 import Deduction (DeductionRule(..))
 import Deduction as D
@@ -29,8 +29,8 @@ toJson (Definition _ i) = AC.fromObject $ O.fromFoldable
     ]
 toJson d = AC.fromString $ D.renderRule d
 
-fromObject :: Array Symbol -> Array (Sequent String) -> O.Object Json ->
-    Either String DeductionRule
+fromObject :: Array Symbol -> Array (Sequent String String String) ->
+    O.Object Json -> Either String DeductionRule
 fromObject syms seqs o = do
     ruleJson <- E.note "Deduction rule is missing name" $ O.lookup "rule" o
     rule <- AC.caseJsonString (Left "Deduction rule name is not a string")
@@ -46,7 +46,9 @@ fromObject syms seqs o = do
             pure $ Introduction seq i
         "Def" -> do
             sym <- E.note "Deduction rule index out of range" $ A.index syms i
-            pure $ Definition sym i
+            case sym of
+                Custom s -> pure $ Definition s i
+                _ -> Left "Deduction rule index is for non-custom symbol"
         _ -> Left $ "Invalid indexed deduction rule: " <> rule
 
 fromString :: String -> Either String DeductionRule
@@ -55,17 +57,21 @@ fromString "MP" = Right ModusPonens
 fromString "MT" = Right ModusTollens
 fromString "DN" = Right DoubleNegation
 fromString "CP" = Right ConditionalProof
-fromString "&I" = Right AndIntroduction
-fromString "&E" = Right AndElimination
-fromString "|I" = Right OrIntroduction
-fromString "|E" = Right OrElimination
+fromString "∧I" = Right AndIntroduction
+fromString "∧E" = Right AndElimination
+fromString "∨I" = Right OrIntroduction
+fromString "∨E" = Right OrElimination
+fromString "∀I" = Right UniversalIntroduction
+fromString "∀E" = Right UniversalElimination
+fromString "∃I" = Right ExistentialIntroduction
+fromString "∃E" = Right ExistentialElimination
 fromString "RAA" = Right RAA
 fromString r = Left $ "Invalid non-indexed deduction rule: " <> r
 
 badDedType :: forall x. x -> Either String DeductionRule
 badDedType _ = Left "Deduction rule is not an object or string"
 
-fromJson :: Array Symbol -> Array (Sequent String) -> Json ->
+fromJson :: Array Symbol -> Array (Sequent String String String) -> Json ->
     Either String DeductionRule
 fromJson syms seqs = AC.caseJson
     badDedType

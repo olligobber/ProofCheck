@@ -10,7 +10,7 @@ module UI.Sequent
 
 import Prelude
     ( Unit
-    , ($), (<$>), (<>), (<<<), (/=)
+    , ($), (<$>), (<>), (<<<)
     , bind, pure, otherwise, discard, unit, const
     )
 import Halogen as H
@@ -19,9 +19,7 @@ import Halogen.HTML.Properties as HP
 import Halogen.HTML.Events as HE
 import Data.String as S
 import Data.Maybe (Maybe(..))
-import Data.Traversable (traverse, sequence)
 import Data.Either (Either(..))
-import Data.Array as A
 import Control.Applicative (when)
 
 import WFF as WFF
@@ -29,7 +27,7 @@ import Sequent (Sequent(..))
 import UI.Capabilities
     ( class ReadSymbols, class ReadSequents, class WriteSequents, class Nav
     , class Error, class ReadNav
-    , parse, error, addSequent, isSequentWindow, getSequents, close
+    , parse, parseMany, error, addSequent, isSequentWindow, getSequents, close
     )
 
 type Slot = H.Slot Query Message
@@ -46,7 +44,7 @@ data Action
 type Message = Unit
 
 type State =
-    { sequents :: Array (Sequent String)
+    { sequents :: Array (Sequent String String String)
     , open :: Boolean
     , ante :: String
     , conse :: String
@@ -101,7 +99,8 @@ renderNewSeq state = HH.tr
         ]
     ]
 
-renderSequent :: forall a m. Sequent String -> H.ComponentHTML a () m
+renderSequent :: forall a m.
+    Sequent String String String -> H.ComponentHTML a () m
 renderSequent (Sequent seq) = HH.tr
     []
     [ HH.td
@@ -139,9 +138,6 @@ render state
         ]
     | otherwise = HH.div [] []
 
-splitCommas :: String -> Array String
-splitCommas = S.split (S.Pattern ",")
-
 handleAction :: forall m.
     ReadSymbols m =>
     WriteSequents m =>
@@ -152,10 +148,10 @@ handleAction (Ante s) = H.modify_ $ _ { ante = s }
 handleAction (Conse s) = H.modify_ $ _ { conse = s }
 handleAction Add = do
     state <- H.get
-    antesp <- traverse parse $ A.filter (_ /= "") $ splitCommas state.ante
+    antesp <- parseMany state.ante
     consep <- parse state.conse
     case do
-        ante <- sequence antesp
+        ante <- antesp
         conse <- consep
         pure $ Sequent { ante, conse }
     of
