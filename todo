@@ -1,9 +1,0 @@
-fix implementation
-	bindings must bind a variable
-	name clashes are illegal
-tests
-si vs si(s)
-delete buttons
-neaten and comment code
-fix overflow of floating windows
-make errors more descriptive

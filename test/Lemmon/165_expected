@@ -1,0 +1,1 @@
+Success: (∀x)(∀y)(∀z)((R(x,y)∧R(y,z))→(~R(x,z))) ⊢ (∀x)(~R(x,x))
