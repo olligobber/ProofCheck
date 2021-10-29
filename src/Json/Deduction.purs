@@ -15,10 +15,10 @@ import Data.Either as E
 
 import Symbol (Symbol(..))
 import Sequent (Sequent)
-import Deduction (DeductionRule(..))
-import Deduction as D
+import Lemmon (LemmonRule(..))
+import Deduce as D
 
-toJson :: DeductionRule -> Json
+toJson :: LemmonRule -> Json
 toJson (Introduction _ i) = AC.fromObject $ O.fromFoldable
     [ Tuple "rule" $ AC.fromString "SI"
     , Tuple "number" $ AC.fromNumber $ toNumber i
@@ -30,7 +30,7 @@ toJson (Definition _ i) = AC.fromObject $ O.fromFoldable
 toJson d = AC.fromString $ D.renderRule d
 
 fromObject :: Array Symbol -> Array (Sequent String String String) ->
-    O.Object Json -> Either String DeductionRule
+    O.Object Json -> Either String LemmonRule
 fromObject syms seqs o = do
     ruleJson <- E.note "Deduction rule is missing name" $ O.lookup "rule" o
     rule <- AC.caseJsonString (Left "Deduction rule name is not a string")
@@ -51,7 +51,7 @@ fromObject syms seqs o = do
                 _ -> Left "Deduction rule index is for non-custom symbol"
         _ -> Left $ "Invalid indexed deduction rule: " <> rule
 
-fromString :: String -> Either String DeductionRule
+fromString :: String -> Either String LemmonRule
 fromString "A" = Right Assumption
 fromString "MP" = Right ModusPonens
 fromString "MT" = Right ModusTollens
@@ -68,11 +68,11 @@ fromString "∃E" = Right ExistentialElimination
 fromString "RAA" = Right RAA
 fromString r = Left $ "Invalid non-indexed deduction rule: " <> r
 
-badDedType :: forall x. x -> Either String DeductionRule
+badDedType :: forall x. x -> Either String LemmonRule
 badDedType _ = Left "Deduction rule is not an object or string"
 
 fromJson :: Array Symbol -> Array (Sequent String String String) -> Json ->
-    Either String DeductionRule
+    Either String LemmonRule
 fromJson syms seqs = AC.caseJson
     badDedType
     badDedType

@@ -37,7 +37,7 @@ import Symbol
     (Symbol(..), SymbolMap, newDefaultMap, newDefaultSymbols, updateMap)
 import Proof (Proof, Deduction(..))
 import Proof as P
-import Deduction (DeductionRule(..))
+import Lemmon (LemmonRule(..))
 import UI.Capabilities
     ( Window(..)
     , class ReadSymbols, class WriteSymbols, class ReadSequents

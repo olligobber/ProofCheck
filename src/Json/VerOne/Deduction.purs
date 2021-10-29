@@ -13,10 +13,10 @@ import Data.Either as E
 
 import Symbol (CustomSymbol)
 import Sequent (Sequent)
-import Deduction (DeductionRule(..))
+import Lemmon (LemmonRule(..))
 
 fromObject :: Array CustomSymbol -> Array (Sequent String String String) ->
-    O.Object Json -> Either String DeductionRule
+    O.Object Json -> Either String LemmonRule
 fromObject syms seqs o = do
     ruleJson <- E.note "Deduction rule is missing name" $ O.lookup "rule" o
     rule <- AC.caseJsonString (Left "Deduction rule name is not a string")
@@ -35,7 +35,7 @@ fromObject syms seqs o = do
             pure $ Definition sym i
         _ -> Left $ "Invalid indexed deduction rule: " <> rule
 
-fromString :: String -> Either String DeductionRule
+fromString :: String -> Either String LemmonRule
 fromString "A" = Right Assumption
 fromString "MP" = Right ModusPonens
 fromString "MT" = Right ModusTollens
@@ -48,11 +48,11 @@ fromString "|E" = Right OrElimination
 fromString "RAA" = Right RAA
 fromString r = Left $ "Invalid non-indexed deduction rule: " <> r
 
-badDedType :: forall x. x -> Either String DeductionRule
+badDedType :: forall x. x -> Either String LemmonRule
 badDedType _ = Left "Deduction rule is not an object or string"
 
 fromJson :: Array CustomSymbol -> Array (Sequent String String String) ->
-    Json -> Either String DeductionRule
+    Json -> Either String LemmonRule
 fromJson syms seqs = AC.caseJson
     badDedType
     badDedType

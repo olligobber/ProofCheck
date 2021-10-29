@@ -33,7 +33,7 @@ import Control.Applicative (when)
 
 import WFF as W
 import UI.HTMLHelp (select)
-import Deduction (DeductionRule(..))
+import Lemmon (LemmonRule(..))
 import Proof (Deduction(..), Proof(..))
 import Proof as P
 import Symbol (Symbol(..), CustomSymbol, getDisplay, getOperator)
@@ -50,14 +50,14 @@ type Slot = H.Slot Query Message
 data Query a = Update a
 
 data PartialDeduction
-    = Full DeductionRule
+    = Full LemmonRule
     | PartSymbol
     | PartSequent
 
 derive instance eqPartialDeduction :: Eq PartialDeduction
 derive instance ordPartialDeduction :: Ord PartialDeduction
 
-toDeduction :: PartialDeduction -> Either String DeductionRule
+toDeduction :: PartialDeduction -> Either String LemmonRule
 toDeduction (Full d) = Right d
 toDeduction PartSymbol = Left "Select a symbol or other reason"
 toDeduction PartSequent = Left "Select a sequent or other reason"

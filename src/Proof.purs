@@ -28,12 +28,13 @@ import Data.Tuple (Tuple(..))
 
 import WFF (WFF, Typing, isWellTyped, getTyping, validateBindings)
 import Sequent (Sequent(..))
-import Deduction
+import Lemmon (LemmonRule)
+import Deduce (matchDeduction, isAssumption, renderRule)
 
 data Deduction = Deduction
     { assumptions :: Set Int
     , deduction :: WFF String String String
-    , rule :: DeductionRule
+    , rule :: LemmonRule
     , reasons :: Array Int
     }
 
