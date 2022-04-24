@@ -32,10 +32,9 @@ import Effect.Class (liftEffect)
 
 import UI.File as F
 import Json (toJson, fromJson)
-import Sequent (Sequent, verifyTypes, verifyBindings)
+import Sequent (verifyTypes, verifyBindings)
 import Symbol
     (Symbol(..), SymbolMap, newDefaultMap, newDefaultSymbols, updateMap)
-import Proof (Proof, Deduction(..))
 import Proof as P
 import Lemmon (LemmonRule(..))
 import UI.Capabilities
@@ -45,12 +44,13 @@ import UI.Capabilities
     , class ReadError, class ReadNav, class Nav, class History, class ReadFile
     , error, errors, canNew
     )
+import UITypes (UISequent, UIProof)
 
 type ProofState =
-    { sequents :: Array (Sequent String String String)
+    { sequents :: Array UISequent
     , symbols :: Array Symbol
     , symbolMap :: SymbolMap
-    , proof :: Proof
+    , proof :: UIProof
     }
 
 type AppState =
@@ -158,7 +158,7 @@ instance readProofAppStateM :: ReadProof AppStateM where
     getProof = _.present.proof <$> get
 
 instance writeProofAppStateM :: WriteProof AppStateM where
-    addDeduction deduction@(Deduction d) = get >>= \state ->
+    addDeduction deduction@(P.Deduction d) = get >>= \state ->
         case d.rule of
             Introduction seq i -> case A.index state.present.sequents i of
                 Just s | seq == s -> validate state

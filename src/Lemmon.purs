@@ -16,7 +16,7 @@ import Data.Map as M
 import Data.Foldable (foldMap, fold)
 
 import WFF
-    ( WFF, Variable(Free)
+    ( WFF, Variable(Free), ValidFree(Known, Impossible)
     , (==>), (/\), (\/)
     , neg, prop, foralv, exists, pred, freeVars
     )
@@ -189,8 +189,8 @@ instance deductionLemmon :: Deduce LemmonRule (WFF String String String) where
             x <- A.fromFoldable $ M.lookup "x" sub.freeMatch
             f <- A.fromFoldable $ M.lookup "F" sub.predMatch
             case x of
-                Left _ -> pure assumptions
-                Right xx -> do
+                Impossible _ -> pure assumptions
+                Known xx -> do
                     guard $ not $ xx `Set.member` assFreeVars
                     guard $ not $ Right xx `Set.member` freeVars f
                     pure assumptions
@@ -212,8 +212,8 @@ instance deductionLemmon :: Deduce LemmonRule (WFF String String String) where
                     Set.mapMaybe (map freeVars <<< flip M.lookup m) assumptions
             case M.lookup "x" sub.freeMatch of
                 Nothing -> []
-                Just (Left _) -> pure assumptions
-                Just (Right x) -> do
+                Just (Impossible _) -> pure assumptions
+                Just (Known x) -> do
                     guard $ not $ x `Set.member` assFreeVars
                     guard $ not $ x `Set.member` freeVars conse
                     pure assumptions

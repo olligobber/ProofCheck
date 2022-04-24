@@ -19,12 +19,18 @@ import Data.Array (sort)
 import Json.WFF as JW
 import Json.Deduction as JD
 import Proof as P
-import Proof (Deduction(..), Proof(..))
 import Symbol (Symbol, SymbolMap)
-import Sequent (Sequent)
+import Sequent as Sequent
+import WFF as W
+import Lemmon (LemmonRule)
+
+type WFF = W.WFF String String String
+type Sequent = Sequent.Sequent String String String
+type Proof = P.Proof LemmonRule WFF String
+type Deduction = P.Deduction LemmonRule WFF
 
 fromDeduction :: Deduction -> Json
-fromDeduction (Deduction d) = AC.fromObject $ O.fromFoldable
+fromDeduction (P.Deduction d) = AC.fromObject $ O.fromFoldable
     [ Tuple "assumptions" $ AC.fromArray $
         AC.fromNumber <<< toNumber <$> S.toUnfoldable d.assumptions
     , Tuple "formula" $ JW.toJson d.deduction
@@ -33,9 +39,9 @@ fromDeduction (Deduction d) = AC.fromObject $ O.fromFoldable
         AC.fromNumber <<< toNumber <$> d.reasons
     ]
 
-toDeduction :: SymbolMap -> Array Symbol -> Array (Sequent String String String)
+toDeduction :: SymbolMap -> Array Symbol -> Array Sequent
     -> Proof -> Json -> Either String Deduction
-toDeduction symbolMap syms seqs (Proof p) j = do
+toDeduction symbolMap syms seqs (P.Proof p) j = do
     o <- E.note "Deduction is not an object" $ AC.toObject j
     formJson <- E.note "Deduction is missing formula" $ O.lookup "formula" o
     deduction <- JW.fromJson symbolMap formJson
@@ -55,12 +61,12 @@ toDeduction symbolMap syms seqs (Proof p) j = do
     assumptions <- E.note "Deduction assumptions are not integers" $
         S.fromFoldable <$>
         traverse (AC.toNumber >=> fromNumber) assArr
-    pure $ Deduction { assumptions, deduction, rule, reasons }
+    pure $ P.Deduction { assumptions, deduction, rule, reasons }
 
 toJson :: Proof -> Json
-toJson (Proof p) = AC.fromArray $ fromDeduction <$> p.lines
+toJson (P.Proof p) = AC.fromArray $ fromDeduction <$> p.lines
 
-fromJson :: SymbolMap -> Array Symbol -> Array (Sequent String String String) ->
+fromJson :: SymbolMap -> Array Symbol -> Array Sequent ->
     Json -> Either String Proof
 fromJson symbolMap syms seqs j = do
     linesArr <- E.note "Proof is not a list" $ AC.toArray j

@@ -36,12 +36,13 @@ import Data.Tuple (Tuple(..))
 import Data.Void (Void, absurd)
 
 import Sequent (Sequent(..))
-import WFF (WFF(..), UnaryOp, BinaryOp, Quantifier)
+import WFF (WFF(..), NullaryOp, UnaryOp, BinaryOp, Quantifier)
 import WFF as WFF
 import Util (mapTraversal)
 
 data Operator
     = QuantOperator Quantifier
+    | NullaryOperator NullaryOp
     | UnaryOperator UnaryOp
     | BinaryOperator BinaryOp
 
@@ -150,6 +151,7 @@ getOperator (Alias a) = a.operator
 getOperator (Builtin (BuiltinSymbol o)) = o
 
 getDisplay :: Operator -> String
+getDisplay (NullaryOperator n) = WFF.renderNullaryOp n
 getDisplay (UnaryOperator u) = WFF.renderUnaryOp u
 getDisplay (BinaryOperator b) = WFF.renderBinaryOp b
 getDisplay (QuantOperator q) = WFF.renderQ q

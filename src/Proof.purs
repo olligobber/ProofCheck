@@ -12,6 +12,7 @@ module Proof
 import Prelude
     ( (<>), (<$>), ($), (>>>), (==), (/=), (+), (-)
     , show, bind, map, pure, mempty, not, flip, discard, unit
+    , class Eq, class Ord
     )
 import Data.String.Common (joinWith)
 import Data.Set (Set)
@@ -29,38 +30,38 @@ import Data.Tuple (Tuple(..))
 import WFF (WFF, Typing, isWellTyped, getTyping, validateBindings)
 import Sequent (Sequent(..))
 import Lemmon (LemmonRule)
-import Deduce (matchDeduction, isAssumption, renderRule)
+import Deduce (class Deduce, matchDeduction, isAssumption, renderRule)
 
-data Deduction = Deduction
+data Deduction r w = Deduction
     { assumptions :: Set Int
-    , deduction :: WFF String String String
-    , rule :: LemmonRule
+    , deduction :: w
+    , rule :: r
     , reasons :: Array Int
     }
 
-data Proof = Proof
-    { lines :: Array Deduction
-    , assumptions :: Map Int (WFF String String String)
-    , types :: Typing String
+data Proof r w t = Proof
+    { lines :: Array (Deduction r w)
+    , assumptions :: Map Int w
+    , types :: Typing t
     }
 
-renderReason :: Deduction -> String
+renderReason :: forall r w. Deduce r w => Deduction r w -> String
 renderReason (Deduction d) =
     renderRule d.rule
     <> " "
     <> joinWith "," (show <$> d.reasons)
 
-empty :: Proof
+empty :: forall r w t. Ord t => Proof r w t
 empty = Proof
     { lines : []
     , assumptions : M.empty
     , types : mempty
     }
 
-isEmpty :: Proof -> Boolean
+isEmpty :: forall r w t. Proof r w t -> Boolean
 isEmpty (Proof p) = length p.lines == 0
 
-conclusion :: Proof -> Maybe (Sequent String String String)
+conclusion :: forall r t. Proof r (WFF String String String) t -> Maybe (Sequent String String String)
 conclusion (Proof p) = case A.last p.lines of
     Just (Deduction d) -> case
         traverse (flip M.lookup p.assumptions) $ A.fromFoldable d.assumptions
@@ -69,8 +70,8 @@ conclusion (Proof p) = case A.last p.lines of
             Nothing -> Nothing
     Nothing -> Nothing
 
-pack :: Deduction ->
-    { formula :: WFF String String String
+pack :: forall r w. Deduce r w => Deduction r w ->
+    { formula :: w
     , isAssumption :: Boolean
     , assumptions :: Set Int
     }
@@ -80,7 +81,8 @@ pack (Deduction d) =
     , assumptions : d.assumptions
     }
 
-addDeduction :: Deduction -> Proof -> Either String Proof
+addDeduction :: forall r x. Ord x => Deduce r (WFF x x x) => 
+    Deduction r (WFF x x x) -> Proof r (WFF x x x) x -> Either String (Proof r (WFF x x x) x)
 addDeduction (Deduction d) (Proof p) = do
     case validateBindings d.deduction of
         Just e -> Left e
@@ -111,7 +113,8 @@ getNextUnused s = case Set.findMin $ plus `Set.difference` s of
     where
         plus = Set.insert 1 $ Set.map (_ + 1) s
 
-getAssumptions :: Deduction -> Proof -> Either String (Set Int)
+getAssumptions :: forall r t x y z. Eq z => Deduce r (WFF x y z) => 
+    Deduction r (WFF x y z) -> Proof r (WFF x y z) t -> Either String (Set Int)
 getAssumptions (Deduction d) (Proof p) = do
     case validateBindings d.deduction of
         Just e -> Left e

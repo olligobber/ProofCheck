@@ -19,13 +19,17 @@ import Data.Array as A
 import Json.Proof as JP
 import Json.Symbol as JSym
 import Json.Sequent as JSeq
-import Json.VerOne as JVerOne
-import Symbol (Symbol, SymbolMap)
-import Sequent (Sequent)
 import Sequent as Seq
-import Proof (Proof)
+import Proof as P
+import WFF as W
+import Lemmon (LemmonRule)
+import Symbol (Symbol, SymbolMap)
 
-toJson :: Array Symbol -> Array (Sequent String String String) -> Proof -> Json
+type WFF = W.WFF String String String
+type Sequent = Seq.Sequent String String String
+type Proof = P.Proof LemmonRule WFF String
+
+toJson :: Array Symbol -> Array Sequent -> Proof -> Json
 toJson syms seqs p = AC.fromObject $ O.fromFoldable
     [ Tuple "version" $ AC.fromNumber 2.0
     , Tuple "symbols" $ AC.fromArray $ JSym.toJson <$> syms
@@ -36,7 +40,7 @@ toJson syms seqs p = AC.fromObject $ O.fromFoldable
 fromObject :: O.Object Json -> Either String
     { symbolMap :: SymbolMap
     , symbols :: Array Symbol
-    , sequents :: Array (Sequent String String String)
+    , sequents :: Array Sequent
     , proof :: Proof
     }
 fromObject o = do
@@ -57,15 +61,15 @@ fromObject o = do
 fromJson :: Json -> Either String
     { symbolMap :: SymbolMap
     , symbols :: Array Symbol
-    , sequents :: Array (Sequent String String String)
+    , sequents :: Array Sequent
     , proof :: Proof
     }
 fromJson j = do
     o <- E.note "Json is not an object" $ AC.toObject j
     case O.lookup "version" o of
-        Nothing -> JVerOne.fromObject o
+        Nothing -> Left "Version 1 is no longer supported"
         Just verJson -> case AC.toNumber verJson of
             Nothing -> Left "Save version is not a number"
             Just 2.0 -> fromObject o
-            Just 1.0 -> JVerOne.fromObject o
+            Just 1.0 -> Left "Version 1 is no longer supported"
             _ -> Left "Unrecognised save version"

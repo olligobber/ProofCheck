@@ -34,16 +34,15 @@ import Control.Applicative (when)
 import WFF as W
 import UI.HTMLHelp (select)
 import Lemmon (LemmonRule(..))
-import Proof (Deduction(..), Proof(..))
 import Proof as P
 import Symbol (Symbol(..), CustomSymbol, getDisplay, getOperator)
-import Sequent (Sequent)
 import Sequent as Seq
 import UI.Capabilities
     ( class ReadSymbols, class ReadSequents, class ReadProof, class WriteProof
     , class Error
     , getSymbols, getSequents, getProof, addDeduction, error, parse
     )
+import UITypes (UIDeduction, UIProof, UISequent)
 
 type Slot = H.Slot Query Message
 
@@ -79,8 +78,8 @@ type Message = Unit
 
 type State =
     { symbols :: Array (Tuple Int CustomSymbol)
-    , sequents :: Array (Sequent String String String)
-    , proof :: Proof
+    , sequents :: Array UISequent
+    , proof :: UIProof
     , assumptions :: String
     , formula :: String
     , reason :: PartialDeduction
@@ -115,7 +114,7 @@ initialState =
     }
 
 renderNewLine :: forall m. State -> H.ComponentHTML Action () m
-renderNewLine state = let Proof proof = state.proof in HH.tr
+renderNewLine state = let P.Proof proof = state.proof in HH.tr
     [ HP.id_ "new-line" ]
     [ HH.td
         [ HP.class_ $ HH.ClassName "assumptions" ]
@@ -204,8 +203,8 @@ renderNewLine state = let Proof proof = state.proof in HH.tr
         ]
     ]
 
-renderDeduction :: forall a m. Int -> Deduction -> H.ComponentHTML a () m
-renderDeduction i (Deduction ded) = HH.tr
+renderDeduction :: forall a m. Int -> UIDeduction -> H.ComponentHTML a () m
+renderDeduction i (P.Deduction ded) = HH.tr
     []
     [ HH.td
         [ HP.class_ $ HH.ClassName "assumptions" ]
@@ -219,7 +218,7 @@ renderDeduction i (Deduction ded) = HH.tr
         [ HH.text $ W.render ded.deduction ]
     , HH.td
         [ HP.class_ $ HH.ClassName "reason" ]
-        [ HH.text $ P.renderReason $ Deduction ded ]
+        [ HH.text $ P.renderReason $ P.Deduction ded ]
     ]
 
 lineHeading :: forall a m. H.ComponentHTML a () m
@@ -240,7 +239,7 @@ lineHeading = HH.tr
     ]
 
 render :: forall m. State -> H.ComponentHTML Action () m
-render state = let Proof proof = state.proof in HH.div
+render state = let P.Proof proof = state.proof in HH.div
     [ HP.id_ "proof-box" ]
     [ HH.table
         [ HP.id_ "proof-lines" ]
@@ -278,7 +277,7 @@ handleAction AddLine = do
         reasons <- E.note "References are not integers" $
             A.sort <$> traverse fromString
             (A.filter (_ /= "") $ SU.words $ commastospaces state.references)
-        pure $ Deduction {assumptions, deduction, rule, reasons}
+        pure $ P.Deduction {assumptions, deduction, rule, reasons}
     of
         Left e -> error e
         Right d -> do

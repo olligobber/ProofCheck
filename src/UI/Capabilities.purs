@@ -53,10 +53,8 @@ import Halogen (HalogenM, lift, raise)
 import Web.Event.Event (Event)
 
 import Symbol (Symbol, SymbolMap)
-import Sequent (Sequent)
-import Proof (Deduction, Proof)
-import WFF (WFF)
 import Parser as P
+import UITypes (UIWFF, UISequent, UIProof, UIDeduction)
 
 data Window
     = SequentWindow
@@ -71,27 +69,27 @@ class Monad m <= ReadSymbols m where
     getSymbolMap :: m SymbolMap
 
 parse :: forall m. ReadSymbols m => String ->
-    m (Either String (WFF String String String))
+    m (Either String UIWFF)
 parse s = getSymbolMap >>= \m -> pure $ P.parse m s
 
 parseMany :: forall m. ReadSymbols m => String ->
-    m (Either String (Array (WFF String String String)))
+    m (Either String (Array UIWFF))
 parseMany s = getSymbolMap >>= \m -> pure $ P.parseMany m s
 
 class Monad m <= WriteSymbols m where
     addSymbol :: Symbol -> m Boolean
 
 class Monad m <= ReadSequents m where
-    getSequents :: m (Array (Sequent String String String))
+    getSequents :: m (Array UISequent)
 
 class Monad m <= WriteSequents m where
-    addSequent :: Sequent String String String -> m Boolean
+    addSequent :: UISequent -> m Boolean
 
 class Monad m <= ReadProof m where
-    getProof :: m Proof
+    getProof :: m UIProof
 
 class Monad m <= WriteProof m where
-    addDeduction :: Deduction -> m Boolean
+    addDeduction :: UIDeduction -> m Boolean
 
 class Monad m <= Error m where
     errors :: Array String -> m Unit

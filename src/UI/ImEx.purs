@@ -19,9 +19,7 @@ import Data.MediaType.Common (applicationJSON)
 import Web.Event.Event (Event)
 import Data.Argonaut.Core (stringify)
 
-import Sequent (Sequent)
 import Symbol (Symbol)
-import Proof (Proof)
 import Proof as P
 import Json (toJson)
 import UI.Capabilities
@@ -29,6 +27,7 @@ import UI.Capabilities
     , class ReadSymbols, class ReadSequents
     , readFile, close, isIEWindow, getSymbols, getSequents, getProof
     )
+import UITypes (UISequent, UIProof)
 
 type Slot = H.Slot Query Message
 
@@ -43,9 +42,9 @@ type Message = Unit
 
 type State =
     { open :: Boolean
-    , sequents :: Array (Sequent String String String)
+    , sequents :: Array UISequent
     , symbols :: Array Symbol
-    , proof :: Proof
+    , proof :: UIProof
     }
 
 component :: forall m.
