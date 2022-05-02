@@ -21,6 +21,7 @@ import Data.Maybe (Maybe(..))
 
 import WFF (WFF, Match)
 import WFF as WFF
+import Typing (getTyping, validate)
 
 data Sequent pred free bound = Sequent
     { ante :: Array (WFF pred free bound)
@@ -112,7 +113,7 @@ matchLift indices small (Sequent big) =
 
 verifyTypes :: forall a. Ord a => Sequent a a a -> Boolean
 verifyTypes (Sequent s) =
-    WFF.isWellTyped $ foldMap WFF.getTyping s.ante <> WFF.getTyping s.conse
+    validate $ foldMap getTyping s.ante <> getTyping s.conse
 
 verifyBindings :: forall pred free bound. Eq bound =>
     Sequent pred free bound -> Maybe (Array String)

@@ -35,9 +35,7 @@ module WFF
     , ValidFree(..)
     , Match
     , Matches(..)
-    , Typing
-    , isWellTyped
-    , getTyping
+    , WFFTyping
     , validateBindings
     ) where
 
@@ -60,6 +58,7 @@ import Data.Set as S
 import Data.Traversable (traverse, sequence)
 
 import Util (mapTraversal, getAllIndex)
+import Typing (class Typing, getTyping)
 
 -- Operators used to join formulas
 
@@ -529,48 +528,50 @@ match (Quant q) (Quant r)
     | q.operator == r.operator = match q.contents r.contents
 match _ _ = Matches []
 
--- TODO comment code below here
-
-data Type
+-- Type information for WFF contents
+data WFFType
     = FreeVar
     | BoundVar
     | Predicate Int
 
-derive instance eqType :: Eq Type
+derive instance eqWFFType :: Eq WFFType
 
-instance showType :: Show Type where
+instance showWFFType :: Show WFFType where
     show FreeVar = "FreeVar"
     show BoundVar = "BoundVar"
     show (Predicate x) = "(Predicate " <> show x <> ")"
 
-newtype Typing x = Typing (Maybe (Map x Type))
+data WFFTyping x
+    = ValidTyping (Map x WFFType)
+    | InvalidTyping
 
-instance semigroupTyping :: Ord x => Semigroup (Typing x) where
-    append (Typing (Just m)) (Typing (Just n))
+instance semigroupWFFTyping :: Ord x => Semigroup (WFFTyping x) where
+    append (ValidTyping m) (ValidTyping n)
         | all identity $ M.intersectionWith (==) m n
-            = Typing $ Just $ M.union m n
-    append _ _ = Typing Nothing
+            = ValidTyping $ M.union m n
+    append _ _ = InvalidTyping 
 
-instance monoidTyping :: Ord x => Monoid (Typing x) where
-    mempty = Typing $ Just $ M.empty
+instance monoidTyping :: Ord x => Monoid (WFFTyping x) where
+    mempty = ValidTyping M.empty
 
-isWellTyped :: forall x. Typing x -> Boolean
-isWellTyped (Typing (Just _)) = true
-isWellTyped (Typing Nothing) = false
-
-getVarTyping :: forall x. Variable x x -> Map x Type
+getVarTyping :: forall x. Variable x x -> Map x WFFType
 getVarTyping (Free a) = M.singleton a FreeVar
 getVarTyping (Bound a _) = M.singleton a BoundVar
 
-getTyping :: forall x. Ord x => WFF x x x -> Typing x
-getTyping (Pred p) = foldMap (Typing <<< Just) $
-    [ M.singleton p.predicate $ Predicate $ length p.variables ]
-    <> (getVarTyping <$> p.variables)
-getTyping (Nullary _) = mempty
-getTyping (Unary u) = getTyping u.contents
-getTyping (Binary b) = getTyping b.left <> getTyping b.right
-getTyping (Quant q) =
-    (Typing $ Just $ M.singleton q.variable BoundVar) <> getTyping q.contents
+instance typingWFF :: Ord x => Typing (WFF x x x) (WFFTyping x) where
+    validate (ValidTyping _) = true
+    validate InvalidTyping = false
+
+    getTyping (Pred p) = foldMap ValidTyping $
+        [ M.singleton p.predicate $ Predicate $ length p.variables ]
+        <> (getVarTyping <$> p.variables)
+    getTyping (Nullary _) = mempty
+    getTyping (Unary u) = getTyping u.contents
+    getTyping (Binary b) = getTyping b.left <> getTyping b.right
+    getTyping (Quant q) =
+        (ValidTyping $ M.singleton q.variable BoundVar) <> getTyping q.contents
+
+-- TODO why is this here and can it be generalised
 
 -- Given a bound variable, check it is not bound elsewhere and how many times
 -- it is used

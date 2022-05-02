@@ -12,7 +12,7 @@ module Proof
 import Prelude
     ( (<>), (<$>), ($), (>>>), (==), (/=), (+), (-)
     , show, bind, map, pure, mempty, not, flip, discard, unit
-    , class Eq, class Ord
+    , class Eq, class Ord, class Monoid
     )
 import Data.String.Common (joinWith)
 import Data.Set (Set)
@@ -27,10 +27,10 @@ import Data.Map (Map)
 import Data.Map as M
 import Data.Tuple (Tuple(..))
 
-import WFF (WFF, Typing, isWellTyped, getTyping, validateBindings)
+import WFF (WFF, validateBindings)
 import Sequent (Sequent(..))
-import Lemmon (LemmonRule)
 import Deduce (class Deduce, matchDeduction, isAssumption, renderRule)
+import Typing (class Typing, getTyping, validate)
 
 data Deduction r w = Deduction
     { assumptions :: Set Int
@@ -42,7 +42,7 @@ data Deduction r w = Deduction
 data Proof r w t = Proof
     { lines :: Array (Deduction r w)
     , assumptions :: Map Int w
-    , types :: Typing t
+    , types :: t
     }
 
 renderReason :: forall r w. Deduce r w => Deduction r w -> String
@@ -51,7 +51,7 @@ renderReason (Deduction d) =
     <> " "
     <> joinWith "," (show <$> d.reasons)
 
-empty :: forall r w t. Ord t => Proof r w t
+empty :: forall r w t. Monoid t => Proof r w t
 empty = Proof
     { lines : []
     , assumptions : M.empty
@@ -81,8 +81,8 @@ pack (Deduction d) =
     , assumptions : d.assumptions
     }
 
-addDeduction :: forall r x. Ord x => Deduce r (WFF x x x) => 
-    Deduction r (WFF x x x) -> Proof r (WFF x x x) x -> Either String (Proof r (WFF x x x) x)
+addDeduction :: forall r w t. Ord w => Deduce r w => Typing w t => 
+    Deduction r w -> Proof r w t -> Either String (Proof r w t)
 addDeduction (Deduction d) (Proof p) = do
     case validateBindings d.deduction of
         Just e -> Left e
@@ -92,7 +92,7 @@ addDeduction (Deduction d) (Proof p) = do
     assumptions <- matchDeduction antes p.assumptions d.deduction d.rule
     let newTypes = p.types <> getTyping d.deduction
     case assumptions of
-        _ | not (isWellTyped newTypes) -> Left "Invalid types"
+        _ | not (validate newTypes) -> Left "Invalid types"
         Just x | x == d.assumptions  -> Right $ Proof $
             p { lines = p.lines <> [Deduction d], types = newTypes }
         Just _ -> Left "Incorrect assumptions"
